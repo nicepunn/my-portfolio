@@ -64,7 +64,7 @@ export function Footer({ data }: { data: Resume }) {
             height={128}
             className="rounded-sm bg-white p-2"
           />
-          <figcaption className="mt-2 text-center font-mono text-[10px] tracking-wider text-[var(--muted)] uppercase">
+          <figcaption className="mt-2 text-center text-[10px] tracking-wide text-[var(--muted)] uppercase">
             {t.footer.scanToOpen}
           </figcaption>
         </figure>

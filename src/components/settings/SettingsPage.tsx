@@ -9,9 +9,7 @@ export function SettingsPage() {
 
   return (
     <div className="mx-auto w-full max-w-xl px-6 py-12 sm:px-10 lg:px-0">
-      <p className="font-mono text-xs tracking-[0.25em] text-[var(--accent)] uppercase">
-        {t.settings.eyebrow}
-      </p>
+      <p className="label-caps">{t.settings.eyebrow}</p>
       <h1 className="mt-3 font-display text-3xl font-bold tracking-tight text-[var(--fg)] sm:text-4xl">
         {t.settings.title}
       </h1>

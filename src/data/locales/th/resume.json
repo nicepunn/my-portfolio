@@ -1,8 +1,8 @@
 {
   "name": "Punnawat Lohanuit",
-  "headline": "นักพัฒนา Full-stack",
-  "summary": "แปลงความต้องการที่ซับซ้อนให้เป็นโซลูชันประสิทธิภาพสูง พร้อมเรียนรู้เทคโนโลยีใหม่ได้อย่างรวดเร็ว และส่งมอบแอปพลิเคชันที่ใช้ได้จริง",
-  "location": "กรุงเทพฯ ประเทศไทย",
+  "headline": "Full-stack developer",
+  "summary": "เปลี่ยน requirement ที่ซับซ้อนให้เป็น high-performance solution เรียนรู้ technology ใหม่ได้เร็ว และส่งมอบ application ที่ใช้งานได้จริง",
+  "location": "Bangkok, Thailand",
   "email": "punnawat58000@gmail.com",
   "github": {
     "label": "nicepunn",
@@ -12,21 +12,21 @@
   "experience": [
     {
       "company": "MyCourseville Co., Ltd",
-      "role": "นักพัฒนา Full-stack",
-      "period": "กรกฎาคม 2025 – ปัจจุบัน",
+      "role": "Full-stack developer",
+      "period": "July 2025 – Present",
       "bullets": [
-        "พัฒนาและปล่อยฟีเจอร์สำหรับแพลตฟอร์มการเรียน (ลงทะเบียน งานมอบหมาย การให้คะแนน การแจ้งเตือน)",
-        "สร้าง UI แบบ responsive และโฟลว์ฟอร์ม ตามแนวทาง accessibility"
+        "Build และ ship feature สำหรับ learning platform (enrollment, assignments, grading, notifications)",
+        "Implement responsive UI component และ form flow ตาม accessibility best practices"
       ]
     },
     {
       "company": "Lodash (Thailand) Co., Ltd",
-      "role": "นักพัฒนา Full-stack",
-      "period": "เมษายน 2024 – กุมภาพันธ์ 2025",
+      "role": "Full-stack developer",
+      "period": "April 2024 – Feb 2025",
       "bullets": [
-        "ออกแบบ พัฒนา และดูแลโปรเจกต์ตั้งแต่ต้น ด้วย Next.js ฝั่ง frontend และ Node.js กับ Strapi ฝั่ง backend",
-        "ส่งมอบโซลูชันที่ขยายและดูแลได้ง่าย โดยผสานไลบรารีและเครื่องมือตามความต้องการของโปรเจกต์",
-        "ปรับตัวเร็วกับเทคโนโลยีและเฟรมเวิร์กใหม่เพื่อตอบโจทย์ที่เปลี่ยนไป"
+        "Design, develop และ manage project จากศูนย์ ด้วย Next.js ฝั่ง frontend และ Node.js + Strapi ฝั่ง backend",
+        "ส่งมอบ scalable, maintainable solution โดย integrate library และ tool ตามความต้องการของ project",
+        "Adapt เร็วกับ technology และ framework ใหม่เพื่อตอบ dynamic requirement"
       ]
     }
   ],
@@ -35,8 +35,8 @@
       "name": "Heathub",
       "stack": "Next.js · Node.js · MongoDB · Redis · Docker",
       "description": [
-        "แปลงสถาปัตยกรรมและความต้องการระบบเป็นแพลตฟอร์มจริงที่เชื่อมเจ้าของสัตว์เลี้ยงกับผู้รับฝากที่ผ่านการยืนยัน",
-        "มาร์เก็ตเพลสรับฝากสัตว์เลี้ยงแบบ full-stack ส่งมอบครบวงจร"
+        "แปลง system architecture และ requirement เป็น production-ready platform เชื่อม pet owner กับ verified pet sitter",
+        "Full-stack boarding marketplace ส่งมอบ end to end"
       ],
       "url": "https://heathub.vercel.app"
     },
@@ -44,7 +44,7 @@
       "name": "Serper",
       "stack": "Solo · JSON-driven UI · Next.js · TypeScript · Tailwind CSS",
       "description": [
-        "สร้างโคลนฟังก์ชันของ serper.dev จำลองอินเทอร์เฟซค้นหาและผลลัพธ์"
+        "Build functional clone ของ serper.dev จำลอง search และ result interface"
       ],
       "url": "https://spotlight-ts-serper.vercel.app/serperMock/auth/playground"
     },
@@ -52,22 +52,22 @@
       "name": "Hiwhiw",
       "stack": "Next.js · Golang · Microservices · RabbitMQ · gRPC",
       "description": [
-        "จัดการสูตรอาหารอัจฉริยะ: สต็อกในตู้เย็น ค้นหา/กรองเมนู และเมนูกำหนดเอง",
-        "สถาปัตยกรรม microservices เพื่อความยืดหยุ่นและความง่ายในการดูแล"
+        "Smart recipe management: fridge inventory, menu search/filter และ custom menu",
+        "Microservices architecture เพื่อ scalability และ maintainability"
       ]
     },
     {
       "name": "CapyKnow",
       "stack": "LLM · RAG · Late chunking · UX/UI · SDLC",
       "description": [
-        "โปรเจกต์จบ: ผสาน LLM เข้ากับ myCourseVille แพลตฟอร์มการเรียนของจุฬาลงกรณ์มหาวิทยาลัย",
-        "ดูแลวงจรการพัฒนาซอฟต์แวร์ตั้งแต่ต้นจนจบ"
+        "Capstone: integrate LLM เข้ากับ myCourseVille learning platform ของ Chulalongkorn University",
+        "Manage software development lifecycle แบบ end-to-end"
       ]
     }
   ],
   "skills": [
     {
-      "label": "ภาษาโปรแกรม",
+      "label": "Languages",
       "items": [
         "[***TypeScript***]",
         "[*Python*]",
@@ -124,20 +124,20 @@
     }
   ],
   "education": {
-    "degree": "วศ.บ. วิศวกรรมคอมพิวเตอร์",
-    "school": "จุฬาลงกรณ์มหาวิทยาลัย",
-    "period": "ส.ค. 2021 – พ.ค. 2025",
+    "degree": "B.Eng. Computer Engineering",
+    "school": "Chulalongkorn University, TH",
+    "period": "Aug 2021 – May 2025",
     "gpax": "3.39"
   },
   "activities": [
-    "FE Camp — หัวหน้าฝ่ายกิจกรรม",
-    "Vishnu20th Camp — ประชาสัมพันธ์ประจำกลุ่ม",
-    "ทีมหลัก IMC (Intania Music Club)",
+    "FE Camp — Activity staff head",
+    "Vishnu20th Camp — Public Relations for a group",
+    "Core team ใน IMC (Intania Music Club)",
     "CUNEX hackathon: Boost up Chula, Sustainable Lifestyle"
   ],
   "interests": [
-    "ดนตรี",
-    "ภาษาญี่ปุ่น (JLPT N3)",
-    "อนิเมะ"
+    "Music",
+    "Japanese language (JLPT N3)",
+    "Anime"
   ]
 }

@@ -30,10 +30,7 @@ export function Hero({ data }: { data: Resume }) {
       </div>
 
       <div className="mx-auto w-full max-w-5xl">
-        <motion.p
-          className="mb-4 font-mono text-xs tracking-[0.25em] text-[var(--accent)] uppercase"
-          {...fade(0.05)}
-        >
+        <motion.p className="label-caps mb-4" {...fade(0.05)}>
           {data.location}
         </motion.p>
 

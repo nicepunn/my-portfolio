@@ -32,9 +32,7 @@ export function Skills({ data }: { data: Resume }) {
             return (
               <Reveal key={group.label} delay={index * 0.05}>
                 <div>
-                  <h3 className="mb-3 font-mono text-xs tracking-[0.2em] text-[var(--accent)] uppercase">
-                    {group.label}
-                  </h3>
+                  <h3 className="label-caps mb-3">{group.label}</h3>
                   <ul className="space-y-2">
                     {items.map((item) => {
                       const skill = parseSkillItem(item);

@@ -43,6 +43,7 @@ html[data-theme="light"] {
   --font-sans: var(--font-outfit);
   --font-display: var(--font-syne);
   --font-mono: var(--font-jetbrains);
+  --font-thai: var(--font-thai);
 }
 
 html {
@@ -70,6 +71,42 @@ body {
 
 .font-mono {
   font-family: var(--font-jetbrains), ui-monospace, monospace;
+}
+
+/* Wide Latin tracking breaks Thai clusters — keep normal spacing when lang=th */
+.label-caps {
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+html[lang="th"] body {
+  font-family:
+    var(--font-thai), var(--font-outfit), "Noto Sans Thai", system-ui, sans-serif;
+}
+
+html[lang="th"] .font-display {
+  font-family:
+    var(--font-thai), var(--font-syne), "Noto Sans Thai", system-ui, sans-serif;
+}
+
+html[lang="th"] .font-mono,
+html[lang="th"] .label-caps {
+  font-family:
+    var(--font-thai), var(--font-outfit), "Noto Sans Thai", system-ui, sans-serif;
+}
+
+html[lang="th"] .label-caps {
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+
+html[lang="th"] .tracking-wide,
+html[lang="th"] .tracking-wider,
+html[lang="th"] .tracking-widest {
+  letter-spacing: normal;
 }
 
 .hero-backdrop {
