@@ -59,7 +59,8 @@ export function Navbar() {
 
           <a
             href={resume.pdfPath}
-            download
+            target="_blank"
+            rel="noopener noreferrer"
             className="text-sm text-[var(--muted)] transition-colors hover:text-[var(--accent)]"
           >
             PDF
