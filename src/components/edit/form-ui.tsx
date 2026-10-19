@@ -52,7 +52,8 @@ const controlClass =
 
 const changedStyle = {
   borderColor: "#ef4444",
-  boxShadow: "0 0 0 2px rgba(239, 68, 68, 0.35)",
+  boxShadow: "0 0 0 3px rgba(239, 68, 68, 0.55)",
+  backgroundColor: "rgba(239, 68, 68, 0.12)",
 } as const;
 
 export function TextInput({

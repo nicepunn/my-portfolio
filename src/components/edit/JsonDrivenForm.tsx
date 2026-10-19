@@ -25,23 +25,33 @@ type JsonDrivenFormProps = {
   data: Resume;
   onChange?: (next: Resume) => void;
   readOnly?: boolean;
-  /** When set, fields that differ from this snapshot are marked. */
+  /**
+   * Optional starting snapshot. If omitted, the form freezes `data` on first
+   * mount / compareKey change and marks later edits against that freeze.
+   */
   compareAgainst?: Resume | null;
-  /** When this changes (e.g. locale), re-freeze compareAgainst. */
+  /** Re-freeze when this changes (e.g. locale id). */
   compareKey?: string;
   changedLabel?: string;
-  /** Label for array rows that existed in the baseline but were removed. */
   removedItemLabel?: string;
-  /** Label for array rows added after the baseline. */
   addedItemLabel?: string;
 };
+
+function isDirty(
+  baseline: Resume | null,
+  absolutePath: string,
+  value: unknown,
+): boolean {
+  if (!baseline) return false;
+  return !fieldValuesEqual(getAtPath(baseline, absolutePath), value);
+}
 
 function FieldControl({
   field,
   value,
   onChange,
   readOnly,
-  changed,
+  dirty,
   changedLabel,
   baselineValue,
 }: {
@@ -49,7 +59,7 @@ function FieldControl({
   value: unknown;
   onChange: (value: unknown) => void;
   readOnly?: boolean;
-  changed?: boolean;
+  dirty?: boolean;
   changedLabel?: string;
   baselineValue?: unknown;
 }) {
@@ -58,18 +68,16 @@ function FieldControl({
       <Field
         label={field.label}
         hint={field.hint}
-        changed={changed}
+        changed={dirty}
         changedLabel={changedLabel}
       >
         <TextArea
           value={typeof value === "string" ? value : ""}
           onChange={(event) => onChange(event.target.value)}
           readOnly={readOnly}
-          changed={changed}
+          changed={dirty}
           onKeyDown={(event) => {
-            if (event.key === "Enter") {
-              event.stopPropagation();
-            }
+            if (event.key === "Enter") event.stopPropagation();
           }}
         />
       </Field>
@@ -83,7 +91,7 @@ function FieldControl({
         value={value}
         onChange={onChange}
         readOnly={readOnly}
-        changed={changed}
+        dirty={dirty}
         changedLabel={changedLabel}
         baselineValue={baselineValue}
       />
@@ -97,7 +105,7 @@ function FieldControl({
     <Field
       label={field.label}
       hint={field.hint}
-      changed={changed}
+      changed={dirty}
       changedLabel={changedLabel}
     >
       <TextInput
@@ -105,7 +113,7 @@ function FieldControl({
         value={typeof value === "string" ? value : value == null ? "" : String(value)}
         onChange={(event) => onChange(event.target.value)}
         readOnly={readOnly}
-        changed={changed}
+        changed={dirty}
       />
     </Field>
   );
@@ -116,7 +124,7 @@ function LinesField({
   value,
   onChange,
   readOnly,
-  changed,
+  dirty,
   changedLabel,
   baselineValue,
 }: {
@@ -124,7 +132,7 @@ function LinesField({
   value: unknown;
   onChange: (value: unknown) => void;
   readOnly?: boolean;
-  changed?: boolean;
+  dirty?: boolean;
   changedLabel?: string;
   baselineValue?: unknown;
 }) {
@@ -136,22 +144,22 @@ function LinesField({
     if (!focused) setText(listToLines(value));
   }, [value, focused]);
 
-  const liveChanged =
+  const liveDirty =
     baselineValue !== undefined
       ? !fieldValuesEqual(baselineValue, focused ? linesToList(text) : value)
-      : Boolean(changed);
+      : Boolean(dirty);
 
   return (
     <Field
       label={field.label}
       hint={field.hint}
-      changed={liveChanged}
+      changed={liveDirty}
       changedLabel={changedLabel}
     >
       <TextArea
         value={focused ? text : committed}
         readOnly={readOnly}
-        changed={liveChanged}
+        changed={liveDirty}
         onFocus={() => {
           if (readOnly) return;
           setFocused(true);
@@ -174,22 +182,13 @@ function LinesField({
   );
 }
 
-function isChanged(
-  compareAgainst: Resume | null | undefined,
-  absolutePath: string,
-  value: unknown,
-): boolean {
-  if (!compareAgainst) return false;
-  return !fieldValuesEqual(getAtPath(compareAgainst, absolutePath), value);
-}
-
 function FieldsGrid({
   fields,
   data,
   onChange,
   readOnly,
   pathPrefix = "",
-  compareAgainst,
+  baseline,
   changedLabel,
 }: {
   fields: FormFieldConfig[];
@@ -197,7 +196,7 @@ function FieldsGrid({
   onChange: (path: string, value: unknown) => void;
   readOnly?: boolean;
   pathPrefix?: string;
-  compareAgainst?: Resume | null;
+  baseline: Resume | null;
   changedLabel?: string;
 }) {
   return (
@@ -207,6 +206,7 @@ function FieldsGrid({
           ? `${pathPrefix}.${field.path}`
           : field.path;
         const value = getAtPath(data, field.path);
+        const dirty = isDirty(baseline, absolutePath, value);
         return (
           <div
             key={field.path}
@@ -217,12 +217,10 @@ function FieldsGrid({
               value={value}
               onChange={(next) => onChange(field.path, next)}
               readOnly={readOnly}
-              changed={isChanged(compareAgainst, absolutePath, value)}
+              dirty={dirty}
               changedLabel={changedLabel}
               baselineValue={
-                compareAgainst
-                  ? getAtPath(compareAgainst, absolutePath)
-                  : undefined
+                baseline ? getAtPath(baseline, absolutePath) : undefined
               }
             />
           </div>
@@ -237,7 +235,7 @@ function ArraySectionCard({
   data,
   onChange,
   readOnly,
-  compareAgainst,
+  baseline,
   changedLabel,
   removedItemLabel,
   addedItemLabel,
@@ -246,17 +244,17 @@ function ArraySectionCard({
   data: Resume;
   onChange: (next: Resume) => void;
   readOnly?: boolean;
-  compareAgainst?: Resume | null;
+  baseline: Resume | null;
   changedLabel?: string;
   removedItemLabel?: string;
   addedItemLabel?: string;
 }) {
   const items = (getAtPath(data, section.path) as Record<string, unknown>[]) ?? [];
-  const compareItems =
-    (compareAgainst
-      ? (getAtPath(compareAgainst, section.path) as Record<string, unknown>[])
+  const baselineItems =
+    (baseline
+      ? (getAtPath(baseline, section.path) as Record<string, unknown>[])
       : null) ?? [];
-  const removedCount = Math.max(0, compareItems.length - items.length);
+  const removedCount = Math.max(0, baselineItems.length - items.length);
 
   function updateItems(nextItems: Record<string, unknown>[]) {
     onChange(setAtPath(data, section.path, nextItems));
@@ -266,27 +264,27 @@ function ArraySectionCard({
     <SectionCard id={section.id} title={section.label}>
       <div className="space-y-6">
         {items.map((item, index) => {
-          const isNew = Boolean(compareAgainst) && index >= compareItems.length;
-          const itemChanged =
-            Boolean(compareAgainst) &&
-            !fieldValuesEqual(compareItems[index], item);
+          const isNew = Boolean(baseline) && index >= baselineItems.length;
+          const itemDirty =
+            Boolean(baseline) &&
+            !fieldValuesEqual(baselineItems[index], item);
 
           return (
             <div
               key={index}
               className={`space-y-3 border-t pt-6 first:border-t-0 first:pt-0 ${
-                itemChanged ? "border-red-500/50" : "border-[var(--border)]"
+                itemDirty ? "border-red-500/50" : "border-[var(--border)]"
               }`}
             >
               <div className="flex items-center justify-between gap-3">
                 <p
                   className={`font-mono text-xs ${
-                    itemChanged ? "text-red-400" : "text-[var(--accent)]"
+                    itemDirty ? "text-red-500" : "text-[var(--accent)]"
                   }`}
                 >
                   {section.itemLabel} #{index + 1}
                   {isNew ? ` · ${addedItemLabel ?? "New"}` : null}
-                  {itemChanged ? (
+                  {itemDirty ? (
                     <span className="ml-2 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
                       !
                     </span>
@@ -308,6 +306,7 @@ function ArraySectionCard({
                 {section.fields.map((field) => {
                   const absolutePath = `${section.path}.${index}.${field.path}`;
                   const value = getAtPath(item, field.path);
+                  const dirty = isDirty(baseline, absolutePath, value);
                   return (
                     <div
                       key={field.path}
@@ -317,11 +316,11 @@ function ArraySectionCard({
                         field={field}
                         value={value}
                         readOnly={readOnly}
-                        changed={isChanged(compareAgainst, absolutePath, value)}
+                        dirty={dirty}
                         changedLabel={changedLabel}
                         baselineValue={
-                          compareAgainst
-                            ? getAtPath(compareAgainst, absolutePath)
+                          baseline
+                            ? getAtPath(baseline, absolutePath)
                             : undefined
                         }
                         onChange={(next) => {
@@ -353,7 +352,7 @@ function ArraySectionCard({
                   key={`removed-${index}`}
                   className="space-y-2 border border-dashed border-red-500/60 bg-red-500/5 px-3 py-3"
                 >
-                  <p className="flex items-center gap-2 font-mono text-xs text-red-400">
+                  <p className="flex items-center gap-2 font-mono text-xs text-red-500">
                     {section.itemLabel} #{index + 1}
                     <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
                       !
@@ -390,11 +389,11 @@ function renderSection(
   section: FormSection,
   data: Resume,
   onChange: (next: Resume) => void,
-  readOnly?: boolean,
-  compareAgainst?: Resume | null,
-  changedLabel?: string,
-  removedItemLabel?: string,
-  addedItemLabel?: string,
+  readOnly: boolean | undefined,
+  baseline: Resume | null,
+  changedLabel: string | undefined,
+  removedItemLabel: string | undefined,
+  addedItemLabel: string | undefined,
 ) {
   if (section.kind === "array") {
     return (
@@ -404,7 +403,7 @@ function renderSection(
         data={data}
         onChange={onChange}
         readOnly={readOnly}
-        compareAgainst={compareAgainst}
+        baseline={baseline}
         changedLabel={changedLabel}
         removedItemLabel={removedItemLabel}
         addedItemLabel={addedItemLabel}
@@ -418,7 +417,7 @@ function renderSection(
         fields={section.fields}
         data={data}
         readOnly={readOnly}
-        compareAgainst={compareAgainst}
+        baseline={baseline}
         changedLabel={changedLabel}
         onChange={(path, value) => {
           if (readOnly) return;
@@ -440,19 +439,23 @@ export function JsonDrivenForm({
   addedItemLabel = "New",
 }: JsonDrivenFormProps) {
   const handleChange = onChange ?? (() => {});
-  const frozenRef = useRef<{ key: string; snapshot: Resume } | null>(null);
 
-  // Freeze once per compareKey so later parent re-renders cannot retarget the snapshot.
-  const key = compareKey ?? "__default__";
-  if (compareAgainst && frozenRef.current?.key !== key) {
-    frozenRef.current = {
-      key,
-      snapshot: structuredClone(compareAgainst),
-    };
-  }
+  // Freeze once per compareKey via effect (not render) so React Compiler / Strict Mode
+  // cannot re-snapshot on every parent update after the user edits.
+  const [baseline, setBaseline] = useState<Resume | null>(null);
+  const dataRef = useRef(data);
+  const compareAgainstRef = useRef(compareAgainst);
+  dataRef.current = data;
+  compareAgainstRef.current = compareAgainst;
 
-  const baseline =
-    frozenRef.current?.key === key ? frozenRef.current.snapshot : null;
+  useEffect(() => {
+    if (readOnly || !compareKey) {
+      setBaseline(null);
+      return;
+    }
+    const source = compareAgainstRef.current ?? dataRef.current;
+    setBaseline(structuredClone(source));
+  }, [compareKey, readOnly]);
 
   return (
     <>

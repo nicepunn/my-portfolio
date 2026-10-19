@@ -1,13 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { localeMeta, type Locale } from "@/i18n/config";
 import { useTranslations } from "@/i18n/LocaleProvider";
 import {
   clearEditDraft,
   ensureBaselines,
-  getBaseline,
   readEditDraft,
   writeEditDraft,
   type EditDraft,
@@ -31,13 +30,6 @@ function downloadDrafts(drafts: Partial<Record<Locale, Resume>>) {
   }
 }
 
-/** Resolve a write-once baseline for a locale; never returns the live draft reference. */
-function freezeBaseline(locale: Locale, live: Resume): Resume {
-  ensureBaselines({ [locale]: live });
-  const stored = getBaseline(locale);
-  return structuredClone(stored ?? live);
-}
-
 export function ResumeReviewEditor() {
   const router = useRouter();
   const t = useTranslations();
@@ -46,39 +38,20 @@ export function ResumeReviewEditor() {
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
-
-  /** In-memory baselines keyed by locale — never overwritten after first freeze. */
-  const baselineByLocaleRef = useRef<Partial<Record<Locale, Resume>>>({});
-  const [baselineLocale, setBaselineLocale] = useState<Locale | null>(null);
-
-  function syncBaselineFor(locale: Locale, live: Resume) {
-    if (!baselineByLocaleRef.current[locale]) {
-      baselineByLocaleRef.current[locale] = freezeBaseline(locale, live);
-    }
-    setBaselineLocale(locale);
-  }
+  /** Bumps when locale advances so the right-hand form remounts and re-freezes. */
+  const [formEpoch, setFormEpoch] = useState(0);
 
   useEffect(() => {
     const loaded = readEditDraft();
     if (loaded) {
-      const live = loaded.drafts[loaded.currentLocale];
-      if (live) {
-        ensureBaselines(loaded.drafts);
-        syncBaselineFor(loaded.currentLocale, live);
-      }
+      ensureBaselines(loaded.drafts);
       setDraft(loaded);
     }
     setHydrated(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const sourceData = draft?.drafts[draft.sourceLocale] ?? null;
   const targetData = draft?.drafts[draft.currentLocale] ?? null;
-
-  const targetBaseline =
-    draft && baselineLocale && baselineByLocaleRef.current[draft.currentLocale]
-      ? baselineByLocaleRef.current[draft.currentLocale]!
-      : null;
 
   const queueLabels = useMemo(() => {
     if (!draft) return [];
@@ -104,7 +77,6 @@ export function ResumeReviewEditor() {
 
   function abandon() {
     clearEditDraft();
-    baselineByLocaleRef.current = {};
     setDraft(null);
     router.replace("/edit");
   }
@@ -141,7 +113,6 @@ export function ResumeReviewEditor() {
         }
 
         clearEditDraft();
-        baselineByLocaleRef.current = {};
         setStatus(payload.message ?? t.edit.published);
         router.replace("/edit");
         router.refresh();
@@ -175,10 +146,9 @@ export function ResumeReviewEditor() {
       currentLocale: nextLocale,
       queue,
     };
-    const nextLive = advanced.drafts[nextLocale];
-    if (nextLive) syncBaselineFor(nextLocale, nextLive);
     setDraft(advanced);
     writeEditDraft(advanced);
+    setFormEpoch((value) => value + 1);
     setStatus(null);
     setError(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -258,10 +228,10 @@ export function ResumeReviewEditor() {
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">
             <JsonDrivenForm
+              key={`${draft.currentLocale}-${formEpoch}`}
               data={targetData}
               onChange={updateTarget}
-              compareAgainst={targetBaseline}
-              compareKey={draft.currentLocale}
+              compareKey={`${draft.currentLocale}-${formEpoch}`}
               changedLabel={t.edit.fieldChanged}
               removedItemLabel={t.edit.itemRemoved}
               addedItemLabel={t.edit.itemAdded}
