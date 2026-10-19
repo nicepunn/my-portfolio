@@ -12,7 +12,12 @@ import {
   type FormFieldConfig,
   type FormSection,
 } from "@/lib/edit-form";
-import { fieldValuesEqual } from "@/lib/form-diff";
+import {
+  alignArrayRows,
+  fieldDirtyOnAlignedRow,
+  fieldValuesEqual,
+  type AlignedArrayRow,
+} from "@/lib/form-diff";
 import {
   Field,
   GhostButton,
@@ -44,6 +49,8 @@ type JsonDrivenFormProps = {
   changedLabel?: string;
   removedItemLabel?: string;
   addedItemLabel?: string;
+  /** Shown on the target pane when source added a row that is not on this side yet. */
+  addedOnSourceLabel?: string;
 };
 
 function pathDirtyFromSource(
@@ -276,6 +283,7 @@ function ArraySectionCard({
   changedLabel,
   removedItemLabel,
   addedItemLabel,
+  addedOnSourceLabel,
 }: {
   section: ArraySection;
   data: Resume;
@@ -286,40 +294,119 @@ function ArraySectionCard({
   changedLabel?: string;
   removedItemLabel?: string;
   addedItemLabel?: string;
+  addedOnSourceLabel?: string;
 }) {
   const items = (getAtPath(data, section.path) as Record<string, unknown>[]) ?? [];
+  const hasDiff = Boolean(sourceDiff || compareAgainst);
 
-  const probeCurrent = sourceDiff?.current ?? data;
-  const probeOriginal = sourceDiff?.original ?? compareAgainst;
-  const probeItems =
-    (probeCurrent
-      ? (getAtPath(probeCurrent, section.path) as Record<string, unknown>[])
-      : null) ?? [];
+  // Left pane: original = compareAgainst, current = data.
+  // Right pane (sourceDiff): original/current = source language; data = target locale.
   const originalItems =
-    (probeOriginal
-      ? (getAtPath(probeOriginal, section.path) as Record<string, unknown>[])
+    ((sourceDiff?.original ?? compareAgainst)
+      ? (getAtPath(
+          sourceDiff?.original ?? compareAgainst!,
+          section.path,
+        ) as Record<string, unknown>[])
       : null) ?? [];
-  const removedCount = Math.max(0, originalItems.length - probeItems.length);
+  const currentItems =
+    ((sourceDiff?.current ?? data)
+      ? (getAtPath(sourceDiff?.current ?? data, section.path) as Record<
+          string,
+          unknown
+        >[])
+      : null) ?? [];
+
+  const rows: AlignedArrayRow[] = hasDiff
+    ? alignArrayRows(section.path, originalItems, currentItems, items)
+    : items.map((item, index) => ({
+        key: `${section.path}:plain:${index}`,
+        dataIndex: index,
+        currentIndex: index,
+        originalIndex: index,
+        status: "unchanged" as const,
+        dataItem: item,
+        originalItem: item,
+        currentItem: item,
+      }));
 
   function updateItems(nextItems: Record<string, unknown>[]) {
     onChange(setAtPath(data, section.path, nextItems));
   }
 
+  function updateRowField(row: AlignedArrayRow, fieldPath: string, next: unknown) {
+    if (readOnly || row.dataIndex < 0) return;
+    const nextItems = items.map((current, itemIndex) =>
+      itemIndex === row.dataIndex
+        ? (setAtPath(current, fieldPath, next) as Record<string, unknown>)
+        : current,
+    );
+    updateItems(nextItems);
+  }
+
+  function addMissingFromSource(row: AlignedArrayRow) {
+    if (readOnly || !row.currentItem) return;
+    updateItems([...items, structuredClone(row.currentItem)]);
+  }
+
   return (
     <SectionCard id={section.id} title={section.label}>
       <div className="space-y-6">
-        {items.map((item, index) => {
-          const itemPath = `${section.path}.${index}`;
-          const isNew =
-            Boolean(probeOriginal) && index >= originalItems.length;
-          const itemDirty = sourceDiff
-            ? pathDirtyFromSource(sourceDiff, itemPath)
-            : Boolean(compareAgainst) &&
-              !fieldValuesEqual(originalItems[index], item);
+        {rows.map((row, displayIndex) => {
+          if (row.status === "removed") {
+            return (
+              <div
+                key={row.key}
+                className="space-y-2 border border-dashed border-red-500/60 bg-red-500/5 px-3 py-3"
+              >
+                <p className="flex items-center gap-2 font-mono text-xs text-red-500">
+                  {section.itemLabel} #{displayIndex + 1}
+                  <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+                    !
+                  </span>
+                  <span className="tracking-wide uppercase">
+                    {removedItemLabel ?? "Removed"}
+                  </span>
+                </p>
+              </div>
+            );
+          }
+
+          const itemDirty = row.status !== "unchanged";
+          const missingOnThisSide = row.dataIndex < 0;
+          const item = row.dataItem;
+
+          // Source added a row that does not exist on the target yet.
+          if (missingOnThisSide && sourceDiff) {
+            return (
+              <div
+                key={row.key}
+                className="space-y-3 border border-dashed border-red-500/60 bg-red-500/5 px-3 py-3"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <p className="flex items-center gap-2 font-mono text-xs text-red-500">
+                    {section.itemLabel} #{displayIndex + 1}
+                    <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+                      !
+                    </span>
+                    <span className="tracking-wide uppercase">
+                      {addedOnSourceLabel ?? addedItemLabel ?? "New"}
+                    </span>
+                  </p>
+                  {readOnly ? null : (
+                    <GhostButton onClick={() => addMissingFromSource(row)}>
+                      {section.addLabel}
+                    </GhostButton>
+                  )}
+                </div>
+              </div>
+            );
+          }
+
+          if (!item) return null;
 
           return (
             <div
-              key={index}
+              key={row.key}
               className={`space-y-3 border-t pt-6 first:border-t-0 first:pt-0 ${
                 itemDirty ? "border-red-500/50" : "border-[var(--border)]"
               }`}
@@ -330,8 +417,10 @@ function ArraySectionCard({
                     itemDirty ? "text-red-500" : "text-[var(--accent)]"
                   }`}
                 >
-                  {section.itemLabel} #{index + 1}
-                  {isNew ? ` · ${addedItemLabel ?? "New"}` : null}
+                  {section.itemLabel} #{displayIndex + 1}
+                  {row.status === "added"
+                    ? ` · ${addedItemLabel ?? "New"}`
+                    : null}
                   {itemDirty ? (
                     <span className="ml-2 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
                       !
@@ -342,7 +431,9 @@ function ArraySectionCard({
                   <GhostButton
                     danger
                     onClick={() =>
-                      updateItems(items.filter((_, itemIndex) => itemIndex !== index))
+                      updateItems(
+                        items.filter((_, itemIndex) => itemIndex !== row.dataIndex),
+                      )
                     }
                   >
                     Remove
@@ -352,14 +443,10 @@ function ArraySectionCard({
 
               <div className="grid gap-3 sm:grid-cols-2">
                 {section.fields.map((field) => {
-                  const absolutePath = `${section.path}.${index}.${field.path}`;
                   const value = getAtPath(item, field.path);
-                  const dirty = isDirty(
-                    absolutePath,
-                    value,
-                    compareAgainst,
-                    sourceDiff,
-                  );
+                  const dirty = hasDiff
+                    ? fieldDirtyOnAlignedRow(row, field.path)
+                    : false;
                   return (
                     <div
                       key={field.path}
@@ -371,24 +458,13 @@ function ArraySectionCard({
                         readOnly={readOnly}
                         dirty={dirty}
                         changedLabel={changedLabel}
-                        lockDirty={Boolean(sourceDiff)}
+                        lockDirty={hasDiff}
                         baselineValue={
-                          compareAgainst
-                            ? getAtPath(compareAgainst, absolutePath)
+                          row.originalItem
+                            ? row.originalItem[field.path]
                             : undefined
                         }
-                        onChange={(next) => {
-                          if (readOnly) return;
-                          const nextItems = items.map((current, itemIndex) =>
-                            itemIndex === index
-                              ? (setAtPath(current, field.path, next) as Record<
-                                  string,
-                                  unknown
-                                >)
-                              : current,
-                          );
-                          updateItems(nextItems);
-                        }}
+                        onChange={(next) => updateRowField(row, field.path, next)}
                       />
                     </div>
                   );
@@ -397,28 +473,6 @@ function ArraySectionCard({
             </div>
           );
         })}
-
-        {removedCount > 0
-          ? Array.from({ length: removedCount }, (_, offset) => {
-              const index = probeItems.length + offset;
-              return (
-                <div
-                  key={`removed-${index}`}
-                  className="space-y-2 border border-dashed border-red-500/60 bg-red-500/5 px-3 py-3"
-                >
-                  <p className="flex items-center gap-2 font-mono text-xs text-red-500">
-                    {section.itemLabel} #{index + 1}
-                    <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
-                      !
-                    </span>
-                    <span className="tracking-wide uppercase">
-                      {removedItemLabel ?? "Removed"}
-                    </span>
-                  </p>
-                </div>
-              );
-            })
-          : null}
 
         {readOnly ? null : (
           <div className="border-t border-[var(--border)] pt-4">
@@ -449,6 +503,7 @@ function renderSection(
   changedLabel: string | undefined,
   removedItemLabel: string | undefined,
   addedItemLabel: string | undefined,
+  addedOnSourceLabel: string | undefined,
 ) {
   if (section.kind === "array") {
     return (
@@ -463,6 +518,7 @@ function renderSection(
         changedLabel={changedLabel}
         removedItemLabel={removedItemLabel}
         addedItemLabel={addedItemLabel}
+        addedOnSourceLabel={addedOnSourceLabel}
       />
     );
   }
@@ -494,6 +550,7 @@ export function JsonDrivenForm({
   changedLabel = "Changed",
   removedItemLabel = "Removed",
   addedItemLabel = "New",
+  addedOnSourceLabel = "Added on source",
 }: JsonDrivenFormProps) {
   const handleChange = onChange ?? (() => {});
 
@@ -510,6 +567,7 @@ export function JsonDrivenForm({
           changedLabel,
           removedItemLabel,
           addedItemLabel,
+          addedOnSourceLabel,
         ),
       )}
     </>

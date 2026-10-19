@@ -78,9 +78,10 @@ export const en = {
       "Left shows the language you already edited. Right is the selected language. Leaving mid-flow discards everything — nothing is published yet.",
     fieldChanged: "Changed in the source language from its original stage",
     fieldChangedLegend:
-      "Red border + ! marks fields changed on the left (source) vs before you started editing",
+      "Red border + ! marks source fields changed vs the original stage (including added/removed list items)",
     itemRemoved: "Removed",
     itemAdded: "New",
+    itemAddedOnSource: "Added on source — add here",
     published: "Published",
     noDraft: "No staged edit found. Start from the editor.",
     backToEditor: "← Back to editor",
@@ -167,6 +168,7 @@ export type Messages = {
     fieldChangedLegend: string;
     itemRemoved: string;
     itemAdded: string;
+    itemAddedOnSource: string;
     published: string;
     noDraft: string;
     backToEditor: string;

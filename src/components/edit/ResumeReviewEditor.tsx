@@ -231,6 +231,7 @@ export function ResumeReviewEditor() {
               changedLabel={t.edit.fieldChanged}
               removedItemLabel={t.edit.itemRemoved}
               addedItemLabel={t.edit.itemAdded}
+              addedOnSourceLabel={t.edit.itemAddedOnSource}
             />
           </div>
         </section>
@@ -252,6 +253,7 @@ export function ResumeReviewEditor() {
               changedLabel={t.edit.fieldChanged}
               removedItemLabel={t.edit.itemRemoved}
               addedItemLabel={t.edit.itemAdded}
+              addedOnSourceLabel={t.edit.itemAddedOnSource}
             />
           </div>
         </section>
