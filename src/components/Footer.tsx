@@ -10,7 +10,7 @@ export function Footer({ data }: { data: Resume }) {
   const { locale } = useLocale();
 
   return (
-    <footer className="relative overflow-hidden px-6 py-16 sm:px-10 sm:py-20 lg:px-16">
+    <footer className="relative overflow-hidden px-6 py-12 sm:px-10 sm:py-16 lg:px-16">
       <Atmosphere orb="right" />
       <div className="relative mx-auto max-w-5xl">
         <div className="flex flex-col items-start gap-10 sm:flex-row sm:items-end sm:justify-between">

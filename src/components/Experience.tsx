@@ -11,7 +11,7 @@ export function Experience({ data }: { data: Resume }) {
   return (
     <section
       id="experience"
-      className="scroll-mt-20 px-6 py-20 sm:px-10 sm:py-28 lg:px-16"
+      className="scroll-mt-20 px-6 py-12 sm:px-10 sm:py-16 lg:px-16"
     >
       <div className="mx-auto max-w-5xl">
         <Reveal>
