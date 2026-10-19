@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
-:root {
+:root,
+html[data-theme="dark"] {
   --bg: #070a0d;
   --fg: #e8e4dc;
   --muted: #8b939c;
@@ -9,6 +10,31 @@
   --border: rgba(232, 228, 220, 0.12);
   --background: var(--bg);
   --foreground: var(--fg);
+  --hero-glow-a: rgba(61, 214, 195, 0.18);
+  --hero-glow-b: rgba(232, 165, 75, 0.12);
+  --hero-glow-c: rgba(61, 214, 195, 0.08);
+  --hero-base-start: #070a0d;
+  --hero-base-mid: #0f161c;
+  --hero-base-end: #0a1014;
+  --grain-opacity: 0.35;
+}
+
+html[data-theme="light"] {
+  --bg: #f3f5f4;
+  --fg: #12161c;
+  --muted: #5a6570;
+  --accent: #0f766e;
+  --accent-bright: #0d9488;
+  --border: rgba(18, 22, 28, 0.12);
+  --background: var(--bg);
+  --foreground: var(--fg);
+  --hero-glow-a: rgba(15, 118, 110, 0.14);
+  --hero-glow-b: rgba(180, 120, 60, 0.1);
+  --hero-glow-c: rgba(15, 118, 110, 0.08);
+  --hero-base-start: #eef2f1;
+  --hero-base-mid: #f7f8f7;
+  --hero-base-end: #f3f5f4;
+  --grain-opacity: 0.18;
 }
 
 @theme inline {
@@ -33,6 +59,9 @@ body {
   background: var(--bg);
   color: var(--fg);
   font-family: var(--font-outfit), system-ui, sans-serif;
+  transition:
+    background-color 0.25s ease,
+    color 0.25s ease;
 }
 
 .font-display {
@@ -43,11 +72,36 @@ body {
   font-family: var(--font-jetbrains), ui-monospace, monospace;
 }
 
+.hero-backdrop {
+  background:
+    radial-gradient(
+      ellipse 80% 60% at 20% 10%,
+      var(--hero-glow-a),
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse 70% 50% at 90% 20%,
+      var(--hero-glow-b),
+      transparent 50%
+    ),
+    linear-gradient(
+      165deg,
+      var(--hero-base-start) 0%,
+      var(--hero-base-mid) 45%,
+      var(--hero-base-end) 100%
+    );
+}
+
+.hero-orb {
+  background: radial-gradient(circle, var(--hero-glow-c), transparent 65%);
+}
+
 .grain {
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
   background-repeat: repeat;
   background-size: 180px 180px;
   mix-blend-mode: overlay;
+  opacity: var(--grain-opacity);
 }
 
 @keyframes scroll-pulse {
@@ -69,12 +123,16 @@ body {
 }
 
 ::selection {
-  background: rgba(61, 214, 195, 0.35);
+  background: color-mix(in oklab, var(--accent) 35%, transparent);
   color: var(--fg);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .scroll-hint {
     animation: none;
+  }
+
+  body {
+    transition: none;
   }
 }

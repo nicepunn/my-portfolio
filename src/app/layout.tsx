@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { JetBrains_Mono, Outfit, Syne } from "next/font/google";
 import { Navbar } from "@/components/Navbar";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { ThemeScript } from "@/components/ThemeScript";
 import "./globals.css";
 
 const outfit = Outfit({
@@ -53,10 +55,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="en"
       className={`${outfit.variable} ${syne.variable} ${jetbrains.variable} h-full antialiased`}
+      suppressHydrationWarning
+      data-theme="dark"
     >
       <body className="min-h-full flex flex-col bg-[var(--bg)] text-[var(--fg)]">
-        <Navbar />
-        {children}
+        <ThemeScript />
+        <ThemeProvider>
+          <Navbar />
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const homeSectionLinks = [
   { id: "experience", label: "Experience" },
@@ -64,6 +65,8 @@ export function Navbar() {
           >
             PDF
           </a>
+
+          <ThemeToggle />
         </div>
       </div>
     </nav>
