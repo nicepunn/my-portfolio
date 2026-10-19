@@ -18,33 +18,33 @@ const font = "Sarabun";
 
 const styles = StyleSheet.create({
   page: {
-    paddingTop: 36,
-    paddingBottom: 40,
-    paddingHorizontal: 48,
+    paddingTop: 32,
+    paddingBottom: 32,
+    paddingHorizontal: 44,
     fontSize: 10,
     fontFamily: font,
     fontWeight: 400,
     color: ink,
-    lineHeight: 1.45,
+    lineHeight: 1.4,
   },
   header: {
-    marginBottom: 14,
+    marginBottom: 10,
   },
   headerTop: {
-    marginBottom: 4,
+    marginBottom: 2,
   },
   nameWrap: {
-    paddingBottom: 10,
+    paddingBottom: 6,
   },
   name: {
-    fontSize: 22,
+    fontSize: 20,
     fontFamily: font,
     fontWeight: 700,
     color: ink,
     lineHeight: 1.2,
   },
   headlineWrap: {
-    paddingBottom: 4,
+    paddingBottom: 2,
   },
   headline: {
     fontSize: 10,
@@ -56,15 +56,15 @@ const styles = StyleSheet.create({
   accentBar: {
     height: 2.5,
     backgroundColor: accent,
-    marginTop: 8,
-    marginBottom: 10,
+    marginTop: 6,
+    marginBottom: 8,
   },
   contactRow: {
     flexDirection: "row",
     flexWrap: "wrap",
     alignItems: "center",
     gap: 6,
-    marginBottom: 10,
+    marginBottom: 8,
   },
   contactItem: {
     fontSize: 9,
@@ -79,17 +79,17 @@ const styles = StyleSheet.create({
     backgroundColor: "#f8fafc",
     borderLeftWidth: 2,
     borderLeftColor: accent,
-    paddingVertical: 8,
-    paddingHorizontal: 10,
+    paddingVertical: 6,
+    paddingHorizontal: 9,
   },
   summary: {
     fontSize: 9.5,
     color: muted,
-    lineHeight: 1.5,
+    lineHeight: 1.45,
   },
   section: {
-    marginTop: 14,
-    marginBottom: 4,
+    marginTop: 10,
+    marginBottom: 2,
   },
   sectionTitle: {
     fontSize: 10.5,
@@ -98,17 +98,17 @@ const styles = StyleSheet.create({
     color: ink,
     borderBottomWidth: 1,
     borderBottomColor: soft,
-    paddingBottom: 4,
-    marginBottom: 8,
+    paddingBottom: 3,
+    marginBottom: 6,
   },
   item: {
-    marginBottom: 8,
+    marginBottom: 6,
   },
   itemHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     gap: 12,
-    marginBottom: 2,
+    marginBottom: 1,
   },
   itemTitle: {
     fontFamily: font,
@@ -125,11 +125,11 @@ const styles = StyleSheet.create({
   itemSubtitle: {
     fontSize: 9.5,
     color: muted,
-    marginBottom: 3,
+    marginBottom: 2,
   },
   bulletRow: {
     flexDirection: "row",
-    marginBottom: 2,
+    marginBottom: 1,
     paddingLeft: 2,
   },
   bulletMark: {
@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
   },
   skillRow: {
     flexDirection: "row",
-    marginBottom: 3,
+    marginBottom: 2,
   },
   skillLabel: {
     width: 110,
@@ -187,10 +187,13 @@ function SkillItems({ items }: { items: string[] }) {
   );
 }
 
+/** Sections wrap across pages; title stays with the next block of content. */
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <View style={styles.section} wrap={false}>
-      <Text style={styles.sectionTitle}>{title}</Text>
+    <View style={styles.section} wrap>
+      <Text style={styles.sectionTitle} minPresenceAhead={56}>
+        {title}
+      </Text>
       {children}
     </View>
   );
@@ -200,11 +203,24 @@ function Bullets({ items }: { items: string[] }) {
   return (
     <View>
       {items.map((item) => (
-        <View key={item} style={styles.bulletRow}>
+        <View key={item} style={styles.bulletRow} wrap={false}>
           <Text style={styles.bulletMark}>•</Text>
           <Text style={styles.bulletText}>{item}</Text>
         </View>
       ))}
+    </View>
+  );
+}
+
+/**
+ * Keep a job/project header with at least a bit of body on the same page,
+ * but allow the entry to continue onto the next page so we don't leave a
+ * large empty gap at the bottom.
+ */
+function Entry({ children }: { children: ReactNode }) {
+  return (
+    <View style={styles.item} wrap minPresenceAhead={28}>
+      {children}
     </View>
   );
 }
@@ -216,8 +232,8 @@ export function ResumePdfDocument({ data }: { data: Resume }) {
       author={data.name}
       subject={data.headline}
     >
-      <Page size="A4" style={styles.page}>
-        <View style={styles.header}>
+      <Page size="A4" style={styles.page} wrap>
+        <View style={styles.header} wrap={false}>
           <View style={styles.headerTop}>
             <View style={styles.nameWrap}>
               <Text style={styles.name}>{data.name}</Text>
@@ -253,7 +269,7 @@ export function ResumePdfDocument({ data }: { data: Resume }) {
         </View>
 
         <Section title="Education">
-          <View style={styles.item} wrap={false}>
+          <Entry>
             <View style={styles.itemHeader}>
               <Text style={styles.itemTitle}>{data.education.degree}</Text>
               <Text style={styles.itemMeta}>{data.education.period}</Text>
@@ -261,26 +277,26 @@ export function ResumePdfDocument({ data }: { data: Resume }) {
             <Text style={styles.itemSubtitle}>
               {data.education.school} · GPAX {data.education.gpax}
             </Text>
-          </View>
+          </Entry>
         </Section>
 
         <Section title="Work Experience">
           {data.experience.map((job) => (
-            <View key={`${job.company}-${job.period}`} style={styles.item} wrap={false}>
-              <View style={styles.itemHeader}>
+            <Entry key={`${job.company}-${job.period}`}>
+              <View style={styles.itemHeader} minPresenceAhead={36}>
                 <Text style={styles.itemTitle}>{job.company}</Text>
                 <Text style={styles.itemMeta}>{job.period}</Text>
               </View>
               <Text style={styles.itemSubtitle}>{job.role}</Text>
               <Bullets items={job.bullets} />
-            </View>
+            </Entry>
           ))}
         </Section>
 
         <Section title="Projects">
           {data.projects.map((project) => (
-            <View key={project.name} style={styles.item} wrap={false}>
-              <View style={styles.itemHeader}>
+            <Entry key={project.name}>
+              <View style={styles.itemHeader} minPresenceAhead={36}>
                 {project.url ? (
                   <Link
                     src={project.url}
@@ -294,13 +310,18 @@ export function ResumePdfDocument({ data }: { data: Resume }) {
               </View>
               <Text style={styles.itemSubtitle}>{project.stack}</Text>
               <Bullets items={project.description} />
-            </View>
+            </Entry>
           ))}
         </Section>
 
         <Section title="Technical Skills">
           {data.skills.map((group) => (
-            <View key={group.label} style={styles.skillRow} wrap={false}>
+            <View
+              key={group.label}
+              style={styles.skillRow}
+              wrap={false}
+              minPresenceAhead={18}
+            >
               <Text style={styles.skillLabel}>{group.label}</Text>
               <SkillItems items={group.items} />
             </View>
@@ -312,7 +333,7 @@ export function ResumePdfDocument({ data }: { data: Resume }) {
         </Section>
 
         <Section title="Interests">
-          <Text>{data.interests.join(" · ")}</Text>
+          <Text minPresenceAhead={18}>{data.interests.join(" · ")}</Text>
         </Section>
       </Page>
     </Document>
