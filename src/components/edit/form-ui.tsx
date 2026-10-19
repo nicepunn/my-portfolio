@@ -22,7 +22,7 @@ export function Field({
 }
 
 const controlClass =
-  "w-full border border-[var(--border)] bg-[var(--bg)] px-3 py-2.5 text-sm text-[var(--fg)] outline-none transition-colors placeholder:text-[var(--muted)] focus:border-[var(--accent)]";
+  "w-full border border-[var(--border)] bg-[var(--bg)] px-3 py-2.5 text-sm text-[var(--fg)] outline-none transition-colors placeholder:text-[var(--muted)] focus:border-[var(--accent)] read-only:cursor-not-allowed read-only:border-[var(--border)] read-only:bg-[color-mix(in_oklab,var(--fg)_4%,var(--bg))] read-only:text-[var(--muted)] read-only:opacity-75";
 
 export function TextInput(props: InputHTMLAttributes<HTMLInputElement>) {
   return <input {...props} className={`${controlClass} ${props.className ?? ""}`} />;

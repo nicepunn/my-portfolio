@@ -24,7 +24,7 @@ async function ReviewContent() {
 
 export default function EditReviewPage() {
   return (
-    <main className="min-h-full bg-[var(--bg)]">
+    <main className="h-[calc(100svh-3.5rem)] overflow-hidden bg-[var(--bg)] sm:h-[calc(100svh-4rem)]">
       <Suspense
         fallback={
           <div className="mx-auto max-w-6xl px-6 py-12 text-sm text-[var(--muted)]">
