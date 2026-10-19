@@ -14,11 +14,11 @@ export function ThemeToggle() {
       aria-label={isDark ? "Dark mode on" : "Light mode on"}
       title={isDark ? "Switch to light mode" : "Switch to dark mode"}
       onClick={toggleTheme}
-      className="relative inline-flex h-7 w-12 shrink-0 items-center rounded-full border border-[var(--border)] bg-[color-mix(in_oklab,var(--fg)_8%,transparent)] transition-colors hover:border-[var(--accent)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+      className="relative inline-flex h-7 w-12 shrink-0 items-center justify-center rounded-full border border-[var(--border)] bg-[color-mix(in_oklab,var(--fg)_8%,transparent)] transition-colors hover:border-[var(--accent)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
     >
       <span
         aria-hidden
-        className={`pointer-events-none absolute top-0.5 left-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-[var(--fg)] text-[var(--bg)] transition-transform duration-200 ease-out ${
+        className={`pointer-events-none absolute top-1/2 left-0.5 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-full bg-[color-mix(in_oklab,var(--fg)_42%,transparent)] text-[var(--bg)] transition-transform duration-200 ease-out ${
           isDark ? "translate-x-0" : "translate-x-5"
         }`}
       >
