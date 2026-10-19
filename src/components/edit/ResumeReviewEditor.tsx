@@ -170,6 +170,8 @@ export function ResumeReviewEditor() {
 
         clearEditDraft();
         setStatus(payload.message ?? t.edit.published);
+        // Brief pause so the success status is readable, then hard-nav home.
+        await new Promise((resolve) => setTimeout(resolve, 3000));
         window.location.assign("/");
       } catch (err) {
         setError(err instanceof Error ? err.message : "Save failed");
