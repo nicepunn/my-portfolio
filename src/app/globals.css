@@ -162,7 +162,7 @@ html[lang="th"] .tracking-widest {
 
 /* Major section break — short rule, distinct from full-width item dividers */
 .section-rule {
-  width: 8rem;
+  width: min(18rem, 55%);
   height: 2px;
   background: color-mix(in oklab, var(--accent) 70%, var(--fg));
   border-radius: 1px;
