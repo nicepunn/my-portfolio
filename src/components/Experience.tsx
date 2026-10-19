@@ -1,8 +1,8 @@
-import { resume } from "@/data/resume";
+import type { Resume } from "@/lib/resume-schema";
 import { Reveal } from "@/components/Reveal";
 import { SectionHeading } from "@/components/SectionHeading";
 
-export function Experience() {
+export function Experience({ data }: { data: Resume }) {
   return (
     <section
       id="experience"
@@ -18,7 +18,7 @@ export function Experience() {
             aria-hidden
             className="absolute top-2 bottom-2 left-[5px] w-px bg-[var(--border)]"
           />
-          {resume.experience.map((job, index) => (
+          {data.experience.map((job, index) => (
             <Reveal key={job.company} delay={index * 0.08} className="relative">
               <li className="relative overflow-visible pl-8 sm:pl-10">
                 <span

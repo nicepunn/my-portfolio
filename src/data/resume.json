@@ -70,9 +70,9 @@
       "label": "Languages",
       "items": [
         "[***TypeScript***]",
-        "Python",
-        "Golang",
-        "JavaScript",
+        "[*Python*]",
+        "[*Golang*]",
+        "[*JavaScript*]",
         "Java",
         "C++",
         "PHP",
@@ -82,42 +82,42 @@
     {
       "label": "Front-End",
       "items": [
-        "React",
-        "Next.js",
-        "Tailwind CSS",
+        "[***React***]",
+        "[***Next.js***]",
+        "[*Tailwind CSS*]",
         "Svelte"
       ]
     },
     {
       "label": "Back-End",
       "items": [
-        "Node.js",
-        "Nest.js",
+        "[***Node.js***]",
+        "[*Nest.js*]",
         "Laravel",
-        "SQL",
-        "NoSQL",
+        "[*SQL*]",
+        "[*NoSQL*]",
         "gRPC"
       ]
     },
     {
       "label": "Infra & Practice",
       "items": [
-        "GitHub",
-        "Docker",
+        "[*GitHub*]",
+        "[*Docker*]",
         "Kubernetes",
         "Terraform",
-        "AWS",
-        "Software Architecture",
+        "[*AWS*]",
+        "[*Software Architecture*]",
         "Microservices"
       ]
     },
     {
       "label": "Tools & Messaging",
       "items": [
-        "Redis",
+        "[*Redis*]",
         "RabbitMQ",
         "Strapi",
-        "Postman",
+        "[*Postman*]",
         "Figma",
         "DBDiagram"
       ]

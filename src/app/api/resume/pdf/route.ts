@@ -1,17 +1,7 @@
 import { NextResponse } from "next/server";
-import { resume as bundledResume } from "@/data/resume";
-import {
-  canPersistResumeToDisk,
-  readResumeFromDisk,
-} from "@/lib/resume-file";
+import { getResume } from "@/lib/resume-file";
 import { renderResumePdf } from "@/lib/render-resume-pdf";
 import { normalizeResume, resumeSchema } from "@/lib/resume-schema";
-
-async function loadResume() {
-  return canPersistResumeToDisk()
-    ? await readResumeFromDisk()
-    : bundledResume;
-}
 
 function pdfResponse(buffer: Buffer, filename = "punnawat-resume.pdf") {
   return new NextResponse(new Uint8Array(buffer), {
@@ -26,7 +16,7 @@ function pdfResponse(buffer: Buffer, filename = "punnawat-resume.pdf") {
 
 export async function GET() {
   try {
-    const data = await loadResume();
+    const data = await getResume();
     const buffer = await renderResumePdf(data);
     return pdfResponse(buffer);
   } catch (error) {

@@ -8,6 +8,7 @@ import {
   View,
 } from "@react-pdf/renderer";
 import type { Resume } from "@/lib/resume-schema";
+import { parseSkillItem, sortSkillsByEmphasis } from "@/lib/skill-emphasis";
 
 const accent = "#0f766e";
 const ink = "#111827";
@@ -261,7 +262,11 @@ export function ResumePdfDocument({ data }: { data: Resume }) {
           {data.skills.map((group) => (
             <View key={group.label} style={styles.skillRow} wrap={false}>
               <Text style={styles.skillLabel}>{group.label}</Text>
-              <Text style={styles.skillItems}>{group.items.join(", ")}</Text>
+              <Text style={styles.skillItems}>
+                {sortSkillsByEmphasis(group.items)
+                  .map((item) => parseSkillItem(item).label)
+                  .join(", ")}
+              </Text>
             </View>
           ))}
         </Section>

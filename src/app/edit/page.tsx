@@ -2,12 +2,8 @@ import { Suspense } from "react";
 import { connection } from "next/server";
 import { EditLogin } from "@/components/edit/EditLogin";
 import { ResumeEditor } from "@/components/edit/ResumeEditor";
-import { resume } from "@/data/resume";
 import { isEditAuthenticated } from "@/lib/edit-auth";
-import {
-  canPersistResumeToDisk,
-  readResumeFromDisk,
-} from "@/lib/resume-file";
+import { canPersistResume, getResume } from "@/lib/resume-file";
 
 export const metadata = {
   title: "Edit resume",
@@ -24,15 +20,10 @@ async function EditContent() {
     return <EditLogin />;
   }
 
-  const data = canPersistResumeToDisk()
-    ? await readResumeFromDisk()
-    : resume;
+  const data = await getResume();
 
   return (
-    <ResumeEditor
-      initialData={data}
-      canPersist={canPersistResumeToDisk()}
-    />
+    <ResumeEditor initialData={data} canPersist={canPersistResume()} />
   );
 }
 

@@ -1,9 +1,9 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
-import { resume } from "@/data/resume";
+import type { Resume } from "@/lib/resume-schema";
 
-export function Hero() {
+export function Hero({ data }: { data: Resume }) {
   const reduce = useReducedMotion();
   const ease = [0.22, 1, 0.36, 1] as const;
 
@@ -32,22 +32,22 @@ export function Hero() {
           className="mb-4 font-mono text-xs tracking-[0.25em] text-[var(--accent)] uppercase"
           {...fade(0.05)}
         >
-          {resume.location}
+          {data.location}
         </motion.p>
 
         <motion.h1
           className="font-display text-[clamp(2.75rem,10vw,6.5rem)] leading-[0.92] font-bold tracking-tight text-[var(--fg)]"
           {...fade(0.12)}
         >
-          {resume.name}
+          {data.name}
         </motion.h1>
 
         <motion.p
           className="mt-6 max-w-xl text-lg text-[var(--muted)] sm:text-xl"
           {...fade(0.22)}
         >
-          <span className="text-[var(--fg)]">{resume.headline}.</span>{" "}
-          {resume.summary}
+          <span className="text-[var(--fg)]">{data.headline}.</span>{" "}
+          {data.summary}
         </motion.p>
 
         <motion.div
@@ -55,18 +55,18 @@ export function Hero() {
           {...fade(0.32)}
         >
           <a
-            href={`mailto:${resume.email}`}
+            href={`mailto:${data.email}`}
             className="inline-flex h-12 items-center justify-center bg-[var(--accent)] px-6 text-sm font-semibold tracking-wide text-[var(--bg)] transition-[transform,background-color] hover:bg-[var(--accent-bright)] active:scale-[0.98]"
           >
             Email me
           </a>
           <a
-            href={resume.github.url}
+            href={data.github.url}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex h-12 items-center justify-center border border-[var(--border)] px-6 text-sm font-medium text-[var(--fg)] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)]"
           >
-            GitHub · {resume.github.label}
+            GitHub · {data.github.label}
           </a>
         </motion.div>
       </div>

@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { resume } from "@/data/resume";
 
 const homeSectionLinks = [
   { id: "experience", label: "Experience" },
@@ -58,7 +57,7 @@ export function Navbar() {
           ) : null}
 
           <a
-            href={resume.pdfPath}
+            href="/api/resume/pdf"
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm text-[var(--muted)] transition-colors hover:text-[var(--accent)]"
