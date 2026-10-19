@@ -12,6 +12,7 @@ import {
   type FormFieldConfig,
   type FormSection,
 } from "@/lib/edit-form";
+import { fieldValuesEqual } from "@/lib/form-diff";
 import {
   Field,
   GhostButton,
@@ -24,6 +25,9 @@ type JsonDrivenFormProps = {
   data: Resume;
   onChange?: (next: Resume) => void;
   readOnly?: boolean;
+  /** When set, fields that differ from this snapshot are marked as changed. */
+  compareAgainst?: Resume | null;
+  changedLabel?: string;
 };
 
 /** Keep raw text while typing so Enter can insert blank lines before blur commit. */
@@ -65,7 +69,6 @@ function LinesTextArea({
         onChange(linesToList(text));
       }}
       onKeyDown={(event) => {
-        // Ensure Enter always inserts a newline (never bubbles as a click/submit).
         if (event.key === "Enter") {
           event.stopPropagation();
         }
@@ -79,15 +82,24 @@ function FieldControl({
   value,
   onChange,
   readOnly,
+  changed,
+  changedLabel,
 }: {
   field: FormFieldConfig;
   value: unknown;
   onChange: (value: unknown) => void;
   readOnly?: boolean;
+  changed?: boolean;
+  changedLabel?: string;
 }) {
   if (field.type === "textarea") {
     return (
-      <Field label={field.label} hint={field.hint}>
+      <Field
+        label={field.label}
+        hint={field.hint}
+        changed={changed}
+        changedLabel={changedLabel}
+      >
         <TextArea
           value={typeof value === "string" ? value : ""}
           onChange={(event) => onChange(event.target.value)}
@@ -104,7 +116,12 @@ function FieldControl({
 
   if (field.type === "lines") {
     return (
-      <Field label={field.label} hint={field.hint}>
+      <Field
+        label={field.label}
+        hint={field.hint}
+        changed={changed}
+        changedLabel={changedLabel}
+      >
         <LinesTextArea
           value={value}
           onChange={onChange}
@@ -118,7 +135,12 @@ function FieldControl({
     field.type === "email" ? "email" : field.type === "url" ? "url" : "text";
 
   return (
-    <Field label={field.label} hint={field.hint}>
+    <Field
+      label={field.label}
+      hint={field.hint}
+      changed={changed}
+      changedLabel={changedLabel}
+    >
       <TextInput
         type={inputType}
         value={typeof value === "string" ? value : value == null ? "" : String(value)}
@@ -129,32 +151,55 @@ function FieldControl({
   );
 }
 
+function isChanged(
+  compareAgainst: Resume | null | undefined,
+  absolutePath: string,
+  value: unknown,
+): boolean {
+  if (!compareAgainst) return false;
+  return !fieldValuesEqual(getAtPath(compareAgainst, absolutePath), value);
+}
+
 function FieldsGrid({
   fields,
   data,
   onChange,
   readOnly,
+  pathPrefix = "",
+  compareAgainst,
+  changedLabel,
 }: {
   fields: FormFieldConfig[];
   data: unknown;
   onChange: (path: string, value: unknown) => void;
   readOnly?: boolean;
+  pathPrefix?: string;
+  compareAgainst?: Resume | null;
+  changedLabel?: string;
 }) {
   return (
     <div className="grid gap-4 sm:grid-cols-2">
-      {fields.map((field) => (
-        <div
-          key={field.path}
-          className={field.fullWidth ? "sm:col-span-2" : undefined}
-        >
-          <FieldControl
-            field={field}
-            value={getAtPath(data, field.path)}
-            onChange={(value) => onChange(field.path, value)}
-            readOnly={readOnly}
-          />
-        </div>
-      ))}
+      {fields.map((field) => {
+        const absolutePath = pathPrefix
+          ? `${pathPrefix}.${field.path}`
+          : field.path;
+        const value = getAtPath(data, field.path);
+        return (
+          <div
+            key={field.path}
+            className={field.fullWidth ? "sm:col-span-2" : undefined}
+          >
+            <FieldControl
+              field={field}
+              value={value}
+              onChange={(next) => onChange(field.path, next)}
+              readOnly={readOnly}
+              changed={isChanged(compareAgainst, absolutePath, value)}
+              changedLabel={changedLabel}
+            />
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -164,13 +209,21 @@ function ArraySectionCard({
   data,
   onChange,
   readOnly,
+  compareAgainst,
+  changedLabel,
 }: {
   section: ArraySection;
   data: Resume;
   onChange: (next: Resume) => void;
   readOnly?: boolean;
+  compareAgainst?: Resume | null;
+  changedLabel?: string;
 }) {
   const items = (getAtPath(data, section.path) as Record<string, unknown>[]) ?? [];
+  const compareItems =
+    (compareAgainst
+      ? (getAtPath(compareAgainst, section.path) as Record<string, unknown>[])
+      : null) ?? [];
 
   function updateItems(nextItems: Record<string, unknown>[]) {
     onChange(setAtPath(data, section.path, nextItems));
@@ -179,55 +232,76 @@ function ArraySectionCard({
   return (
     <SectionCard id={section.id} title={section.label}>
       <div className="space-y-6">
-        {items.map((item, index) => (
-          <div
-            key={index}
-            className="space-y-3 border-t border-[var(--border)] pt-6 first:border-t-0 first:pt-0"
-          >
-            <div className="flex items-center justify-between gap-3">
-              <p className="font-mono text-xs text-[var(--accent)]">
-                {section.itemLabel} #{index + 1}
-              </p>
-              {readOnly ? null : (
-                <GhostButton
-                  danger
-                  onClick={() =>
-                    updateItems(items.filter((_, itemIndex) => itemIndex !== index))
-                  }
-                >
-                  Remove
-                </GhostButton>
-              )}
-            </div>
+        {items.map((item, index) => {
+          const itemChanged =
+            Boolean(compareAgainst) &&
+            !fieldValuesEqual(compareItems[index], item);
 
-            <div className="grid gap-3 sm:grid-cols-2">
-              {section.fields.map((field) => (
-                <div
-                  key={field.path}
-                  className={field.fullWidth ? "sm:col-span-2" : undefined}
+          return (
+            <div
+              key={index}
+              className={`space-y-3 border-t pt-6 first:border-t-0 first:pt-0 ${
+                itemChanged
+                  ? "border-red-400/40"
+                  : "border-[var(--border)]"
+              }`}
+            >
+              <div className="flex items-center justify-between gap-3">
+                <p
+                  className={`font-mono text-xs ${
+                    itemChanged ? "text-red-400" : "text-[var(--accent)]"
+                  }`}
                 >
-                  <FieldControl
-                    field={field}
-                    value={getAtPath(item, field.path)}
-                    readOnly={readOnly}
-                    onChange={(value) => {
-                      if (readOnly) return;
-                      const nextItems = items.map((current, itemIndex) =>
-                        itemIndex === index
-                          ? (setAtPath(current, field.path, value) as Record<
-                              string,
-                              unknown
-                            >)
-                          : current,
-                      );
-                      updateItems(nextItems);
-                    }}
-                  />
-                </div>
-              ))}
+                  {section.itemLabel} #{index + 1}
+                  {itemChanged ? " !" : ""}
+                </p>
+                {readOnly ? null : (
+                  <GhostButton
+                    danger
+                    onClick={() =>
+                      updateItems(items.filter((_, itemIndex) => itemIndex !== index))
+                    }
+                  >
+                    Remove
+                  </GhostButton>
+                )}
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                {section.fields.map((field) => {
+                  const absolutePath = `${section.path}.${index}.${field.path}`;
+                  const value = getAtPath(item, field.path);
+                  return (
+                    <div
+                      key={field.path}
+                      className={field.fullWidth ? "sm:col-span-2" : undefined}
+                    >
+                      <FieldControl
+                        field={field}
+                        value={value}
+                        readOnly={readOnly}
+                        changed={isChanged(compareAgainst, absolutePath, value)}
+                        changedLabel={changedLabel}
+                        onChange={(next) => {
+                          if (readOnly) return;
+                          const nextItems = items.map((current, itemIndex) =>
+                            itemIndex === index
+                              ? (setAtPath(current, field.path, next) as Record<
+                                  string,
+                                  unknown
+                                >)
+                              : current,
+                          );
+                          updateItems(nextItems);
+                        }}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
 
         {readOnly ? null : (
           <div className="border-t border-[var(--border)] pt-4">
@@ -253,6 +327,8 @@ function renderSection(
   data: Resume,
   onChange: (next: Resume) => void,
   readOnly?: boolean,
+  compareAgainst?: Resume | null,
+  changedLabel?: string,
 ) {
   if (section.kind === "array") {
     return (
@@ -262,6 +338,8 @@ function renderSection(
         data={data}
         onChange={onChange}
         readOnly={readOnly}
+        compareAgainst={compareAgainst}
+        changedLabel={changedLabel}
       />
     );
   }
@@ -272,6 +350,8 @@ function renderSection(
         fields={section.fields}
         data={data}
         readOnly={readOnly}
+        compareAgainst={compareAgainst}
+        changedLabel={changedLabel}
         onChange={(path, value) => {
           if (readOnly) return;
           onChange(setAtPath(data, path, value));
@@ -285,13 +365,22 @@ export function JsonDrivenForm({
   data,
   onChange,
   readOnly = false,
+  compareAgainst = null,
+  changedLabel = "Changed",
 }: JsonDrivenFormProps) {
   const handleChange = onChange ?? (() => {});
 
   return (
     <>
       {editForm.sections.map((section) =>
-        renderSection(section, data, handleChange, readOnly),
+        renderSection(
+          section,
+          data,
+          handleChange,
+          readOnly,
+          compareAgainst,
+          changedLabel,
+        ),
       )}
     </>
   );

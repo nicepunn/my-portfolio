@@ -4,18 +4,45 @@ export function Field({
   label,
   children,
   hint,
+  changed = false,
+  changedLabel = "Changed",
 }: {
   label: string;
   children: ReactNode;
   hint?: string;
+  changed?: boolean;
+  changedLabel?: string;
 }) {
   // Use a div (not <label>) so Enter in textareas is not treated as label activation.
   return (
     <div className="block space-y-1.5">
-      <span className="font-mono text-[11px] tracking-[0.18em] text-[var(--muted)] uppercase">
-        {label}
-      </span>
-      {children}
+      <div className="flex items-center gap-2">
+        <span
+          className={`font-mono text-[11px] tracking-[0.18em] uppercase ${
+            changed ? "text-red-400" : "text-[var(--muted)]"
+          }`}
+        >
+          {label}
+        </span>
+        {changed ? (
+          <span
+            className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500/20 px-1 font-mono text-[10px] font-bold text-red-400"
+            title={changedLabel}
+            aria-label={changedLabel}
+          >
+            !
+          </span>
+        ) : null}
+      </div>
+      <div
+        className={
+          changed
+            ? "[&_input]:border-red-400/80 [&_input]:ring-1 [&_input]:ring-red-400/35 [&_textarea]:border-red-400/80 [&_textarea]:ring-1 [&_textarea]:ring-red-400/35"
+            : undefined
+        }
+      >
+        {children}
+      </div>
       {hint ? <span className="block text-xs text-[var(--muted)]">{hint}</span> : null}
     </div>
   );

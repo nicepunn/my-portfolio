@@ -37,11 +37,28 @@ export function ResumeReviewEditor() {
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  /** Snapshot of the target locale when we started editing it — used for change marks. */
+  const [targetBaseline, setTargetBaseline] = useState<Resume | null>(null);
 
   useEffect(() => {
     setDraft(readEditDraft());
     setHydrated(true);
   }, []);
+
+  useEffect(() => {
+    if (!draft) {
+      setTargetBaseline(null);
+      return;
+    }
+    const data = draft.drafts[draft.currentLocale];
+    if (!data) {
+      setTargetBaseline(null);
+      return;
+    }
+    setTargetBaseline(structuredClone(data));
+    // Only reset when switching which locale is on the right.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draft?.currentLocale]);
 
   const sourceData = draft?.drafts[draft.sourceLocale] ?? null;
   const targetData = draft?.drafts[draft.currentLocale] ?? null;
@@ -182,6 +199,7 @@ export function ResumeReviewEditor() {
             {t.edit.reviewQueue}: {queueLabels.join(" → ")}
           </p>
         ) : null}
+        <p className="text-xs text-red-400/90">{t.edit.fieldChangedLegend}</p>
       </header>
 
       <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 overflow-hidden lg:grid-cols-2 lg:gap-6">
@@ -209,7 +227,12 @@ export function ResumeReviewEditor() {
             </p>
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">
-            <JsonDrivenForm data={targetData} onChange={updateTarget} />
+            <JsonDrivenForm
+              data={targetData}
+              onChange={updateTarget}
+              compareAgainst={targetBaseline}
+              changedLabel={t.edit.fieldChanged}
+            />
           </div>
         </section>
       </div>
