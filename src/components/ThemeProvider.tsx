@@ -10,6 +10,7 @@ import {
   type ReactNode,
 } from "react";
 import {
+  DEFAULT_THEME,
   THEME_STORAGE_KEY,
   applyTheme,
   resolveTheme,
@@ -25,23 +26,12 @@ type ThemeContextValue = {
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("dark");
+  const [theme, setThemeState] = useState<Theme>(DEFAULT_THEME);
 
   useEffect(() => {
     const initial = resolveTheme(localStorage.getItem(THEME_STORAGE_KEY));
     setThemeState(initial);
     applyTheme(initial);
-
-    const media = window.matchMedia("(prefers-color-scheme: light)");
-    const onChange = () => {
-      if (localStorage.getItem(THEME_STORAGE_KEY)) return;
-      const next = resolveTheme(null);
-      setThemeState(next);
-      applyTheme(next);
-    };
-
-    media.addEventListener("change", onChange);
-    return () => media.removeEventListener("change", onChange);
   }, []);
 
   const setTheme = useCallback((next: Theme) => {
