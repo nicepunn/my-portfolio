@@ -13,6 +13,7 @@ import {
 } from "@/lib/edit-draft";
 import type { Resume } from "@/lib/resume-schema";
 import { JsonDrivenForm } from "@/components/edit/JsonDrivenForm";
+import { LoadingOverlay } from "@/components/edit/LoadingOverlay";
 import { GhostButton } from "@/components/edit/form-ui";
 
 function downloadDrafts(drafts: Partial<Record<Locale, Resume>>) {
@@ -235,6 +236,7 @@ export function ResumeReviewEditor() {
 
   return (
     <div className="mx-auto flex h-full max-w-7xl flex-col overflow-hidden px-4 py-4 sm:px-6 lg:px-8">
+      <LoadingOverlay show={pending} />
       <header className="shrink-0 space-y-2 pb-4">
         <p className="font-mono text-xs tracking-[0.25em] text-[var(--accent)] uppercase">
           {t.edit.eyebrow}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition, type FormEvent } from "react";
+import { LoadingOverlay } from "@/components/edit/LoadingOverlay";
 import { Field, TextInput } from "@/components/edit/form-ui";
 
 export function EditLogin() {
@@ -38,6 +39,7 @@ export function EditLogin() {
 
   return (
     <div className="mx-auto flex min-h-[70vh] max-w-md flex-col justify-center px-6 py-16 sm:px-10">
+      <LoadingOverlay show={pending} />
       <p className="mb-3 font-mono text-xs tracking-[0.25em] text-[var(--accent)] uppercase">
         Protected
       </p>

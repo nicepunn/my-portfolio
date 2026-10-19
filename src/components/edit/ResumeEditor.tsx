@@ -16,6 +16,7 @@ import type { Resume } from "@/lib/resume-schema";
 import { ConfirmModal } from "@/components/edit/ConfirmModal";
 import { EditSectionNav } from "@/components/edit/EditSectionNav";
 import { JsonDrivenForm } from "@/components/edit/JsonDrivenForm";
+import { LoadingOverlay } from "@/components/edit/LoadingOverlay";
 import { OtherLanguagesModal } from "@/components/edit/OtherLanguagesModal";
 import { GhostButton } from "@/components/edit/form-ui";
 
@@ -237,6 +238,7 @@ export function ResumeEditor({
 
   return (
     <div className="relative mx-auto max-w-3xl space-y-8 px-6 py-12 sm:px-10 lg:px-0 xl:max-w-3xl">
+      <LoadingOverlay show={pending} />
       <EditSectionNav onBack={onBackClick} />
 
       <header className="space-y-3">
