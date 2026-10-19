@@ -22,9 +22,9 @@ export function Hero({ data }: { data: Resume }) {
         aria-hidden
         className="pointer-events-none absolute inset-0 -z-10"
       >
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_20%_10%,rgba(61,214,195,0.18),transparent_55%),radial-gradient(ellipse_70%_50%_at_90%_20%,rgba(232,165,75,0.12),transparent_50%),linear-gradient(165deg,#070a0d_0%,#0f161c_45%,#0a1014_100%)]" />
-        <div className="grain absolute inset-0 opacity-[0.35]" />
-        <div className="absolute -left-1/4 top-1/3 h-[50vmax] w-[50vmax] rounded-full bg-[radial-gradient(circle,rgba(61,214,195,0.08),transparent_65%)] blur-2xl" />
+        <div className="hero-backdrop absolute inset-0" />
+        <div className="grain absolute inset-0" />
+        <div className="hero-orb absolute -left-1/4 top-1/3 h-[50vmax] w-[50vmax] rounded-full blur-2xl" />
       </div>
 
       <div className="mx-auto w-full max-w-5xl">
