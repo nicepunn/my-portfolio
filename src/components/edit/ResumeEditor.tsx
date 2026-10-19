@@ -1,14 +1,15 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { locales, localeMeta, type Locale } from "@/i18n/config";
 import { useTranslations } from "@/i18n/LocaleProvider";
 import {
+  captureOriginalIfMissing,
   clearEditDraft,
   otherLocales,
-  replaceBaselines,
   resumesEqual,
+  setOriginal,
   writeEditDraft,
 } from "@/lib/edit-draft";
 import type { Resume } from "@/lib/resume-schema";
@@ -57,11 +58,16 @@ export function ResumeEditor({
   const router = useRouter();
   const t = useTranslations();
   const [data, setData] = useState<Resume>(initialData);
-  const [baseline] = useState<Resume>(initialData);
+  /** Frozen copy of the resume as loaded — before any edits this session. */
+  const [preEditOriginal] = useState<Resume>(() => structuredClone(initialData));
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showOtherModal, setShowOtherModal] = useState(false);
   const [pending, startTransition] = useTransition();
+
+  useEffect(() => {
+    captureOriginalIfMissing(locale, preEditOriginal);
+  }, [locale, preEditOriginal]);
 
   const availableOthers = useMemo(
     () => otherLocales(locale, locales),
@@ -159,7 +165,8 @@ export function ResumeEditor({
         );
 
         const [currentLocale, ...queue] = selected;
-        replaceBaselines(drafts);
+        // Persist the pre-edit source snapshot for review-page change marks.
+        setOriginal(locale, preEditOriginal);
         writeEditDraft({
           sourceLocale: locale,
           drafts,
@@ -179,7 +186,7 @@ export function ResumeEditor({
     setError(null);
     setStatus(null);
 
-    if (resumesEqual(data, baseline)) {
+    if (resumesEqual(data, preEditOriginal)) {
       return;
     }
 

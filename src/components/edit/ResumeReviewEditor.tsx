@@ -6,7 +6,7 @@ import { localeMeta, type Locale } from "@/i18n/config";
 import { useTranslations } from "@/i18n/LocaleProvider";
 import {
   clearEditDraft,
-  getBaseline,
+  getOriginal,
   readEditDraft,
   writeEditDraft,
   type EditDraft,
@@ -47,13 +47,17 @@ export function ResumeReviewEditor() {
   const sourceData = draft?.drafts[draft.sourceLocale] ?? null;
   const targetData = draft?.drafts[draft.currentLocale] ?? null;
 
-  // Stable clone of the write-once baseline for the locale on the right.
-  // Recomputed only when the active locale changes — never when drafts edit.
-  const targetBaseline = useMemo(() => {
+  // Pre-edit snapshot of the source (left) language — frozen when /edit first loaded.
+  const sourceOriginal = useMemo(() => {
     if (!draft) return null;
-    const snap = getBaseline(draft.currentLocale);
+    const snap = getOriginal(draft.sourceLocale);
     return snap ? structuredClone(snap) : null;
-  }, [draft?.currentLocale]);
+  }, [draft?.sourceLocale, hydrated]);
+
+  const sourceDiff =
+    sourceData && sourceOriginal
+      ? { current: sourceData, original: sourceOriginal }
+      : null;
 
   const queueLabels = useMemo(() => {
     if (!draft) return [];
@@ -201,10 +205,10 @@ export function ResumeReviewEditor() {
           </span>
           {t.edit.fieldChangedLegend}
         </p>
-        {!targetBaseline ? (
+        {!sourceOriginal ? (
           <p className="text-xs text-amber-400">
-            Missing baseline snapshot — discard and start Save again so change
-            marks can work.
+            Missing source original — open /edit first, then Save again so
+            change marks can work.
           </p>
         ) : null}
       </header>
@@ -220,7 +224,14 @@ export function ResumeReviewEditor() {
             </p>
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">
-            <JsonDrivenForm data={sourceData} readOnly />
+            <JsonDrivenForm
+              data={sourceData}
+              readOnly
+              compareAgainst={sourceOriginal}
+              changedLabel={t.edit.fieldChanged}
+              removedItemLabel={t.edit.itemRemoved}
+              addedItemLabel={t.edit.itemAdded}
+            />
           </div>
         </section>
 
@@ -237,7 +248,7 @@ export function ResumeReviewEditor() {
             <JsonDrivenForm
               data={targetData}
               onChange={updateTarget}
-              compareAgainst={targetBaseline}
+              sourceDiff={sourceDiff}
               changedLabel={t.edit.fieldChanged}
               removedItemLabel={t.edit.itemRemoved}
               addedItemLabel={t.edit.itemAdded}

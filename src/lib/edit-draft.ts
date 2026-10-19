@@ -9,9 +9,12 @@ import {
 export const EDIT_DRAFT_STORAGE_KEY = "resume-edit-draft";
 
 /**
- * Write-once snapshots keyed by locale. Stored separately from the draft so
- * field edits cannot accidentally overwrite the compare baseline.
+ * Write-once snapshot of each locale as loaded into the editor — before the user
+ * edits. Used on the review page to mark what changed on the source (left) language.
  */
+export const EDIT_ORIGINAL_STORAGE_KEY = "resume-edit-originals";
+
+/** @deprecated Kept so clearEditDraft can wipe older sessions. */
 export const EDIT_BASELINE_STORAGE_KEY = "resume-edit-baselines";
 
 export type EditDraft = {
@@ -34,65 +37,49 @@ export function resumesEqual(a: Resume, b: Resume): boolean {
   );
 }
 
-function parseBaselines(raw: unknown): Partial<Record<Locale, Resume>> {
+function parseResumes(raw: unknown): Partial<Record<Locale, Resume>> {
   if (!raw || typeof raw !== "object") return {};
-  const baselines: Partial<Record<Locale, Resume>> = {};
+  const out: Partial<Record<Locale, Resume>> = {};
   for (const [key, entry] of Object.entries(raw as Record<string, unknown>)) {
     if (!isLocale(key) || !isResume(entry)) continue;
-    baselines[key] = normalizeResume(entry);
+    out[key] = normalizeResume(entry);
   }
-  return baselines;
+  return out;
 }
 
-export function readBaselines(): Partial<Record<Locale, Resume>> {
+function readOriginals(): Partial<Record<Locale, Resume>> {
   if (typeof window === "undefined") return {};
   try {
-    const raw = sessionStorage.getItem(EDIT_BASELINE_STORAGE_KEY);
+    const raw = sessionStorage.getItem(EDIT_ORIGINAL_STORAGE_KEY);
     if (!raw) return {};
-    return parseBaselines(JSON.parse(raw));
+    return parseResumes(JSON.parse(raw));
   } catch {
     return {};
   }
 }
 
-function writeBaselines(baselines: Partial<Record<Locale, Resume>>): void {
+function writeOriginals(originals: Partial<Record<Locale, Resume>>): void {
   if (typeof window === "undefined") return;
-  sessionStorage.setItem(EDIT_BASELINE_STORAGE_KEY, JSON.stringify(baselines));
+  sessionStorage.setItem(EDIT_ORIGINAL_STORAGE_KEY, JSON.stringify(originals));
 }
 
-/**
- * Freeze each provided locale once. Existing baseline entries are never replaced.
- */
-export function ensureBaselines(
-  drafts: Partial<Record<Locale, Resume>>,
-): Partial<Record<Locale, Resume>> {
-  const baselines = readBaselines();
-  let changed = false;
-  for (const [key, entry] of Object.entries(drafts)) {
-    if (!isLocale(key) || !entry) continue;
-    if (baselines[key]) continue;
-    baselines[key] = structuredClone(entry);
-    changed = true;
-  }
-  if (changed) writeBaselines(baselines);
-  return baselines;
+/** Freeze a locale's pre-edit snapshot once (first load into the editor). */
+export function captureOriginalIfMissing(locale: Locale, data: Resume): void {
+  const originals = readOriginals();
+  if (originals[locale]) return;
+  originals[locale] = structuredClone(data);
+  writeOriginals(originals);
 }
 
-/** Replace all baselines (used when starting a new multi-locale review flow). */
-export function replaceBaselines(
-  drafts: Partial<Record<Locale, Resume>>,
-): Partial<Record<Locale, Resume>> {
-  const baselines: Partial<Record<Locale, Resume>> = {};
-  for (const [key, entry] of Object.entries(drafts)) {
-    if (!isLocale(key) || !entry) continue;
-    baselines[key] = structuredClone(entry);
-  }
-  writeBaselines(baselines);
-  return baselines;
+/** Force-set the pre-edit snapshot for a locale (e.g. editor's frozen initialData). */
+export function setOriginal(locale: Locale, data: Resume): void {
+  const originals = readOriginals();
+  originals[locale] = structuredClone(data);
+  writeOriginals(originals);
 }
 
-export function getBaseline(locale: Locale): Resume | null {
-  return readBaselines()[locale] ?? null;
+export function getOriginal(locale: Locale): Resume | null {
+  return readOriginals()[locale] ?? null;
 }
 
 export function parseEditDraft(raw: unknown): EditDraft | null {
@@ -125,16 +112,6 @@ export function parseEditDraft(raw: unknown): EditDraft | null {
       )
     : [];
 
-  // Migrate legacy drafts that still embed baselines in the same JSON blob.
-  if (value.baselines && typeof value.baselines === "object") {
-    const embedded = parseBaselines(value.baselines);
-    const current = readBaselines();
-    const merged = { ...embedded, ...current };
-    if (Object.keys(merged).length > 0) {
-      writeBaselines(merged);
-    }
-  }
-
   return {
     sourceLocale,
     drafts,
@@ -156,7 +133,6 @@ export function readEditDraft(): EditDraft | null {
 
 export function writeEditDraft(draft: EditDraft): void {
   if (typeof window === "undefined") return;
-  // Never persist baselines inside the draft blob — edits update drafts only.
   const { sourceLocale, drafts, queue, currentLocale } = draft;
   sessionStorage.setItem(
     EDIT_DRAFT_STORAGE_KEY,
@@ -167,6 +143,7 @@ export function writeEditDraft(draft: EditDraft): void {
 export function clearEditDraft(): void {
   if (typeof window === "undefined") return;
   sessionStorage.removeItem(EDIT_DRAFT_STORAGE_KEY);
+  sessionStorage.removeItem(EDIT_ORIGINAL_STORAGE_KEY);
   sessionStorage.removeItem(EDIT_BASELINE_STORAGE_KEY);
 }
 

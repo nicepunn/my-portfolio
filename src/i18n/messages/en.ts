@@ -76,9 +76,9 @@ export const en = {
     reviewAbandon: "Discard all changes",
     reviewHint:
       "Left shows the language you already edited. Right is the selected language. Leaving mid-flow discards everything — nothing is published yet.",
-    fieldChanged: "Changed from when you started this language",
+    fieldChanged: "Changed in the source language from its original stage",
     fieldChangedLegend:
-      "Red border + ! marks fields you changed on the right (vs this language's starting stage)",
+      "Red border + ! marks fields changed on the left (source) vs before you started editing",
     itemRemoved: "Removed",
     itemAdded: "New",
     published: "Published",

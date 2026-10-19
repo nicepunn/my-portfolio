@@ -21,27 +21,53 @@ import {
   TextInput,
 } from "@/components/edit/form-ui";
 
+/** Mark fields dirty when the source (left) language changed vs its pre-edit original. */
+export type SourceDiff = {
+  current: Resume;
+  original: Resume;
+};
+
 type JsonDrivenFormProps = {
   data: Resume;
   onChange?: (next: Resume) => void;
   readOnly?: boolean;
   /**
-   * Frozen snapshot to compare against. Required for dirty marks.
-   * Must NOT be the live `data` object — pass a write-once baseline.
+   * Compare live `data` against this snapshot (same-locale dirty marks).
+   * Do not pass the live data object here.
    */
   compareAgainst?: Resume | null;
+  /**
+   * When set, dirty marks follow source-language edits (original → current),
+   * ignoring local typing on this form.
+   */
+  sourceDiff?: SourceDiff | null;
   changedLabel?: string;
   removedItemLabel?: string;
   addedItemLabel?: string;
 };
 
+function pathDirtyFromSource(
+  sourceDiff: SourceDiff | null | undefined,
+  absolutePath: string,
+): boolean {
+  if (!sourceDiff) return false;
+  return !fieldValuesEqual(
+    getAtPath(sourceDiff.original, absolutePath),
+    getAtPath(sourceDiff.current, absolutePath),
+  );
+}
+
 function isDirty(
-  baseline: Resume | null | undefined,
   absolutePath: string,
   value: unknown,
+  compareAgainst: Resume | null | undefined,
+  sourceDiff: SourceDiff | null | undefined,
 ): boolean {
-  if (!baseline) return false;
-  return !fieldValuesEqual(getAtPath(baseline, absolutePath), value);
+  if (sourceDiff) {
+    return pathDirtyFromSource(sourceDiff, absolutePath);
+  }
+  if (!compareAgainst) return false;
+  return !fieldValuesEqual(getAtPath(compareAgainst, absolutePath), value);
 }
 
 function FieldControl({
@@ -52,6 +78,7 @@ function FieldControl({
   dirty,
   changedLabel,
   baselineValue,
+  lockDirty,
 }: {
   field: FormFieldConfig;
   value: unknown;
@@ -60,6 +87,8 @@ function FieldControl({
   dirty?: boolean;
   changedLabel?: string;
   baselineValue?: unknown;
+  /** When true, LinesField won't recompute dirty from local typing. */
+  lockDirty?: boolean;
 }) {
   if (field.type === "textarea") {
     return (
@@ -91,7 +120,8 @@ function FieldControl({
         readOnly={readOnly}
         dirty={dirty}
         changedLabel={changedLabel}
-        baselineValue={baselineValue}
+        baselineValue={lockDirty ? undefined : baselineValue}
+        lockDirty={lockDirty}
       />
     );
   }
@@ -125,6 +155,7 @@ function LinesField({
   dirty,
   changedLabel,
   baselineValue,
+  lockDirty,
 }: {
   field: FormFieldConfig;
   value: unknown;
@@ -133,6 +164,7 @@ function LinesField({
   dirty?: boolean;
   changedLabel?: string;
   baselineValue?: unknown;
+  lockDirty?: boolean;
 }) {
   const committed = listToLines(value);
   const [text, setText] = useState(committed);
@@ -142,8 +174,9 @@ function LinesField({
     if (!focused) setText(listToLines(value));
   }, [value, focused]);
 
-  const liveDirty =
-    baselineValue !== undefined
+  const liveDirty = lockDirty
+    ? Boolean(dirty)
+    : baselineValue !== undefined
       ? !fieldValuesEqual(baselineValue, focused ? linesToList(text) : value)
       : Boolean(dirty);
 
@@ -186,7 +219,8 @@ function FieldsGrid({
   onChange,
   readOnly,
   pathPrefix = "",
-  baseline,
+  compareAgainst,
+  sourceDiff,
   changedLabel,
 }: {
   fields: FormFieldConfig[];
@@ -194,7 +228,8 @@ function FieldsGrid({
   onChange: (path: string, value: unknown) => void;
   readOnly?: boolean;
   pathPrefix?: string;
-  baseline: Resume | null;
+  compareAgainst: Resume | null;
+  sourceDiff: SourceDiff | null;
   changedLabel?: string;
 }) {
   return (
@@ -204,7 +239,7 @@ function FieldsGrid({
           ? `${pathPrefix}.${field.path}`
           : field.path;
         const value = getAtPath(data, field.path);
-        const dirty = isDirty(baseline, absolutePath, value);
+        const dirty = isDirty(absolutePath, value, compareAgainst, sourceDiff);
         return (
           <div
             key={field.path}
@@ -217,8 +252,11 @@ function FieldsGrid({
               readOnly={readOnly}
               dirty={dirty}
               changedLabel={changedLabel}
+              lockDirty={Boolean(sourceDiff)}
               baselineValue={
-                baseline ? getAtPath(baseline, absolutePath) : undefined
+                compareAgainst
+                  ? getAtPath(compareAgainst, absolutePath)
+                  : undefined
               }
             />
           </div>
@@ -233,7 +271,8 @@ function ArraySectionCard({
   data,
   onChange,
   readOnly,
-  baseline,
+  compareAgainst,
+  sourceDiff,
   changedLabel,
   removedItemLabel,
   addedItemLabel,
@@ -242,17 +281,25 @@ function ArraySectionCard({
   data: Resume;
   onChange: (next: Resume) => void;
   readOnly?: boolean;
-  baseline: Resume | null;
+  compareAgainst: Resume | null;
+  sourceDiff: SourceDiff | null;
   changedLabel?: string;
   removedItemLabel?: string;
   addedItemLabel?: string;
 }) {
   const items = (getAtPath(data, section.path) as Record<string, unknown>[]) ?? [];
-  const baselineItems =
-    (baseline
-      ? (getAtPath(baseline, section.path) as Record<string, unknown>[])
+
+  const probeCurrent = sourceDiff?.current ?? data;
+  const probeOriginal = sourceDiff?.original ?? compareAgainst;
+  const probeItems =
+    (probeCurrent
+      ? (getAtPath(probeCurrent, section.path) as Record<string, unknown>[])
       : null) ?? [];
-  const removedCount = Math.max(0, baselineItems.length - items.length);
+  const originalItems =
+    (probeOriginal
+      ? (getAtPath(probeOriginal, section.path) as Record<string, unknown>[])
+      : null) ?? [];
+  const removedCount = Math.max(0, originalItems.length - probeItems.length);
 
   function updateItems(nextItems: Record<string, unknown>[]) {
     onChange(setAtPath(data, section.path, nextItems));
@@ -262,10 +309,13 @@ function ArraySectionCard({
     <SectionCard id={section.id} title={section.label}>
       <div className="space-y-6">
         {items.map((item, index) => {
-          const isNew = Boolean(baseline) && index >= baselineItems.length;
-          const itemDirty =
-            Boolean(baseline) &&
-            !fieldValuesEqual(baselineItems[index], item);
+          const itemPath = `${section.path}.${index}`;
+          const isNew =
+            Boolean(probeOriginal) && index >= originalItems.length;
+          const itemDirty = sourceDiff
+            ? pathDirtyFromSource(sourceDiff, itemPath)
+            : Boolean(compareAgainst) &&
+              !fieldValuesEqual(originalItems[index], item);
 
           return (
             <div
@@ -304,7 +354,12 @@ function ArraySectionCard({
                 {section.fields.map((field) => {
                   const absolutePath = `${section.path}.${index}.${field.path}`;
                   const value = getAtPath(item, field.path);
-                  const dirty = isDirty(baseline, absolutePath, value);
+                  const dirty = isDirty(
+                    absolutePath,
+                    value,
+                    compareAgainst,
+                    sourceDiff,
+                  );
                   return (
                     <div
                       key={field.path}
@@ -316,9 +371,10 @@ function ArraySectionCard({
                         readOnly={readOnly}
                         dirty={dirty}
                         changedLabel={changedLabel}
+                        lockDirty={Boolean(sourceDiff)}
                         baselineValue={
-                          baseline
-                            ? getAtPath(baseline, absolutePath)
+                          compareAgainst
+                            ? getAtPath(compareAgainst, absolutePath)
                             : undefined
                         }
                         onChange={(next) => {
@@ -344,7 +400,7 @@ function ArraySectionCard({
 
         {removedCount > 0
           ? Array.from({ length: removedCount }, (_, offset) => {
-              const index = items.length + offset;
+              const index = probeItems.length + offset;
               return (
                 <div
                   key={`removed-${index}`}
@@ -388,7 +444,8 @@ function renderSection(
   data: Resume,
   onChange: (next: Resume) => void,
   readOnly: boolean | undefined,
-  baseline: Resume | null,
+  compareAgainst: Resume | null,
+  sourceDiff: SourceDiff | null,
   changedLabel: string | undefined,
   removedItemLabel: string | undefined,
   addedItemLabel: string | undefined,
@@ -401,7 +458,8 @@ function renderSection(
         data={data}
         onChange={onChange}
         readOnly={readOnly}
-        baseline={baseline}
+        compareAgainst={compareAgainst}
+        sourceDiff={sourceDiff}
         changedLabel={changedLabel}
         removedItemLabel={removedItemLabel}
         addedItemLabel={addedItemLabel}
@@ -415,7 +473,8 @@ function renderSection(
         fields={section.fields}
         data={data}
         readOnly={readOnly}
-        baseline={baseline}
+        compareAgainst={compareAgainst}
+        sourceDiff={sourceDiff}
         changedLabel={changedLabel}
         onChange={(path, value) => {
           if (readOnly) return;
@@ -431,13 +490,12 @@ export function JsonDrivenForm({
   onChange,
   readOnly = false,
   compareAgainst = null,
+  sourceDiff = null,
   changedLabel = "Changed",
   removedItemLabel = "Removed",
   addedItemLabel = "New",
 }: JsonDrivenFormProps) {
   const handleChange = onChange ?? (() => {});
-  // Use the provided snapshot as-is. Never fall back to live `data`.
-  const baseline = readOnly ? null : (compareAgainst ?? null);
 
   return (
     <>
@@ -447,7 +505,8 @@ export function JsonDrivenForm({
           data,
           handleChange,
           readOnly,
-          baseline,
+          compareAgainst,
+          sourceDiff,
           changedLabel,
           removedItemLabel,
           addedItemLabel,
