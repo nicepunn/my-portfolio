@@ -67,6 +67,15 @@ export const en = {
     saveThisOnly: "No, save this language only",
     cancel: "Cancel",
     selectAtLeastOne: "Select at least one language.",
+    leaveConfirmTitle: "Leave without saving?",
+    leaveConfirmBlurb:
+      "You have unsaved changes. If you go back now, those edits will be discarded.",
+    leaveConfirm: "Discard and leave",
+    leaveStay: "Keep editing",
+    saveThisOnlyConfirmTitle: "Save this language only?",
+    saveThisOnlyConfirmBlurb:
+      "Only the current language will be published. Other languages will not be updated in this save.",
+    saveThisOnlyConfirm: "Yes, save this language only",
     reviewTitle: "Translate / update other language",
     reviewSource: "Source (read-only)",
     reviewTarget: "Editing",
@@ -78,13 +87,18 @@ export const en = {
       "Left shows the language you already edited. Right is the selected language. Leaving mid-flow discards everything — nothing is published yet.",
     fieldChanged: "Changed in the source language from its original stage",
     fieldChangedLegend:
-      "Red border + ! marks source fields changed vs the original stage (including added/removed list items)",
+      "Red + ! — still needs an update on the right (source changed)",
+    fieldResolved: "Updated on this side to match the source change",
+    fieldResolvedLegend:
+      "Green + ✓ — you already edited this field on the right",
+    scrollToNextPending: "Jump to next red field",
     itemRemoved: "Removed",
     itemAdded: "New",
     itemAddedOnSource: "Added on source — add here",
     published: "Published",
     noDraft: "No staged edit found. Start from the editor.",
     backToEditor: "← Back to editor",
+    backHome: "← Back to resume",
   },
   a11y: {
     language: "Language",
@@ -156,6 +170,13 @@ export type Messages = {
     saveThisOnly: string;
     cancel: string;
     selectAtLeastOne: string;
+    leaveConfirmTitle: string;
+    leaveConfirmBlurb: string;
+    leaveConfirm: string;
+    leaveStay: string;
+    saveThisOnlyConfirmTitle: string;
+    saveThisOnlyConfirmBlurb: string;
+    saveThisOnlyConfirm: string;
     reviewTitle: string;
     reviewSource: string;
     reviewTarget: string;
@@ -166,12 +187,16 @@ export type Messages = {
     reviewHint: string;
     fieldChanged: string;
     fieldChangedLegend: string;
+    fieldResolved: string;
+    fieldResolvedLegend: string;
+    scrollToNextPending: string;
     itemRemoved: string;
     itemAdded: string;
     itemAddedOnSource: string;
     published: string;
     noDraft: string;
     backToEditor: string;
+    backHome: string;
   };
   a11y: {
     language: string;

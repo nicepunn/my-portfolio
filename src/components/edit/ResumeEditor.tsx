@@ -13,6 +13,7 @@ import {
   writeEditDraft,
 } from "@/lib/edit-draft";
 import type { Resume } from "@/lib/resume-schema";
+import { ConfirmModal } from "@/components/edit/ConfirmModal";
 import { EditSectionNav } from "@/components/edit/EditSectionNav";
 import { JsonDrivenForm } from "@/components/edit/JsonDrivenForm";
 import { OtherLanguagesModal } from "@/components/edit/OtherLanguagesModal";
@@ -63,7 +64,11 @@ export function ResumeEditor({
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showOtherModal, setShowOtherModal] = useState(false);
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
+  const [showSaveThisOnlyConfirm, setShowSaveThisOnlyConfirm] = useState(false);
   const [pending, startTransition] = useTransition();
+
+  const isDirty = !resumesEqual(data, preEditOriginal);
 
   useEffect(() => {
     captureOriginalIfMissing(locale, preEditOriginal);
@@ -110,10 +115,15 @@ export function ResumeEditor({
     return payload;
   }
 
+  function requestSaveThisLocaleOnly() {
+    setShowSaveThisOnlyConfirm(true);
+  }
+
   function saveThisLocaleOnly() {
     setError(null);
     setStatus(null);
     setShowOtherModal(false);
+    setShowSaveThisOnlyConfirm(false);
 
     startTransition(async () => {
       try {
@@ -187,16 +197,30 @@ export function ResumeEditor({
     setError(null);
     setStatus(null);
 
-    if (resumesEqual(data, preEditOriginal)) {
+    if (!isDirty) {
       return;
     }
 
     if (availableOthers.length === 0) {
-      saveThisLocaleOnly();
+      requestSaveThisLocaleOnly();
       return;
     }
 
     setShowOtherModal(true);
+  }
+
+  function onBackClick() {
+    if (!isDirty) {
+      window.location.assign("/");
+      return;
+    }
+    setShowLeaveConfirm(true);
+  }
+
+  function confirmLeave() {
+    clearEditDraft();
+    setShowLeaveConfirm(false);
+    window.location.assign("/");
   }
 
   const saveButton = (
@@ -212,7 +236,7 @@ export function ResumeEditor({
 
   return (
     <div className="relative mx-auto max-w-3xl space-y-8 px-6 py-12 sm:px-10 lg:px-0 xl:max-w-3xl">
-      <EditSectionNav />
+      <EditSectionNav onBack={onBackClick} />
 
       <header className="space-y-3">
         <div className="flex flex-wrap items-start justify-between gap-4">
@@ -293,8 +317,34 @@ export function ResumeEditor({
           options={availableOthers}
           pending={pending}
           onContinue={beginOtherLanguages}
-          onSaveThisOnly={saveThisLocaleOnly}
+          onSaveThisOnly={requestSaveThisLocaleOnly}
           onCancel={() => setShowOtherModal(false)}
+        />
+      ) : null}
+
+      {showLeaveConfirm ? (
+        <ConfirmModal
+          title={t.edit.leaveConfirmTitle}
+          description={t.edit.leaveConfirmBlurb}
+          confirmLabel={t.edit.leaveConfirm}
+          cancelLabel={t.edit.leaveStay}
+          danger
+          onConfirm={confirmLeave}
+          onCancel={() => setShowLeaveConfirm(false)}
+        />
+      ) : null}
+
+      {showSaveThisOnlyConfirm ? (
+        <ConfirmModal
+          title={t.edit.saveThisOnlyConfirmTitle}
+          description={t.edit.saveThisOnlyConfirmBlurb}
+          confirmLabel={
+            pending ? t.edit.saving : t.edit.saveThisOnlyConfirm
+          }
+          cancelLabel={t.edit.cancel}
+          pending={pending}
+          onConfirm={saveThisLocaleOnly}
+          onCancel={() => setShowSaveThisOnlyConfirm(false)}
         />
       ) : null}
     </div>

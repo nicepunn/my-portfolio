@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { localeMeta, type Locale } from "@/i18n/config";
 import { useTranslations } from "@/i18n/LocaleProvider";
@@ -30,6 +30,31 @@ function downloadDrafts(drafts: Partial<Record<Locale, Resume>>) {
   }
 }
 
+function scrollPairedPending(
+  targetPane: HTMLElement | null,
+  sourcePane: HTMLElement | null,
+) {
+  if (!targetPane) return;
+  // Only leaf anchors — skip row wrappers that can stay "pending" after a field turns green.
+  const pending = targetPane.querySelector<HTMLElement>(
+    '[data-review-leaf="true"][data-review-mark="pending"]',
+  );
+  if (!pending) return;
+
+  const key = pending.dataset.reviewKey;
+  pending.scrollIntoView({ behavior: "smooth", block: "center" });
+
+  if (!key || !sourcePane) return;
+  const paired =
+    sourcePane.querySelector<HTMLElement>(
+      `[data-review-pane="source"][data-review-leaf="true"][data-review-key="${CSS.escape(key)}"]`,
+    ) ??
+    sourcePane.querySelector<HTMLElement>(
+      `[data-review-pane="source"][data-review-key="${CSS.escape(key)}"]`,
+    );
+  paired?.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
 export function ResumeReviewEditor() {
   const router = useRouter();
   const t = useTranslations();
@@ -38,14 +63,39 @@ export function ResumeReviewEditor() {
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const [targetBaselines, setTargetBaselines] = useState<
+    Partial<Record<Locale, Resume>>
+  >({});
+  const sourceScrollRef = useRef<HTMLDivElement>(null);
+  const targetScrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setDraft(readEditDraft());
     setHydrated(true);
   }, []);
 
+  // Freeze target locale as first shown on review — used for red → green.
+  useEffect(() => {
+    if (!draft) return;
+    const locale = draft.currentLocale;
+    const data = draft.drafts[locale];
+    if (!data) return;
+    setTargetBaselines((prev) => {
+      if (prev[locale]) return prev;
+      const fromOriginal = getOriginal(locale);
+      return {
+        ...prev,
+        [locale]: structuredClone(fromOriginal ?? data),
+      };
+    });
+  }, [draft, hydrated]);
+
   const sourceData = draft?.drafts[draft.sourceLocale] ?? null;
   const targetData = draft?.drafts[draft.currentLocale] ?? null;
+  const targetBaseline =
+    draft && targetBaselines[draft.currentLocale]
+      ? targetBaselines[draft.currentLocale]!
+      : null;
 
   // Pre-edit snapshot of the source (left) language — frozen when /edit first loaded.
   const sourceOriginal = useMemo(() => {
@@ -120,7 +170,6 @@ export function ResumeReviewEditor() {
 
         clearEditDraft();
         setStatus(payload.message ?? t.edit.published);
-        // Full navigation so `/` re-fetches resume (soft nav keeps stale RSC cache).
         window.location.assign("/");
       } catch (err) {
         setError(err instanceof Error ? err.message : "Save failed");
@@ -199,12 +248,32 @@ export function ResumeReviewEditor() {
             {t.edit.reviewQueue}: {queueLabels.join(" → ")}
           </p>
         ) : null}
-        <p className="flex items-center gap-2 text-xs text-red-500">
-          <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
-            !
-          </span>
-          {t.edit.fieldChangedLegend}
-        </p>
+        <div className="flex flex-wrap items-center gap-3">
+          <p className="flex items-center gap-2 text-xs text-red-500">
+            <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+              !
+            </span>
+            {t.edit.fieldChangedLegend}
+          </p>
+          <p className="flex items-center gap-2 text-xs text-emerald-500">
+            <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-bold text-white">
+              ✓
+            </span>
+            {t.edit.fieldResolvedLegend}
+          </p>
+          <div className="ml-auto">
+            <GhostButton
+              onClick={() =>
+                scrollPairedPending(
+                  targetScrollRef.current,
+                  sourceScrollRef.current,
+                )
+              }
+            >
+              {t.edit.scrollToNextPending}
+            </GhostButton>
+          </div>
+        </div>
         {!sourceOriginal ? (
           <p className="text-xs text-amber-400">
             Missing source original — open /edit first, then Save again so
@@ -223,12 +292,17 @@ export function ResumeReviewEditor() {
               {sourceMeta.label} ({sourceMeta.nativeLabel})
             </p>
           </div>
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">
+          <div
+            ref={sourceScrollRef}
+            className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1"
+          >
             <JsonDrivenForm
               data={sourceData}
               readOnly
               compareAgainst={sourceOriginal}
+              reviewPane="source"
               changedLabel={t.edit.fieldChanged}
+              resolvedLabel={t.edit.fieldResolved}
               removedItemLabel={t.edit.itemRemoved}
               addedItemLabel={t.edit.itemAdded}
               addedOnSourceLabel={t.edit.itemAddedOnSource}
@@ -245,12 +319,18 @@ export function ResumeReviewEditor() {
               {targetMeta.label} ({targetMeta.nativeLabel})
             </p>
           </div>
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">
+          <div
+            ref={targetScrollRef}
+            className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1"
+          >
             <JsonDrivenForm
               data={targetData}
               onChange={updateTarget}
               sourceDiff={sourceDiff}
+              resolveAgainst={targetBaseline}
+              reviewPane="target"
               changedLabel={t.edit.fieldChanged}
+              resolvedLabel={t.edit.fieldResolved}
               removedItemLabel={t.edit.itemRemoved}
               addedItemLabel={t.edit.itemAdded}
               addedOnSourceLabel={t.edit.itemAddedOnSource}

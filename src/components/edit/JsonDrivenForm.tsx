@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import type { Resume } from "@/lib/resume-schema";
 import {
   editForm,
@@ -25,6 +25,9 @@ import {
   SectionCard,
   TextArea,
   TextInput,
+  markRowBorderClass,
+  markTextClass,
+  type FieldMark,
 } from "@/components/edit/form-ui";
 
 /** Mark fields dirty when the source (left) language changed vs its pre-edit original. */
@@ -47,7 +50,15 @@ type JsonDrivenFormProps = {
    * ignoring local typing on this form.
    */
   sourceDiff?: SourceDiff | null;
+  /**
+   * Target pane only: snapshot of this locale before review edits.
+   * Source-attention fields stay red until `data` differs here, then turn green.
+   */
+  resolveAgainst?: Resume | null;
+  /** `source` | `target` for paired smooth-scroll anchors. */
+  reviewPane?: "source" | "target";
   changedLabel?: string;
+  resolvedLabel?: string;
   removedItemLabel?: string;
   addedItemLabel?: string;
   /** Shown on the target pane when source added a row that is not on this side yet. */
@@ -65,7 +76,7 @@ function pathDirtyFromSource(
   );
 }
 
-function isDirty(
+function isAttention(
   absolutePath: string,
   value: unknown,
   compareAgainst: Resume | null | undefined,
@@ -78,39 +89,84 @@ function isDirty(
   return !fieldValuesEqual(getAtPath(compareAgainst, absolutePath), value);
 }
 
+function toMark(
+  attention: boolean,
+  resolved: boolean,
+  resolveAgainst: Resume | null | undefined,
+): FieldMark | null {
+  if (!attention) return null;
+  if (resolveAgainst) return resolved ? "resolved" : "pending";
+  return "pending";
+}
+
+function reviewRowKey(sectionPath: string, row: AlignedArrayRow): string {
+  if (row.status === "removed") {
+    return `${sectionPath}#removed#${row.originalIndex}`;
+  }
+  if (row.originalIndex >= 0) return `${sectionPath}#${row.originalIndex}`;
+  return `${sectionPath}#added#${row.currentIndex}`;
+}
+
+function ReviewAnchor({
+  reviewKey,
+  pane,
+  mark,
+  leaf = false,
+  children,
+  className,
+}: {
+  reviewKey: string;
+  pane?: "source" | "target";
+  mark: FieldMark | null;
+  /** Jump targets only leaf anchors (not row wrappers that stay pending). */
+  leaf?: boolean;
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={className}
+      data-review-key={reviewKey}
+      data-review-pane={pane}
+      data-review-mark={leaf ? (mark ?? undefined) : undefined}
+      data-review-leaf={leaf ? "true" : undefined}
+    >
+      {children}
+    </div>
+  );
+}
+
 function FieldControl({
   field,
   value,
   onChange,
   readOnly,
-  dirty,
+  mark,
   changedLabel,
-  baselineValue,
-  lockDirty,
+  resolvedLabel,
 }: {
   field: FormFieldConfig;
   value: unknown;
   onChange: (value: unknown) => void;
   readOnly?: boolean;
-  dirty?: boolean;
+  mark?: FieldMark | null;
   changedLabel?: string;
-  baselineValue?: unknown;
-  /** When true, LinesField won't recompute dirty from local typing. */
-  lockDirty?: boolean;
+  resolvedLabel?: string;
 }) {
   if (field.type === "textarea") {
     return (
       <Field
         label={field.label}
         hint={field.hint}
-        changed={dirty}
+        mark={mark ?? false}
         changedLabel={changedLabel}
+        resolvedLabel={resolvedLabel}
       >
         <TextArea
           value={typeof value === "string" ? value : ""}
           onChange={(event) => onChange(event.target.value)}
           readOnly={readOnly}
-          changed={dirty}
+          mark={mark ?? false}
           onKeyDown={(event) => {
             if (event.key === "Enter") event.stopPropagation();
           }}
@@ -126,10 +182,9 @@ function FieldControl({
         value={value}
         onChange={onChange}
         readOnly={readOnly}
-        dirty={dirty}
+        mark={mark ?? null}
         changedLabel={changedLabel}
-        baselineValue={lockDirty ? undefined : baselineValue}
-        lockDirty={lockDirty}
+        resolvedLabel={resolvedLabel}
       />
     );
   }
@@ -141,15 +196,16 @@ function FieldControl({
     <Field
       label={field.label}
       hint={field.hint}
-      changed={dirty}
+      mark={mark ?? false}
       changedLabel={changedLabel}
+      resolvedLabel={resolvedLabel}
     >
       <TextInput
         type={inputType}
         value={typeof value === "string" ? value : value == null ? "" : String(value)}
         onChange={(event) => onChange(event.target.value)}
         readOnly={readOnly}
-        changed={dirty}
+        mark={mark ?? false}
       />
     </Field>
   );
@@ -160,19 +216,17 @@ function LinesField({
   value,
   onChange,
   readOnly,
-  dirty,
+  mark,
   changedLabel,
-  baselineValue,
-  lockDirty,
+  resolvedLabel,
 }: {
   field: FormFieldConfig;
   value: unknown;
   onChange: (value: unknown) => void;
   readOnly?: boolean;
-  dirty?: boolean;
+  mark?: FieldMark | null;
   changedLabel?: string;
-  baselineValue?: unknown;
-  lockDirty?: boolean;
+  resolvedLabel?: string;
 }) {
   const committed = listToLines(value);
   const [text, setText] = useState(committed);
@@ -182,23 +236,18 @@ function LinesField({
     if (!focused) setText(listToLines(value));
   }, [value, focused]);
 
-  const liveDirty = lockDirty
-    ? Boolean(dirty)
-    : baselineValue !== undefined
-      ? !fieldValuesEqual(baselineValue, focused ? linesToList(text) : value)
-      : Boolean(dirty);
-
   return (
     <Field
       label={field.label}
       hint={field.hint}
-      changed={liveDirty}
+      mark={mark ?? false}
       changedLabel={changedLabel}
+      resolvedLabel={resolvedLabel}
     >
       <TextArea
         value={focused ? text : committed}
         readOnly={readOnly}
-        changed={liveDirty}
+        mark={mark ?? false}
         onFocus={() => {
           if (readOnly) return;
           setFocused(true);
@@ -206,7 +255,10 @@ function LinesField({
         }}
         onChange={(event) => {
           if (readOnly) return;
-          setText(event.target.value);
+          const next = event.target.value;
+          setText(next);
+          // Commit immediately so resolve marks turn green on the first keystroke.
+          onChange(linesToList(next));
         }}
         onBlur={() => {
           if (readOnly) return;
@@ -229,7 +281,10 @@ function FieldsGrid({
   pathPrefix = "",
   compareAgainst,
   sourceDiff,
+  resolveAgainst,
+  reviewPane,
   changedLabel,
+  resolvedLabel,
 }: {
   fields: FormFieldConfig[];
   data: unknown;
@@ -238,7 +293,10 @@ function FieldsGrid({
   pathPrefix?: string;
   compareAgainst: Resume | null;
   sourceDiff: SourceDiff | null;
+  resolveAgainst: Resume | null;
+  reviewPane?: "source" | "target";
   changedLabel?: string;
+  resolvedLabel?: string;
 }) {
   return (
     <div className="grid gap-4 sm:grid-cols-2">
@@ -247,10 +305,24 @@ function FieldsGrid({
           ? `${pathPrefix}.${field.path}`
           : field.path;
         const value = getAtPath(data, field.path);
-        const dirty = isDirty(absolutePath, value, compareAgainst, sourceDiff);
+        const attention = isAttention(
+          absolutePath,
+          value,
+          compareAgainst,
+          sourceDiff,
+        );
+        const resolved = Boolean(
+          resolveAgainst &&
+            !fieldValuesEqual(getAtPath(resolveAgainst, absolutePath), value),
+        );
+        const mark = toMark(attention, resolved, resolveAgainst);
         return (
-          <div
+          <ReviewAnchor
             key={field.path}
+            reviewKey={absolutePath}
+            pane={reviewPane}
+            mark={mark}
+            leaf
             className={field.fullWidth ? "sm:col-span-2" : undefined}
           >
             <FieldControl
@@ -258,16 +330,37 @@ function FieldsGrid({
               value={value}
               onChange={(next) => onChange(field.path, next)}
               readOnly={readOnly}
-              dirty={dirty}
+              mark={mark}
               changedLabel={changedLabel}
-              // Never live-diff while typing on /edit (no compare props).
-              lockDirty
-              baselineValue={undefined}
+              resolvedLabel={resolvedLabel}
             />
-          </div>
+          </ReviewAnchor>
         );
       })}
     </div>
+  );
+}
+
+function arrayFieldResolved(
+  resolveAgainst: Resume | null,
+  sectionPath: string,
+  row: AlignedArrayRow,
+  fieldPath: string,
+  value: unknown,
+): boolean {
+  if (!resolveAgainst) return false;
+  // Fully synced remove (no target row left).
+  if (row.status === "removed" && row.dataItem == null) return true;
+  // Added on source and already inserted on target.
+  if (row.status === "added") return row.dataIndex >= 0;
+  const baselineItems =
+    (getAtPath(resolveAgainst, sectionPath) as Record<string, unknown>[]) ?? [];
+  const baselineItem =
+    row.originalIndex >= 0 ? (baselineItems[row.originalIndex] ?? null) : null;
+  // Any edit vs the target baseline (including typing inside a pending-remove row).
+  return !fieldValuesEqual(
+    baselineItem ? baselineItem[fieldPath] : undefined,
+    value,
   );
 }
 
@@ -278,7 +371,10 @@ function ArraySectionCard({
   readOnly,
   compareAgainst,
   sourceDiff,
+  resolveAgainst,
+  reviewPane,
   changedLabel,
+  resolvedLabel,
   removedItemLabel,
   addedItemLabel,
   addedOnSourceLabel,
@@ -289,7 +385,10 @@ function ArraySectionCard({
   readOnly?: boolean;
   compareAgainst: Resume | null;
   sourceDiff: SourceDiff | null;
+  resolveAgainst: Resume | null;
+  reviewPane?: "source" | "target";
   changedLabel?: string;
+  resolvedLabel?: string;
   removedItemLabel?: string;
   addedItemLabel?: string;
   addedOnSourceLabel?: string;
@@ -297,9 +396,6 @@ function ArraySectionCard({
   const items = (getAtPath(data, section.path) as Record<string, unknown>[]) ?? [];
   const hasDiff = Boolean(sourceDiff || compareAgainst);
 
-  // Left pane: same-locale identity align (source original ↔ source current).
-  // Right pane: dirty from source diff; rows mapped onto target by order.
-  // Single /edit form: no diff props → never mark dirty.
   const rows: AlignedArrayRow[] = (() => {
     if (sourceDiff) {
       const sourceOriginal =
@@ -360,36 +456,56 @@ function ArraySectionCard({
     <SectionCard id={section.id} title={section.label}>
       <div className="space-y-6">
         {rows.map((row, displayIndex) => {
-          // Source (left) remove: item is gone — dashed placeholder only.
-          // Target (right) remove: keep full fields from target data, whole group red.
+          const rowKey = reviewRowKey(section.path, row);
+
+          // Synced remove (target already deleted to match source).
           if (row.status === "removed" && !row.dataItem) {
+            const mark = toMark(true, Boolean(resolveAgainst), resolveAgainst);
             return (
-              <div
+              <ReviewAnchor
                 key={row.key}
-                className="space-y-2 border border-dashed border-red-500/60 bg-red-500/5 px-3 py-3"
+                reviewKey={rowKey}
+                pane={reviewPane}
+                mark={mark}
+                leaf
+                className={`space-y-2 border border-dashed px-3 py-3 ${
+                  mark === "resolved"
+                    ? "border-emerald-500/60 bg-emerald-500/5"
+                    : "border-red-500/60 bg-red-500/5"
+                }`}
               >
-                <p className="flex items-center gap-2 font-mono text-xs text-red-500">
+                <p
+                  className={`flex items-center gap-2 font-mono text-xs ${markTextClass(mark, "text-red-500")}`}
+                >
                   {section.itemLabel} #{displayIndex + 1}
-                  <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
-                    !
+                  <span
+                    className={`inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold text-white ${
+                      mark === "resolved" ? "bg-emerald-500" : "bg-red-500"
+                    }`}
+                  >
+                    {mark === "resolved" ? "✓" : "!"}
                   </span>
                   <span className="tracking-wide uppercase">
                     {removedItemLabel ?? "Removed"}
                   </span>
                 </p>
-              </div>
+              </ReviewAnchor>
             );
           }
 
-          const itemDirty = row.status !== "unchanged";
+          const itemAttention = hasDiff && row.status !== "unchanged";
           const missingOnThisSide = row.dataIndex < 0;
           const item = row.dataItem;
 
-          // Source added a row that does not exist on the target yet.
           if (missingOnThisSide && sourceDiff) {
+            const mark = toMark(true, false, resolveAgainst);
             return (
-              <div
+              <ReviewAnchor
                 key={row.key}
+                reviewKey={rowKey}
+                pane={reviewPane}
+                mark={mark}
+                leaf
                 className="space-y-3 border border-dashed border-red-500/60 bg-red-500/5 px-3 py-3"
               >
                 <div className="flex flex-wrap items-center justify-between gap-3">
@@ -408,32 +524,53 @@ function ArraySectionCard({
                     </GhostButton>
                   )}
                 </div>
-              </div>
+              </ReviewAnchor>
             );
           }
 
           if (!item) return null;
 
+          const rowResolved =
+            row.status === "removed"
+              ? false
+              : row.status === "added"
+                ? Boolean(resolveAgainst)
+                : section.fields.every((field) =>
+                    arrayFieldResolved(
+                      resolveAgainst,
+                      section.path,
+                      row,
+                      field.path,
+                      getAtPath(item, field.path),
+                    ),
+                  );
+          const rowMark = toMark(itemAttention, rowResolved, resolveAgainst);
+
           return (
             <div
               key={row.key}
-              className={`space-y-3 border-t pt-6 first:border-t-0 first:pt-0 ${
-                itemDirty ? "border-red-500/50" : "border-[var(--border)]"
-              }`}
+              data-review-key={rowKey}
+              data-review-pane={reviewPane}
+              className={`space-y-3 border-t pt-6 first:border-t-0 first:pt-0 ${markRowBorderClass(rowMark)}`}
             >
               <div className="flex items-center justify-between gap-3">
                 <p
-                  className={`font-mono text-xs ${
-                    itemDirty ? "text-red-500" : "text-[var(--accent)]"
-                  }`}
+                  className={`font-mono text-xs ${markTextClass(rowMark, "text-[var(--accent)]")}`}
                 >
                   {section.itemLabel} #{displayIndex + 1}
                   {row.status === "added"
                     ? ` · ${addedItemLabel ?? "New"}`
                     : null}
-                  {itemDirty ? (
-                    <span className="ml-2 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
-                      !
+                  {row.status === "removed"
+                    ? ` · ${removedItemLabel ?? "Removed"}`
+                    : null}
+                  {rowMark ? (
+                    <span
+                      className={`ml-2 inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold text-white ${
+                        rowMark === "resolved" ? "bg-emerald-500" : "bg-red-500"
+                      }`}
+                    >
+                      {rowMark === "resolved" ? "✓" : "!"}
                     </span>
                   ) : null}
                 </p>
@@ -454,25 +591,37 @@ function ArraySectionCard({
               <div className="grid gap-3 sm:grid-cols-2">
                 {section.fields.map((field) => {
                   const value = getAtPath(item, field.path);
-                  const dirty = hasDiff
+                  const attention = hasDiff
                     ? fieldDirtyOnAlignedRow(row, field.path)
                     : false;
+                  const resolved = arrayFieldResolved(
+                    resolveAgainst,
+                    section.path,
+                    row,
+                    field.path,
+                    value,
+                  );
+                  const mark = toMark(attention, resolved, resolveAgainst);
+                  const fieldKey = `${rowKey}.${field.path}`;
                   return (
-                    <div
+                    <ReviewAnchor
                       key={field.path}
+                      reviewKey={fieldKey}
+                      pane={reviewPane}
+                      mark={mark}
+                      leaf
                       className={field.fullWidth ? "sm:col-span-2" : undefined}
                     >
                       <FieldControl
                         field={field}
                         value={value}
                         readOnly={readOnly}
-                        dirty={dirty}
+                        mark={mark}
                         changedLabel={changedLabel}
-                        lockDirty
-                        baselineValue={undefined}
+                        resolvedLabel={resolvedLabel}
                         onChange={(next) => updateRowField(row, field.path, next)}
                       />
-                    </div>
+                    </ReviewAnchor>
                   );
                 })}
               </div>
@@ -508,7 +657,10 @@ function renderSection(
   readOnly: boolean | undefined,
   compareAgainst: Resume | null,
   sourceDiff: SourceDiff | null,
+  resolveAgainst: Resume | null,
+  reviewPane: "source" | "target" | undefined,
   changedLabel: string | undefined,
+  resolvedLabel: string | undefined,
   removedItemLabel: string | undefined,
   addedItemLabel: string | undefined,
   addedOnSourceLabel: string | undefined,
@@ -523,7 +675,10 @@ function renderSection(
         readOnly={readOnly}
         compareAgainst={compareAgainst}
         sourceDiff={sourceDiff}
+        resolveAgainst={resolveAgainst}
+        reviewPane={reviewPane}
         changedLabel={changedLabel}
+        resolvedLabel={resolvedLabel}
         removedItemLabel={removedItemLabel}
         addedItemLabel={addedItemLabel}
         addedOnSourceLabel={addedOnSourceLabel}
@@ -539,7 +694,10 @@ function renderSection(
         readOnly={readOnly}
         compareAgainst={compareAgainst}
         sourceDiff={sourceDiff}
+        resolveAgainst={resolveAgainst}
+        reviewPane={reviewPane}
         changedLabel={changedLabel}
+        resolvedLabel={resolvedLabel}
         onChange={(path, value) => {
           if (readOnly) return;
           onChange(setAtPath(data, path, value));
@@ -555,7 +713,10 @@ export function JsonDrivenForm({
   readOnly = false,
   compareAgainst = null,
   sourceDiff = null,
+  resolveAgainst = null,
+  reviewPane,
   changedLabel = "Changed",
+  resolvedLabel = "Updated",
   removedItemLabel = "Removed",
   addedItemLabel = "New",
   addedOnSourceLabel = "Added on source",
@@ -572,7 +733,10 @@ export function JsonDrivenForm({
           readOnly,
           compareAgainst,
           sourceDiff,
+          resolveAgainst,
+          reviewPane,
           changedLabel,
+          resolvedLabel,
           removedItemLabel,
           addedItemLabel,
           addedOnSourceLabel,
