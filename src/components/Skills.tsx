@@ -1,8 +1,8 @@
-import { resume } from "@/data/resume";
+import type { Resume } from "@/lib/resume-schema";
 import { Reveal } from "@/components/Reveal";
 import { SectionHeading } from "@/components/SectionHeading";
 
-export function Skills() {
+export function Skills({ data }: { data: Resume }) {
   return (
     <section
       id="skills"
@@ -14,7 +14,7 @@ export function Skills() {
         </Reveal>
 
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
-          {resume.skills.map((group, index) => (
+          {data.skills.map((group, index) => (
             <Reveal key={group.label} delay={index * 0.05}>
               <div>
                 <h3 className="mb-3 font-mono text-xs tracking-[0.2em] text-[var(--accent)] uppercase">

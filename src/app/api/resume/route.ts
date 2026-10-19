@@ -1,22 +1,19 @@
 import { NextResponse } from "next/server";
-import { resume as bundledResume } from "@/data/resume";
 import { isEditAuthenticated } from "@/lib/edit-auth";
 import {
-  canPersistResumeToDisk,
-  readResumeFromDisk,
-  writeResumeToDisk,
+  canPersistResume,
+  getResume,
+  saveResume,
 } from "@/lib/resume-file";
 import { normalizeResume, resumeSchema } from "@/lib/resume-schema";
 
 export async function GET() {
   try {
-    const data = canPersistResumeToDisk()
-      ? await readResumeFromDisk()
-      : bundledResume;
+    const data = await getResume();
 
     return NextResponse.json({
       data,
-      canPersist: canPersistResumeToDisk(),
+      canPersist: canPersistResume(),
       authenticated: await isEditAuthenticated(),
     });
   } catch (error) {
@@ -54,28 +51,36 @@ export async function PUT(request: Request) {
 
   const data = normalizeResume(parsed.data);
 
-  if (!canPersistResumeToDisk()) {
-    return NextResponse.json({
-      ok: true,
-      persisted: false,
-      data,
-      message:
-        "Saved in memory only on this host. Download resume.json and commit it, then redeploy.",
-    });
-  }
-
   try {
-    await writeResumeToDisk(data);
+    const result = await saveResume(data);
+
+    if (!result.persisted) {
+      return NextResponse.json({
+        ok: true,
+        persisted: false,
+        data,
+        message:
+          "Could not persist. Configure BLOB_READ_WRITE_TOKEN, or download JSON and redeploy.",
+      });
+    }
+
+    const messages = {
+      disk: "Saved to src/data/resume.json",
+      blob: "Saved. Live site and PDF will use this data now.",
+      github: "Saved to GitHub. Vercel will redeploy shortly.",
+      none: "Could not persist.",
+    } as const;
+
     return NextResponse.json({
       ok: true,
       persisted: true,
       data,
-      message: "Wrote src/data/resume.json",
+      message: messages[result.target],
     });
   } catch (error) {
     return NextResponse.json(
       {
-        error: error instanceof Error ? error.message : "Failed to write resume",
+        error: error instanceof Error ? error.message : "Failed to save resume",
       },
       { status: 500 },
     );

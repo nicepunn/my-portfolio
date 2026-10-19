@@ -1,8 +1,8 @@
-import { resume } from "@/data/resume";
+import type { Resume } from "@/lib/resume-schema";
 import { Reveal } from "@/components/Reveal";
 import { SectionHeading } from "@/components/SectionHeading";
 
-export function Projects() {
+export function Projects({ data }: { data: Resume }) {
   return (
     <section
       id="projects"
@@ -14,7 +14,7 @@ export function Projects() {
         </Reveal>
 
         <ul className="divide-y divide-[var(--border)] border-y border-[var(--border)]">
-          {resume.projects.map((project, index) => (
+          {data.projects.map((project, index) => (
             <Reveal key={project.name} delay={index * 0.06}>
               <li className="group py-8 sm:py-10">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-8">

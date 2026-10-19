@@ -1,8 +1,8 @@
-import { resume } from "@/data/resume";
+import type { Resume } from "@/lib/resume-schema";
 import { Reveal } from "@/components/Reveal";
 import { SectionHeading } from "@/components/SectionHeading";
 
-export function Extras() {
+export function Extras({ data }: { data: Resume }) {
   return (
     <section
       id="about"
@@ -13,11 +13,11 @@ export function Extras() {
           <SectionHeading eyebrow="Background" title="Education" />
           <div>
             <h3 className="font-display text-xl font-semibold text-[var(--fg)]">
-              {resume.education.degree}
+              {data.education.degree}
             </h3>
-            <p className="mt-1 text-[var(--muted)]">{resume.education.school}</p>
+            <p className="mt-1 text-[var(--muted)]">{data.education.school}</p>
             <p className="mt-3 font-mono text-xs tracking-wide text-[var(--accent)]">
-              {resume.education.period} · GPAX {resume.education.gpax}
+              {data.education.period} · GPAX {data.education.gpax}
             </p>
           </div>
         </Reveal>
@@ -25,7 +25,7 @@ export function Extras() {
         <Reveal className="lg:col-span-1" delay={0.08}>
           <SectionHeading eyebrow="Campus life" title="Activities" />
           <ul className="space-y-3 text-[var(--muted)]">
-            {resume.activities.map((item) => (
+            {data.activities.map((item) => (
               <li key={item} className="leading-relaxed">
                 {item}
               </li>
@@ -36,7 +36,7 @@ export function Extras() {
         <Reveal className="lg:col-span-1" delay={0.14}>
           <SectionHeading eyebrow="Off the clock" title="Interests" />
           <ul className="space-y-3 text-[var(--muted)]">
-            {resume.interests.map((item) => (
+            {data.interests.map((item) => (
               <li key={item} className="leading-relaxed">
                 {item}
               </li>

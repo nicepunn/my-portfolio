@@ -36,9 +36,9 @@ export function ResumeEditor({
 
   const persistenceHint = useMemo(() => {
     if (canPersist) {
-      return "Save writes directly to src/data/resume.json on this machine.";
+      return "Save stores your changes immediately. The live page and PDF will use the latest data.";
     }
-    return "This host cannot write files. Save validates data, then download resume.json and replace src/data/resume.json before redeploying.";
+    return "Persistent storage is not configured on this host. Save will download JSON instead.";
   }, [canPersist]);
 
   function logout() {
@@ -90,22 +90,37 @@ export function ResumeEditor({
     });
   }
 
+  const saveButton = (
+    <button
+      type="button"
+      disabled={pending}
+      onClick={save}
+      className="inline-flex h-11 items-center justify-center bg-[var(--accent)] px-5 text-sm font-semibold text-[var(--bg)] transition-[opacity,transform] enabled:hover:bg-[var(--accent-bright)] enabled:active:scale-[0.98] disabled:opacity-40"
+    >
+      {pending ? "Saving…" : "Save"}
+    </button>
+  );
+
   return (
     <div className="relative mx-auto max-w-3xl space-y-8 px-6 py-12 sm:px-10 lg:px-0 xl:max-w-3xl">
       <EditSectionNav />
 
       <header className="space-y-3">
-        <p className="font-mono text-xs tracking-[0.25em] text-[var(--accent)] uppercase">
-          Content editor
-        </p>
-        <h1 className="font-display text-3xl font-bold tracking-tight text-[var(--fg)] sm:text-4xl">
-          Edit resume data
-        </h1>
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="space-y-3">
+            <p className="font-mono text-xs tracking-[0.25em] text-[var(--accent)] uppercase">
+              Content editor
+            </p>
+            <h1 className="font-display text-3xl font-bold tracking-tight text-[var(--fg)] sm:text-4xl">
+              Edit resume data
+            </h1>
+          </div>
+          {saveButton}
+        </div>
         <p className="max-w-2xl text-sm leading-relaxed text-[var(--muted)]">
           Form layout is driven by{" "}
           <code className="font-mono text-[var(--accent)]">src/data/edit-form.json</code>
-          . Resume values live in{" "}
-          <code className="font-mono text-[var(--accent)]">src/data/resume.json</code>.
+          . Values save through the API and update the live site + PDF.
         </p>
         <p className="text-xs text-[var(--muted)]">{persistenceHint}</p>
         <button
@@ -121,14 +136,7 @@ export function ResumeEditor({
 
       <div className="sticky bottom-0 z-10 border-t border-[var(--border)] bg-[color-mix(in_oklab,var(--bg)_92%,transparent)] py-4 backdrop-blur-md">
         <div className="flex flex-wrap items-center gap-3">
-          <button
-            type="button"
-            disabled={pending}
-            onClick={save}
-            className="inline-flex h-11 items-center justify-center bg-[var(--accent)] px-5 text-sm font-semibold text-[var(--bg)] transition-[opacity,transform] enabled:hover:bg-[var(--accent-bright)] enabled:active:scale-[0.98] disabled:opacity-40"
-          >
-            {pending ? "Saving…" : canPersist ? "Save to disk" : "Validate & download"}
-          </button>
+          {saveButton}
           <GhostButton onClick={() => downloadJson(data)}>Download JSON</GhostButton>
           <GhostButton
             onClick={() => {
@@ -149,7 +157,9 @@ export function ResumeEditor({
                   window.open(url, "_blank", "noopener,noreferrer");
                   setTimeout(() => URL.revokeObjectURL(url), 60_000);
                 } catch (err) {
-                  setError(err instanceof Error ? err.message : "PDF generation failed");
+                  setError(
+                    err instanceof Error ? err.message : "PDF generation failed",
+                  );
                 }
               });
             }}
