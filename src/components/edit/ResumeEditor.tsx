@@ -2,102 +2,201 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { locales, localeMeta, type Locale } from "@/i18n/config";
+import { useTranslations } from "@/i18n/LocaleProvider";
+import {
+  clearEditDraft,
+  otherLocales,
+  resumesEqual,
+  writeEditDraft,
+} from "@/lib/edit-draft";
 import type { Resume } from "@/lib/resume-schema";
 import { EditSectionNav } from "@/components/edit/EditSectionNav";
 import { JsonDrivenForm } from "@/components/edit/JsonDrivenForm";
+import { OtherLanguagesModal } from "@/components/edit/OtherLanguagesModal";
 import { GhostButton } from "@/components/edit/form-ui";
 
 type ResumeEditorProps = {
   initialData: Resume;
+  locale: Locale;
   canPersist: boolean;
 };
 
-function downloadJson(data: Resume) {
+function downloadJson(data: Resume, locale: Locale) {
   const blob = new Blob([`${JSON.stringify(data, null, 2)}\n`], {
     type: "application/json",
   });
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
   anchor.href = url;
-  anchor.download = "resume.json";
+  anchor.download = `resume.${locale}.json`;
   anchor.click();
   URL.revokeObjectURL(url);
 }
 
+async function fetchLocaleResume(locale: Locale): Promise<Resume> {
+  const response = await fetch(`/api/resume?locale=${locale}`, {
+    cache: "no-store",
+  });
+  const payload = (await response.json()) as {
+    data?: Resume;
+    error?: string;
+  };
+  if (!response.ok || !payload.data) {
+    throw new Error(payload.error ?? `Failed to load resume (${locale})`);
+  }
+  return payload.data;
+}
+
 export function ResumeEditor({
   initialData,
+  locale,
   canPersist,
 }: ResumeEditorProps) {
   const router = useRouter();
+  const t = useTranslations();
   const [data, setData] = useState<Resume>(initialData);
+  const [baseline] = useState<Resume>(initialData);
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showOtherModal, setShowOtherModal] = useState(false);
   const [pending, startTransition] = useTransition();
 
-  const persistenceHint = useMemo(() => {
-    if (canPersist) {
-      return "Save stores your changes immediately. The live page and PDF will use the latest data.";
-    }
-    return "Persistent storage is not configured on this host. Save will download JSON instead.";
-  }, [canPersist]);
+  const availableOthers = useMemo(
+    () => otherLocales(locale, locales),
+    [locale],
+  );
+
+  const persistenceHint = canPersist
+    ? t.edit.persistenceReady
+    : t.edit.persistenceUnavailable;
 
   function logout() {
     startTransition(async () => {
+      clearEditDraft();
       await fetch("/api/edit-auth", { method: "DELETE" });
       router.refresh();
     });
   }
 
-  function save() {
+  async function persistLocales(drafts: Partial<Record<Locale, Resume>>) {
+    const response = await fetch("/api/resume", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ drafts }),
+    });
+
+    const payload = (await response.json()) as {
+      error?: string;
+      message?: string;
+      persisted?: boolean;
+      drafts?: Partial<Record<Locale, Resume>>;
+      data?: Resume;
+    };
+
+    if (!response.ok) {
+      throw Object.assign(new Error(payload.error ?? "Save failed"), {
+        status: response.status,
+      });
+    }
+
+    return payload;
+  }
+
+  function saveThisLocaleOnly() {
+    setError(null);
+    setStatus(null);
+    setShowOtherModal(false);
+
+    startTransition(async () => {
+      try {
+        clearEditDraft();
+        const payload = await persistLocales({ [locale]: data });
+
+        if (payload.data) {
+          setData(payload.data);
+        } else if (payload.drafts?.[locale]) {
+          setData(payload.drafts[locale]!);
+        }
+
+        setStatus(payload.message ?? t.edit.published);
+
+        if (!payload.persisted) {
+          downloadJson(payload.data ?? data, locale);
+        }
+
+        router.refresh();
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Save failed";
+        setError(message);
+        if (
+          err &&
+          typeof err === "object" &&
+          "status" in err &&
+          err.status === 401
+        ) {
+          router.refresh();
+        }
+      }
+    });
+  }
+
+  function beginOtherLanguages(selected: Locale[]) {
     setError(null);
     setStatus(null);
 
     startTransition(async () => {
       try {
-        const response = await fetch("/api/resume", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-        });
-
-        const payload = (await response.json()) as {
-          error?: string;
-          message?: string;
-          persisted?: boolean;
-          data?: Resume;
+        const drafts: Partial<Record<Locale, Resume>> = {
+          [locale]: data,
         };
 
-        if (!response.ok) {
-          setError(payload.error ?? "Save failed");
-          if (response.status === 401) {
-            router.refresh();
-          }
-          return;
-        }
+        await Promise.all(
+          selected.map(async (target) => {
+            drafts[target] = await fetchLocaleResume(target);
+          }),
+        );
 
-        if (payload.data) {
-          setData(payload.data);
-        }
+        const [currentLocale, ...queue] = selected;
+        writeEditDraft({
+          sourceLocale: locale,
+          drafts,
+          queue,
+          currentLocale,
+        });
 
-        setStatus(payload.message ?? "Saved");
-
-        if (!payload.persisted) {
-          downloadJson(payload.data ?? data);
-        }
+        setShowOtherModal(false);
+        router.push("/edit/review");
       } catch (err) {
         setError(err instanceof Error ? err.message : "Save failed");
       }
     });
   }
 
+  function onSaveClick() {
+    setError(null);
+    setStatus(null);
+
+    if (resumesEqual(data, baseline)) {
+      return;
+    }
+
+    if (availableOthers.length === 0) {
+      saveThisLocaleOnly();
+      return;
+    }
+
+    setShowOtherModal(true);
+  }
+
   const saveButton = (
     <button
       type="button"
       disabled={pending}
-      onClick={save}
+      onClick={onSaveClick}
       className="inline-flex h-11 items-center justify-center bg-[var(--accent)] px-5 text-sm font-semibold text-[var(--bg)] transition-[opacity,transform] enabled:hover:bg-[var(--accent-bright)] enabled:active:scale-[0.98] disabled:opacity-40"
     >
-      {pending ? "Saving…" : "Save"}
+      {pending ? t.edit.saving : t.edit.save}
     </button>
   );
 
@@ -109,18 +208,22 @@ export function ResumeEditor({
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="space-y-3">
             <p className="font-mono text-xs tracking-[0.25em] text-[var(--accent)] uppercase">
-              Content editor
+              {t.edit.eyebrow}
             </p>
             <h1 className="font-display text-3xl font-bold tracking-tight text-[var(--fg)] sm:text-4xl">
-              Edit resume data
+              {t.edit.title}
             </h1>
+            <p className="font-mono text-xs text-[var(--muted)]">
+              {t.edit.editingLocale}: {localeMeta[locale].label} (
+              {localeMeta[locale].nativeLabel})
+            </p>
           </div>
           {saveButton}
         </div>
         <p className="max-w-2xl text-sm leading-relaxed text-[var(--muted)]">
-          Form layout is driven by{" "}
+          {t.edit.blurbPrefix}{" "}
           <code className="font-mono text-[var(--accent)]">src/data/edit-form.json</code>
-          . Values save through the API and update the live site + PDF.
+          {t.edit.blurbSuffix}
         </p>
         <p className="text-xs text-[var(--muted)]">{persistenceHint}</p>
         <button
@@ -128,7 +231,7 @@ export function ResumeEditor({
           onClick={logout}
           className="text-sm text-[var(--muted)] underline-offset-4 hover:text-[var(--fg)] hover:underline"
         >
-          Lock editor
+          {t.edit.lockEditor}
         </button>
       </header>
 
@@ -137,7 +240,9 @@ export function ResumeEditor({
       <div className="sticky bottom-0 z-10 border-t border-[var(--border)] bg-[color-mix(in_oklab,var(--bg)_92%,transparent)] py-4 backdrop-blur-md">
         <div className="flex flex-wrap items-center gap-3">
           {saveButton}
-          <GhostButton onClick={() => downloadJson(data)}>Download JSON</GhostButton>
+          <GhostButton onClick={() => downloadJson(data, locale)}>
+            {t.edit.downloadJson}
+          </GhostButton>
           <GhostButton
             onClick={() => {
               startTransition(async () => {
@@ -164,7 +269,7 @@ export function ResumeEditor({
               });
             }}
           >
-            Preview PDF
+            {t.edit.previewPdf}
           </GhostButton>
           {status ? (
             <p className="text-sm text-[var(--accent)]">{status}</p>
@@ -172,6 +277,16 @@ export function ResumeEditor({
           {error ? <p className="text-sm text-red-300">{error}</p> : null}
         </div>
       </div>
+
+      {showOtherModal ? (
+        <OtherLanguagesModal
+          options={availableOthers}
+          pending={pending}
+          onContinue={beginOtherLanguages}
+          onSaveThisOnly={saveThisLocaleOnly}
+          onCancel={() => setShowOtherModal(false)}
+        />
+      ) : null}
     </div>
   );
 }

@@ -31,6 +31,8 @@ export function resolveLocale(value: string | null | undefined): Locale {
  * 1. Append the code to `locales`
  * 2. Add `localeMeta` entry
  * 3. Add `src/i18n/messages/{code}.ts` (copy from `en.ts`)
- * 4. Optionally add `src/data/locales/{code}/resume.json` for translated resume content
+ * 4. Add `src/data/locales/{code}/resume.json` for translated resume content
  * 5. Register the message module in `src/i18n/messages/index.ts`
+ * 6. Register the bundled resume in `src/i18n/resume-locales.ts`
+ *    (runtime edits persist per-locale via disk / Blob / GitHub)
  */

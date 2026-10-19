@@ -3,6 +3,7 @@ import path from "node:path";
 import { list, put } from "@vercel/blob";
 import {
   DEFAULT_LOCALE,
+  isLocale,
   resolveLocale,
   type Locale,
 } from "@/i18n/config";
@@ -13,15 +14,48 @@ import {
   type Resume,
 } from "@/lib/resume-schema";
 
+export type ResumePersistTarget = "disk" | "blob" | "github" | "none";
+
+export type ResumePaths = {
+  disk: string;
+  blob: string;
+  github: string;
+};
+
+/** Stable path helpers for the default locale (kept for callers/tests). */
 export const RESUME_JSON_PATH = path.join(
   process.cwd(),
   "src",
   "data",
   "resume.json",
 );
-
 export const RESUME_BLOB_PATHNAME = "resume/resume.json";
 export const RESUME_GITHUB_PATH = "src/data/resume.json";
+
+export function getResumePaths(localeInput?: string | null): ResumePaths {
+  const locale = resolveLocale(localeInput);
+
+  if (locale === DEFAULT_LOCALE) {
+    return {
+      disk: RESUME_JSON_PATH,
+      blob: RESUME_BLOB_PATHNAME,
+      github: RESUME_GITHUB_PATH,
+    };
+  }
+
+  return {
+    disk: path.join(
+      process.cwd(),
+      "src",
+      "data",
+      "locales",
+      locale,
+      "resume.json",
+    ),
+    blob: `resume/${locale}/resume.json`,
+    github: `src/data/locales/${locale}/resume.json`,
+  };
+}
 
 export function canPersistResumeToDisk() {
   return process.env.VERCEL !== "1";
@@ -43,29 +77,43 @@ export function canPersistResume() {
   );
 }
 
-export async function readResumeFromDisk(): Promise<Resume> {
-  const raw = await fs.readFile(RESUME_JSON_PATH, "utf8");
+export async function readResumeFromDisk(
+  localeInput?: string | null,
+): Promise<Resume> {
+  const { disk } = getResumePaths(localeInput);
+  const raw = await fs.readFile(/*turbopackIgnore: true*/ disk, "utf8");
   return normalizeResume(resumeSchema.parse(JSON.parse(raw)));
 }
 
-export async function writeResumeToDisk(data: Resume): Promise<void> {
+export async function writeResumeToDisk(
+  data: Resume,
+  localeInput?: string | null,
+): Promise<void> {
   if (!canPersistResumeToDisk()) {
     throw new Error("Filesystem is read-only on this host");
   }
 
+  const locale = resolveLocale(localeInput);
+  const { disk } = getResumePaths(locale);
   const normalized = normalizeResume(resumeSchema.parse(data));
+  await fs.mkdir(/*turbopackIgnore: true*/ path.dirname(disk), {
+    recursive: true,
+  });
   await fs.writeFile(
-    RESUME_JSON_PATH,
+    /*turbopackIgnore: true*/ disk,
     `${JSON.stringify(normalized, null, 2)}\n`,
     "utf8",
   );
 }
 
-async function readResumeFromBlob(): Promise<Resume | null> {
+async function readResumeFromBlob(
+  localeInput?: string | null,
+): Promise<Resume | null> {
   if (!canPersistResumeToBlob()) return null;
 
+  const { blob: blobPath } = getResumePaths(localeInput);
   const { blobs } = await list({
-    prefix: RESUME_BLOB_PATHNAME,
+    prefix: blobPath,
     limit: 1,
   });
 
@@ -78,13 +126,17 @@ async function readResumeFromBlob(): Promise<Resume | null> {
   return normalizeResume(resumeSchema.parse(await response.json()));
 }
 
-async function writeResumeToBlob(data: Resume): Promise<void> {
+async function writeResumeToBlob(
+  data: Resume,
+  localeInput?: string | null,
+): Promise<void> {
   if (!canPersistResumeToBlob()) {
     throw new Error("BLOB_READ_WRITE_TOKEN is not configured");
   }
 
+  const { blob: blobPath } = getResumePaths(localeInput);
   const normalized = normalizeResume(resumeSchema.parse(data));
-  await put(RESUME_BLOB_PATHNAME, `${JSON.stringify(normalized, null, 2)}\n`, {
+  await put(blobPath, `${JSON.stringify(normalized, null, 2)}\n`, {
     access: "public",
     addRandomSuffix: false,
     allowOverwrite: true,
@@ -92,16 +144,21 @@ async function writeResumeToBlob(data: Resume): Promise<void> {
   });
 }
 
-async function writeResumeToGitHub(data: Resume): Promise<void> {
+async function writeResumeToGitHub(
+  data: Resume,
+  localeInput?: string | null,
+): Promise<void> {
   const token = process.env.GITHUB_TOKEN;
   const repo = process.env.GITHUB_REPO;
   if (!token || !repo) {
     throw new Error("GITHUB_TOKEN / GITHUB_REPO are not configured");
   }
 
+  const locale = resolveLocale(localeInput);
+  const { github } = getResumePaths(locale);
   const normalized = normalizeResume(resumeSchema.parse(data));
   const content = `${JSON.stringify(normalized, null, 2)}\n`;
-  const apiBase = `https://api.github.com/repos/${repo}/contents/${RESUME_GITHUB_PATH}`;
+  const apiBase = `https://api.github.com/repos/${repo}/contents/${github}`;
 
   const current = await fetch(apiBase, {
     headers: {
@@ -129,7 +186,7 @@ async function writeResumeToGitHub(data: Resume): Promise<void> {
       "X-GitHub-Api-Version": "2022-11-28",
     },
     body: JSON.stringify({
-      message: "chore: update resume.json from /edit",
+      message: `chore: update resume.json (${locale}) from /edit`,
       content: Buffer.from(content, "utf8").toString("base64"),
       sha,
       branch: process.env.GITHUB_BRANCH || "main",
@@ -142,60 +199,88 @@ async function writeResumeToGitHub(data: Resume): Promise<void> {
   }
 }
 
-async function getDefaultResume(): Promise<Resume> {
-  const fromBlob = await readResumeFromBlob();
+export async function getResume(localeInput?: string | null): Promise<Resume> {
+  const locale: Locale = resolveLocale(localeInput);
+
+  const fromBlob = await readResumeFromBlob(locale);
   if (fromBlob) return fromBlob;
 
   if (canPersistResumeToDisk()) {
     try {
-      return await readResumeFromDisk();
+      return await readResumeFromDisk(locale);
     } catch {
-      return getBundledResume(DEFAULT_LOCALE);
+      return getBundledResume(locale);
     }
-  }
-
-  return getBundledResume(DEFAULT_LOCALE);
-}
-
-export async function getResume(localeInput?: string | null): Promise<Resume> {
-  const locale: Locale = resolveLocale(localeInput);
-
-  // Editable / persisted source of truth is the default locale only.
-  if (locale === DEFAULT_LOCALE) {
-    return getDefaultResume();
   }
 
   return getBundledResume(locale);
 }
 
-export async function saveResume(data: Resume): Promise<{
+export async function saveResume(
+  data: Resume,
+  localeInput?: string | null,
+): Promise<{
   persisted: boolean;
-  target: "disk" | "blob" | "github" | "none";
+  target: ResumePersistTarget;
+  locale: Locale;
 }> {
+  const locale = resolveLocale(localeInput);
   const normalized = normalizeResume(resumeSchema.parse(data));
 
   if (canPersistResumeToDisk()) {
-    await writeResumeToDisk(normalized);
-    return { persisted: true, target: "disk" };
+    await writeResumeToDisk(normalized, locale);
+    return { persisted: true, target: "disk", locale };
   }
 
   // Prefer blob for instant live reads; GitHub keeps the repo in sync.
   if (canPersistResumeToBlob()) {
-    await writeResumeToBlob(normalized);
+    await writeResumeToBlob(normalized, locale);
     if (canPersistResumeToGitHub()) {
       try {
-        await writeResumeToGitHub(normalized);
+        await writeResumeToGitHub(normalized, locale);
       } catch {
         // Blob already saved; GitHub sync is best-effort.
       }
     }
-    return { persisted: true, target: "blob" };
+    return { persisted: true, target: "blob", locale };
   }
 
   if (canPersistResumeToGitHub()) {
-    await writeResumeToGitHub(normalized);
-    return { persisted: true, target: "github" };
+    await writeResumeToGitHub(normalized, locale);
+    return { persisted: true, target: "github", locale };
   }
 
-  return { persisted: false, target: "none" };
+  return { persisted: false, target: "none", locale };
+}
+
+export async function saveResumes(
+  drafts: Partial<Record<Locale, Resume>>,
+): Promise<{
+  persisted: boolean;
+  target: ResumePersistTarget;
+  locales: Locale[];
+}> {
+  const entries = Object.entries(drafts).filter(
+    (entry): entry is [Locale, Resume] =>
+      isLocale(entry[0]) && entry[1] != null,
+  );
+
+  if (entries.length === 0) {
+    return { persisted: false, target: "none", locales: [] };
+  }
+
+  let target: ResumePersistTarget = "none";
+  let persisted = false;
+  const locales: Locale[] = [];
+
+  for (const [locale, data] of entries) {
+    const result = await saveResume(data, locale);
+    locales.push(locale);
+    if (result.persisted) {
+      persisted = true;
+      target = result.target;
+    }
+  }
+
+  return { persisted, target, locales };
 }

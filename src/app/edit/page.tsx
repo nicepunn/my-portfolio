@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { connection } from "next/server";
 import { EditLogin } from "@/components/edit/EditLogin";
 import { ResumeEditor } from "@/components/edit/ResumeEditor";
+import { getRequestLocale } from "@/i18n/get-request-locale";
 import { isEditAuthenticated } from "@/lib/edit-auth";
 import { canPersistResume, getResume } from "@/lib/resume-file";
 
@@ -20,10 +21,15 @@ async function EditContent() {
     return <EditLogin />;
   }
 
-  const data = await getResume();
+  const locale = await getRequestLocale();
+  const data = await getResume(locale);
 
   return (
-    <ResumeEditor initialData={data} canPersist={canPersistResume()} />
+    <ResumeEditor
+      initialData={data}
+      locale={locale}
+      canPersist={canPersistResume()}
+    />
   );
 }
 
