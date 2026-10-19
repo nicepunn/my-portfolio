@@ -12,6 +12,11 @@ export type EditDraft = {
   sourceLocale: Locale;
   /** Staged resume payloads keyed by locale (source + selected targets). */
   drafts: Partial<Record<Locale, Resume>>;
+  /**
+   * Frozen snapshot of each locale when the review stage began.
+   * Used to mark fields the user changed for that language (not cross-locale diffs).
+   */
+  baselines: Partial<Record<Locale, Resume>>;
   /** Remaining target locales after the current one. */
   queue: Locale[];
   /** Locale currently being edited on the review page. */
@@ -26,6 +31,18 @@ export function resumesEqual(a: Resume, b: Resume): boolean {
   return (
     JSON.stringify(normalizeResume(a)) === JSON.stringify(normalizeResume(b))
   );
+}
+
+/** Deep-clone every staged locale as an immutable review baseline. */
+export function snapshotBaselines(
+  drafts: Partial<Record<Locale, Resume>>,
+): Partial<Record<Locale, Resume>> {
+  const baselines: Partial<Record<Locale, Resume>> = {};
+  for (const [key, entry] of Object.entries(drafts)) {
+    if (!isLocale(key) || !entry) continue;
+    baselines[key] = structuredClone(entry);
+  }
+  return baselines;
 }
 
 export function parseEditDraft(raw: unknown): EditDraft | null {
@@ -58,9 +75,27 @@ export function parseEditDraft(raw: unknown): EditDraft | null {
       )
     : [];
 
+  const baselines: Partial<Record<Locale, Resume>> = {};
+  if (value.baselines && typeof value.baselines === "object") {
+    for (const [key, entry] of Object.entries(
+      value.baselines as Record<string, unknown>,
+    )) {
+      if (!isLocale(key) || !isResume(entry)) continue;
+      baselines[key] = normalizeResume(entry);
+    }
+  }
+
+  // Migrate older drafts that predate baselines: freeze whatever is staged now.
+  for (const key of Object.keys(drafts) as Locale[]) {
+    if (!baselines[key] && drafts[key]) {
+      baselines[key] = structuredClone(drafts[key]);
+    }
+  }
+
   return {
     sourceLocale,
     drafts,
+    baselines,
     queue,
     currentLocale,
   };

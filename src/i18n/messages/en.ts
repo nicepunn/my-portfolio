@@ -76,9 +76,11 @@ export const en = {
     reviewAbandon: "Discard all changes",
     reviewHint:
       "Left shows the language you already edited. Right is the selected language. Leaving mid-flow discards everything — nothing is published yet.",
-    fieldChanged: "Different between languages",
+    fieldChanged: "Changed from when you started this language",
     fieldChangedLegend:
-      "Red border + ! marks fields that differ between left and right",
+      "Red border + ! marks fields you changed on the right (vs this language's starting stage)",
+    itemRemoved: "Removed",
+    itemAdded: "New",
     published: "Published",
     noDraft: "No staged edit found. Start from the editor.",
     backToEditor: "← Back to editor",
@@ -163,6 +165,8 @@ export type Messages = {
     reviewHint: string;
     fieldChanged: string;
     fieldChangedLegend: string;
+    itemRemoved: string;
+    itemAdded: string;
     published: string;
     noDraft: string;
     backToEditor: string;

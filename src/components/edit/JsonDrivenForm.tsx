@@ -28,6 +28,10 @@ type JsonDrivenFormProps = {
   /** When set, fields that differ from this snapshot are marked. */
   compareAgainst?: Resume | null;
   changedLabel?: string;
+  /** Label for array rows that existed in the baseline but were removed. */
+  removedItemLabel?: string;
+  /** Label for array rows added after the baseline. */
+  addedItemLabel?: string;
 };
 
 function LinesTextArea({
@@ -216,6 +220,8 @@ function ArraySectionCard({
   readOnly,
   compareAgainst,
   changedLabel,
+  removedItemLabel,
+  addedItemLabel,
 }: {
   section: ArraySection;
   data: Resume;
@@ -223,12 +229,15 @@ function ArraySectionCard({
   readOnly?: boolean;
   compareAgainst?: Resume | null;
   changedLabel?: string;
+  removedItemLabel?: string;
+  addedItemLabel?: string;
 }) {
   const items = (getAtPath(data, section.path) as Record<string, unknown>[]) ?? [];
   const compareItems =
     (compareAgainst
       ? (getAtPath(compareAgainst, section.path) as Record<string, unknown>[])
       : null) ?? [];
+  const removedCount = Math.max(0, compareItems.length - items.length);
 
   function updateItems(nextItems: Record<string, unknown>[]) {
     onChange(setAtPath(data, section.path, nextItems));
@@ -238,6 +247,7 @@ function ArraySectionCard({
     <SectionCard id={section.id} title={section.label}>
       <div className="space-y-6">
         {items.map((item, index) => {
+          const isNew = Boolean(compareAgainst) && index >= compareItems.length;
           const itemChanged =
             Boolean(compareAgainst) &&
             !fieldValuesEqual(compareItems[index], item);
@@ -256,6 +266,7 @@ function ArraySectionCard({
                   }`}
                 >
                   {section.itemLabel} #{index + 1}
+                  {isNew ? ` · ${addedItemLabel ?? "New"}` : null}
                   {itemChanged ? (
                     <span className="ml-2 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
                       !
@@ -310,6 +321,28 @@ function ArraySectionCard({
           );
         })}
 
+        {removedCount > 0
+          ? Array.from({ length: removedCount }, (_, offset) => {
+              const index = items.length + offset;
+              return (
+                <div
+                  key={`removed-${index}`}
+                  className="space-y-2 border border-dashed border-red-500/60 bg-red-500/5 px-3 py-3"
+                >
+                  <p className="flex items-center gap-2 font-mono text-xs text-red-400">
+                    {section.itemLabel} #{index + 1}
+                    <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+                      !
+                    </span>
+                    <span className="tracking-wide uppercase">
+                      {removedItemLabel ?? "Removed"}
+                    </span>
+                  </p>
+                </div>
+              );
+            })
+          : null}
+
         {readOnly ? null : (
           <div className="border-t border-[var(--border)] pt-4">
             <GhostButton
@@ -336,6 +369,8 @@ function renderSection(
   readOnly?: boolean,
   compareAgainst?: Resume | null,
   changedLabel?: string,
+  removedItemLabel?: string,
+  addedItemLabel?: string,
 ) {
   if (section.kind === "array") {
     return (
@@ -347,6 +382,8 @@ function renderSection(
         readOnly={readOnly}
         compareAgainst={compareAgainst}
         changedLabel={changedLabel}
+        removedItemLabel={removedItemLabel}
+        addedItemLabel={addedItemLabel}
       />
     );
   }
@@ -374,6 +411,8 @@ export function JsonDrivenForm({
   readOnly = false,
   compareAgainst = null,
   changedLabel = "Changed",
+  removedItemLabel = "Removed",
+  addedItemLabel = "New",
 }: JsonDrivenFormProps) {
   const handleChange = onChange ?? (() => {});
 
@@ -387,6 +426,8 @@ export function JsonDrivenForm({
           readOnly,
           compareAgainst,
           changedLabel,
+          removedItemLabel,
+          addedItemLabel,
         ),
       )}
     </>

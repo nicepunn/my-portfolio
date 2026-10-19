@@ -8,6 +8,7 @@ import {
   clearEditDraft,
   otherLocales,
   resumesEqual,
+  snapshotBaselines,
   writeEditDraft,
 } from "@/lib/edit-draft";
 import type { Resume } from "@/lib/resume-schema";
@@ -161,6 +162,7 @@ export function ResumeEditor({
         writeEditDraft({
           sourceLocale: locale,
           drafts,
+          baselines: snapshotBaselines(drafts),
           queue,
           currentLocale,
         });

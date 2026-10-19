@@ -38,12 +38,16 @@ export function ResumeReviewEditor() {
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   useEffect(() => {
-    setDraft(readEditDraft());
+    const loaded = readEditDraft();
+    // Persist migrated baselines so later edits keep a stable compare snapshot.
+    if (loaded) writeEditDraft(loaded);
+    setDraft(loaded);
     setHydrated(true);
   }, []);
 
   const sourceData = draft?.drafts[draft.sourceLocale] ?? null;
   const targetData = draft?.drafts[draft.currentLocale] ?? null;
+  const targetBaseline = draft?.baselines[draft.currentLocale] ?? null;
 
   const queueLabels = useMemo(() => {
     if (!draft) return [];
@@ -200,12 +204,7 @@ export function ResumeReviewEditor() {
             </p>
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">
-            <JsonDrivenForm
-              data={sourceData}
-              readOnly
-              compareAgainst={targetData}
-              changedLabel={t.edit.fieldChanged}
-            />
+            <JsonDrivenForm data={sourceData} readOnly />
           </div>
         </section>
 
@@ -222,8 +221,10 @@ export function ResumeReviewEditor() {
             <JsonDrivenForm
               data={targetData}
               onChange={updateTarget}
-              compareAgainst={sourceData}
+              compareAgainst={targetBaseline}
               changedLabel={t.edit.fieldChanged}
+              removedItemLabel={t.edit.itemRemoved}
+              addedItemLabel={t.edit.itemAdded}
             />
           </div>
         </section>
