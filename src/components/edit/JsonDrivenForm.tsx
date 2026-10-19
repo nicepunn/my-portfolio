@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import type { Resume } from "@/lib/resume-schema";
 import {
   editForm,
@@ -26,19 +26,17 @@ type JsonDrivenFormProps = {
   onChange?: (next: Resume) => void;
   readOnly?: boolean;
   /**
-   * Optional starting snapshot. If omitted, the form freezes `data` on first
-   * mount / compareKey change and marks later edits against that freeze.
+   * Frozen snapshot to compare against. Required for dirty marks.
+   * Must NOT be the live `data` object — pass a write-once baseline.
    */
   compareAgainst?: Resume | null;
-  /** Re-freeze when this changes (e.g. locale id). */
-  compareKey?: string;
   changedLabel?: string;
   removedItemLabel?: string;
   addedItemLabel?: string;
 };
 
 function isDirty(
-  baseline: Resume | null,
+  baseline: Resume | null | undefined,
   absolutePath: string,
   value: unknown,
 ): boolean {
@@ -433,29 +431,13 @@ export function JsonDrivenForm({
   onChange,
   readOnly = false,
   compareAgainst = null,
-  compareKey,
   changedLabel = "Changed",
   removedItemLabel = "Removed",
   addedItemLabel = "New",
 }: JsonDrivenFormProps) {
   const handleChange = onChange ?? (() => {});
-
-  // Freeze once per compareKey via effect (not render) so React Compiler / Strict Mode
-  // cannot re-snapshot on every parent update after the user edits.
-  const [baseline, setBaseline] = useState<Resume | null>(null);
-  const dataRef = useRef(data);
-  const compareAgainstRef = useRef(compareAgainst);
-  dataRef.current = data;
-  compareAgainstRef.current = compareAgainst;
-
-  useEffect(() => {
-    if (readOnly || !compareKey) {
-      setBaseline(null);
-      return;
-    }
-    const source = compareAgainstRef.current ?? dataRef.current;
-    setBaseline(structuredClone(source));
-  }, [compareKey, readOnly]);
+  // Use the provided snapshot as-is. Never fall back to live `data`.
+  const baseline = readOnly ? null : (compareAgainst ?? null);
 
   return (
     <>

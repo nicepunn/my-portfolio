@@ -6,7 +6,7 @@ import { localeMeta, type Locale } from "@/i18n/config";
 import { useTranslations } from "@/i18n/LocaleProvider";
 import {
   clearEditDraft,
-  ensureBaselines,
+  getBaseline,
   readEditDraft,
   writeEditDraft,
   type EditDraft,
@@ -38,20 +38,22 @@ export function ResumeReviewEditor() {
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
-  /** Bumps when locale advances so the right-hand form remounts and re-freezes. */
-  const [formEpoch, setFormEpoch] = useState(0);
 
   useEffect(() => {
-    const loaded = readEditDraft();
-    if (loaded) {
-      ensureBaselines(loaded.drafts);
-      setDraft(loaded);
-    }
+    setDraft(readEditDraft());
     setHydrated(true);
   }, []);
 
   const sourceData = draft?.drafts[draft.sourceLocale] ?? null;
   const targetData = draft?.drafts[draft.currentLocale] ?? null;
+
+  // Stable clone of the write-once baseline for the locale on the right.
+  // Recomputed only when the active locale changes — never when drafts edit.
+  const targetBaseline = useMemo(() => {
+    if (!draft) return null;
+    const snap = getBaseline(draft.currentLocale);
+    return snap ? structuredClone(snap) : null;
+  }, [draft?.currentLocale]);
 
   const queueLabels = useMemo(() => {
     if (!draft) return [];
@@ -148,7 +150,6 @@ export function ResumeReviewEditor() {
     };
     setDraft(advanced);
     writeEditDraft(advanced);
-    setFormEpoch((value) => value + 1);
     setStatus(null);
     setError(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -200,6 +201,12 @@ export function ResumeReviewEditor() {
           </span>
           {t.edit.fieldChangedLegend}
         </p>
+        {!targetBaseline ? (
+          <p className="text-xs text-amber-400">
+            Missing baseline snapshot — discard and start Save again so change
+            marks can work.
+          </p>
+        ) : null}
       </header>
 
       <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 overflow-hidden lg:grid-cols-2 lg:gap-6">
@@ -228,10 +235,9 @@ export function ResumeReviewEditor() {
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">
             <JsonDrivenForm
-              key={`${draft.currentLocale}-${formEpoch}`}
               data={targetData}
               onChange={updateTarget}
-              compareKey={`${draft.currentLocale}-${formEpoch}`}
+              compareAgainst={targetBaseline}
               changedLabel={t.edit.fieldChanged}
               removedItemLabel={t.edit.itemRemoved}
               addedItemLabel={t.edit.itemAdded}
