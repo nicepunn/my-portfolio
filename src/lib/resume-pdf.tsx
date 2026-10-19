@@ -252,6 +252,18 @@ export function ResumePdfDocument({ data }: { data: Resume }) {
           </View>
         </View>
 
+        <Section title="Education">
+          <View style={styles.item} wrap={false}>
+            <View style={styles.itemHeader}>
+              <Text style={styles.itemTitle}>{data.education.degree}</Text>
+              <Text style={styles.itemMeta}>{data.education.period}</Text>
+            </View>
+            <Text style={styles.itemSubtitle}>
+              {data.education.school} · GPAX {data.education.gpax}
+            </Text>
+          </View>
+        </Section>
+
         <Section title="Work Experience">
           {data.experience.map((job) => (
             <View key={`${job.company}-${job.period}`} style={styles.item} wrap={false}>
@@ -293,18 +305,6 @@ export function ResumePdfDocument({ data }: { data: Resume }) {
               <SkillItems items={group.items} />
             </View>
           ))}
-        </Section>
-
-        <Section title="Education">
-          <View style={styles.item} wrap={false}>
-            <View style={styles.itemHeader}>
-              <Text style={styles.itemTitle}>{data.education.degree}</Text>
-              <Text style={styles.itemMeta}>{data.education.period}</Text>
-            </View>
-            <Text style={styles.itemSubtitle}>
-              {data.education.school} · GPAX {data.education.gpax}
-            </Text>
-          </View>
         </Section>
 
         <Section title="Activities">
