@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { Atmosphere } from "@/components/Atmosphere";
 import type { Resume } from "@/lib/resume-schema";
 import { useLocale, useTranslations } from "@/i18n/LocaleProvider";
 
@@ -9,8 +10,9 @@ export function Footer({ data }: { data: Resume }) {
   const { locale } = useLocale();
 
   return (
-    <footer className="px-6 py-16 sm:px-10 lg:px-16">
-      <div className="mx-auto max-w-5xl">
+    <footer className="relative overflow-hidden px-6 py-16 sm:px-10 sm:py-20 lg:px-16">
+      <Atmosphere orb="right" />
+      <div className="relative mx-auto max-w-5xl">
         <div className="section-rule mb-10" aria-hidden />
         <div className="flex flex-col items-start gap-10 sm:flex-row sm:items-end sm:justify-between">
           <div>

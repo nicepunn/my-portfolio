@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
+import { Atmosphere } from "@/components/Atmosphere";
 import type { Resume } from "@/lib/resume-schema";
 import { useTranslations } from "@/i18n/LocaleProvider";
 
@@ -20,14 +21,7 @@ export function Hero({ data }: { data: Resume }) {
 
   return (
     <header className="relative flex min-h-[calc(100svh-4rem)] flex-col justify-end overflow-hidden px-6 pb-16 pt-16 sm:px-10 sm:pb-20 lg:px-16">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 -z-10"
-      >
-        <div className="hero-backdrop absolute inset-0" />
-        <div className="grain absolute inset-0" />
-        <div className="hero-orb absolute -left-1/4 top-1/3 h-[50vmax] w-[50vmax] rounded-full blur-2xl" />
-      </div>
+      <Atmosphere orb="left" />
 
       <div className="mx-auto w-full max-w-5xl">
         <motion.p className="label-caps mb-4" {...fade(0.05)}>

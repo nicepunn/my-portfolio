@@ -28,13 +28,14 @@ html[data-theme="light"] {
   --border: rgba(18, 22, 28, 0.12);
   --background: var(--bg);
   --foreground: var(--fg);
-  --hero-glow-a: rgba(15, 118, 110, 0.14);
-  --hero-glow-b: rgba(180, 120, 60, 0.1);
-  --hero-glow-c: rgba(15, 118, 110, 0.08);
-  --hero-base-start: #eef2f1;
-  --hero-base-mid: #f7f8f7;
-  --hero-base-end: #f3f5f4;
-  --grain-opacity: 0.18;
+  /* Mirror dark hero depth: stronger glows + clearer base steps */
+  --hero-glow-a: rgba(15, 118, 110, 0.28);
+  --hero-glow-b: rgba(196, 130, 55, 0.18);
+  --hero-glow-c: rgba(15, 118, 110, 0.14);
+  --hero-base-start: #dfe8e5;
+  --hero-base-mid: #eef3f1;
+  --hero-base-end: #e6ecea;
+  --grain-opacity: 0.28;
 }
 
 @theme inline {
@@ -161,10 +162,17 @@ html[lang="th"] .tracking-widest {
 
 /* Major section break — short rule, distinct from full-width item dividers */
 .section-rule {
-  width: 3rem;
+  width: 8rem;
   height: 2px;
   background: color-mix(in oklab, var(--accent) 70%, var(--fg));
   border-radius: 1px;
+}
+
+.atmosphere {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: -10;
 }
 
 ::selection {
