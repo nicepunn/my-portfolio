@@ -25,20 +25,21 @@ type JsonDrivenFormProps = {
   data: Resume;
   onChange?: (next: Resume) => void;
   readOnly?: boolean;
-  /** When set, fields that differ from this snapshot are marked as changed. */
+  /** When set, fields that differ from this snapshot are marked. */
   compareAgainst?: Resume | null;
   changedLabel?: string;
 };
 
-/** Keep raw text while typing so Enter can insert blank lines before blur commit. */
 function LinesTextArea({
   value,
   onChange,
   readOnly,
+  changed,
 }: {
   value: unknown;
   onChange: (value: unknown) => void;
   readOnly?: boolean;
+  changed?: boolean;
 }) {
   const committed = listToLines(value);
   const [text, setText] = useState(committed);
@@ -54,6 +55,7 @@ function LinesTextArea({
     <TextArea
       value={focused ? text : committed}
       readOnly={readOnly}
+      changed={changed}
       onFocus={() => {
         if (readOnly) return;
         setFocused(true);
@@ -104,6 +106,7 @@ function FieldControl({
           value={typeof value === "string" ? value : ""}
           onChange={(event) => onChange(event.target.value)}
           readOnly={readOnly}
+          changed={changed}
           onKeyDown={(event) => {
             if (event.key === "Enter") {
               event.stopPropagation();
@@ -126,6 +129,7 @@ function FieldControl({
           value={value}
           onChange={onChange}
           readOnly={readOnly}
+          changed={changed}
         />
       </Field>
     );
@@ -146,6 +150,7 @@ function FieldControl({
         value={typeof value === "string" ? value : value == null ? "" : String(value)}
         onChange={(event) => onChange(event.target.value)}
         readOnly={readOnly}
+        changed={changed}
       />
     </Field>
   );
@@ -241,9 +246,7 @@ function ArraySectionCard({
             <div
               key={index}
               className={`space-y-3 border-t pt-6 first:border-t-0 first:pt-0 ${
-                itemChanged
-                  ? "border-red-400/40"
-                  : "border-[var(--border)]"
+                itemChanged ? "border-red-500/50" : "border-[var(--border)]"
               }`}
             >
               <div className="flex items-center justify-between gap-3">
@@ -253,7 +256,11 @@ function ArraySectionCard({
                   }`}
                 >
                   {section.itemLabel} #{index + 1}
-                  {itemChanged ? " !" : ""}
+                  {itemChanged ? (
+                    <span className="ml-2 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+                      !
+                    </span>
+                  ) : null}
                 </p>
                 {readOnly ? null : (
                   <GhostButton

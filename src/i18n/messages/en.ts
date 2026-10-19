@@ -76,8 +76,9 @@ export const en = {
     reviewAbandon: "Discard all changes",
     reviewHint:
       "Left shows the language you already edited. Right is the selected language. Leaving mid-flow discards everything — nothing is published yet.",
-    fieldChanged: "Changed from the starting value",
-    fieldChangedLegend: "Red border + ! marks fields you changed on the right",
+    fieldChanged: "Different between languages",
+    fieldChangedLegend:
+      "Red border + ! marks fields that differ between left and right",
     published: "Published",
     noDraft: "No staged edit found. Start from the editor.",
     backToEditor: "← Back to editor",

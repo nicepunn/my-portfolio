@@ -26,7 +26,7 @@ export function Field({
         </span>
         {changed ? (
           <span
-            className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500/20 px-1 font-mono text-[10px] font-bold text-red-400"
+            className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 font-mono text-[11px] font-bold leading-none text-white"
             title={changedLabel}
             aria-label={changedLabel}
           >
@@ -34,32 +34,40 @@ export function Field({
           </span>
         ) : null}
       </div>
-      <div
-        className={
-          changed
-            ? "[&_input]:border-red-400/80 [&_input]:ring-1 [&_input]:ring-red-400/35 [&_textarea]:border-red-400/80 [&_textarea]:ring-1 [&_textarea]:ring-red-400/35"
-            : undefined
-        }
-      >
-        {children}
-      </div>
+      {children}
       {hint ? <span className="block text-xs text-[var(--muted)]">{hint}</span> : null}
     </div>
   );
 }
 
 const controlClass =
-  "w-full border border-[var(--border)] bg-[var(--bg)] px-3 py-2.5 text-sm text-[var(--fg)] outline-none transition-colors placeholder:text-[var(--muted)] focus:border-[var(--accent)] read-only:cursor-not-allowed read-only:border-[var(--border)] read-only:bg-[color-mix(in_oklab,var(--fg)_4%,var(--bg))] read-only:text-[var(--muted)] read-only:opacity-75";
+  "w-full border border-[var(--border)] bg-[var(--bg)] px-3 py-2.5 text-sm text-[var(--fg)] outline-none transition-[border-color,box-shadow,color,opacity] placeholder:text-[var(--muted)] focus:border-[var(--accent)] read-only:cursor-not-allowed read-only:bg-[color-mix(in_oklab,var(--fg)_4%,var(--bg))] read-only:text-[var(--muted)] read-only:opacity-75";
 
-export function TextInput(props: InputHTMLAttributes<HTMLInputElement>) {
-  return <input {...props} className={`${controlClass} ${props.className ?? ""}`} />;
+const changedControlClass =
+  "!border-red-500 !ring-2 !ring-red-500/40 focus:!border-red-500";
+
+export function TextInput({
+  changed = false,
+  className = "",
+  ...props
+}: InputHTMLAttributes<HTMLInputElement> & { changed?: boolean }) {
+  return (
+    <input
+      {...props}
+      className={`${controlClass} ${changed ? changedControlClass : ""} ${className}`}
+    />
+  );
 }
 
-export function TextArea(props: TextareaHTMLAttributes<HTMLTextAreaElement>) {
+export function TextArea({
+  changed = false,
+  className = "",
+  ...props
+}: TextareaHTMLAttributes<HTMLTextAreaElement> & { changed?: boolean }) {
   return (
     <textarea
       {...props}
-      className={`${controlClass} min-h-[88px] resize-y ${props.className ?? ""}`}
+      className={`${controlClass} min-h-[88px] resize-y ${changed ? changedControlClass : ""} ${className}`}
     />
   );
 }
