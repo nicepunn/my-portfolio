@@ -2,8 +2,10 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import type { Resume } from "@/lib/resume-schema";
+import { useTranslations } from "@/i18n/LocaleProvider";
 
 export function Hero({ data }: { data: Resume }) {
+  const t = useTranslations();
   const reduce = useReducedMotion();
   const ease = [0.22, 1, 0.36, 1] as const;
 
@@ -58,7 +60,7 @@ export function Hero({ data }: { data: Resume }) {
             href={`mailto:${data.email}`}
             className="inline-flex h-12 items-center justify-center bg-[var(--accent)] px-6 text-sm font-semibold tracking-wide text-[var(--bg)] transition-[transform,background-color] hover:bg-[var(--accent-bright)] active:scale-[0.98]"
           >
-            Email me
+            {t.hero.emailMe}
           </a>
           <a
             href={data.github.url}
@@ -66,7 +68,7 @@ export function Hero({ data }: { data: Resume }) {
             rel="noopener noreferrer"
             className="inline-flex h-12 items-center justify-center border border-[var(--border)] px-6 text-sm font-medium text-[var(--fg)] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)]"
           >
-            GitHub · {data.github.label}
+            {t.hero.github} · {data.github.label}
           </a>
         </motion.div>
       </div>

@@ -3,6 +3,8 @@ import { JetBrains_Mono, Outfit, Syne } from "next/font/google";
 import { Navbar } from "@/components/Navbar";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { ThemeScript } from "@/components/ThemeScript";
+import { LocaleProvider } from "@/i18n/LocaleProvider";
+import { LocaleScript } from "@/i18n/LocaleScript";
 import "./globals.css";
 
 const outfit = Outfit({
@@ -60,9 +62,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full flex flex-col bg-[var(--bg)] text-[var(--fg)]">
         <ThemeScript />
+        <LocaleScript />
         <ThemeProvider>
-          <Navbar />
-          {children}
+          <LocaleProvider>
+            <Navbar />
+            {children}
+          </LocaleProvider>
         </ThemeProvider>
       </body>
     </html>

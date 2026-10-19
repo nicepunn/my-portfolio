@@ -1,3 +1,5 @@
+"use client";
+
 import type { Resume } from "@/lib/resume-schema";
 import {
   parseSkillItem,
@@ -6,8 +8,11 @@ import {
 } from "@/lib/skill-emphasis";
 import { Reveal } from "@/components/Reveal";
 import { SectionHeading } from "@/components/SectionHeading";
+import { useTranslations } from "@/i18n/LocaleProvider";
 
 export function Skills({ data }: { data: Resume }) {
+  const t = useTranslations();
+
   return (
     <section
       id="skills"
@@ -15,7 +20,10 @@ export function Skills({ data }: { data: Resume }) {
     >
       <div className="mx-auto max-w-5xl">
         <Reveal>
-          <SectionHeading eyebrow="Toolkit" title="Technical skills" />
+          <SectionHeading
+            eyebrow={t.sections.skills.eyebrow}
+            title={t.sections.skills.title}
+          />
         </Reveal>
 
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3">

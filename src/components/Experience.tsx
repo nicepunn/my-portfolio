@@ -1,8 +1,13 @@
+"use client";
+
 import type { Resume } from "@/lib/resume-schema";
 import { Reveal } from "@/components/Reveal";
 import { SectionHeading } from "@/components/SectionHeading";
+import { useTranslations } from "@/i18n/LocaleProvider";
 
 export function Experience({ data }: { data: Resume }) {
+  const t = useTranslations();
+
   return (
     <section
       id="experience"
@@ -10,7 +15,10 @@ export function Experience({ data }: { data: Resume }) {
     >
       <div className="mx-auto max-w-5xl">
         <Reveal>
-          <SectionHeading eyebrow="Career" title="Work experience" />
+          <SectionHeading
+            eyebrow={t.sections.experience.eyebrow}
+            title={t.sections.experience.title}
+          />
         </Reveal>
 
         <ol className="relative space-y-12">

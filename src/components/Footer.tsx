@@ -1,7 +1,13 @@
+"use client";
+
 import Image from "next/image";
 import type { Resume } from "@/lib/resume-schema";
+import { useLocale, useTranslations } from "@/i18n/LocaleProvider";
 
 export function Footer({ data }: { data: Resume }) {
+  const t = useTranslations();
+  const { locale } = useLocale();
+
   return (
     <footer className="border-t border-[var(--border)] px-6 py-16 sm:px-10 lg:px-16">
       <div className="mx-auto flex max-w-5xl flex-col items-start gap-10 sm:flex-row sm:items-end sm:justify-between">
@@ -10,16 +16,16 @@ export function Footer({ data }: { data: Resume }) {
             {data.name}
           </p>
           <p className="mt-2 max-w-sm text-sm text-[var(--muted)]">
-            Scan the QR or share this page. Prefer paper? Grab the PDF.
+            {t.footer.blurb}
           </p>
           <div className="mt-6 flex flex-wrap gap-4 text-sm">
             <a
-              href={data.pdfPath}
+              href={`/api/resume/pdf?locale=${locale}`}
               target="_blank"
               rel="noopener noreferrer"
               className="text-[var(--accent)] underline-offset-4 hover:underline"
             >
-              View PDF
+              {t.footer.viewPdf}
             </a>
             <a
               href={`mailto:${data.email}`}
@@ -33,13 +39,13 @@ export function Footer({ data }: { data: Resume }) {
               rel="noopener noreferrer"
               className="text-[var(--muted)] underline-offset-4 hover:text-[var(--fg)] hover:underline"
             >
-              GitHub
+              {t.footer.github}
             </a>
             <a
               href="/edit"
               className="text-[var(--muted)] underline-offset-4 hover:text-[var(--fg)] hover:underline"
             >
-              Edit data
+              {t.footer.editData}
             </a>
           </div>
         </div>
@@ -47,13 +53,13 @@ export function Footer({ data }: { data: Resume }) {
         <figure className="shrink-0">
           <Image
             src="/qr/resume-qr.png"
-            alt="QR code linking to this resume website"
+            alt={t.footer.qrAlt}
             width={128}
             height={128}
             className="rounded-sm bg-white p-2"
           />
           <figcaption className="mt-2 text-center font-mono text-[10px] tracking-wider text-[var(--muted)] uppercase">
-            Scan to open
+            {t.footer.scanToOpen}
           </figcaption>
         </figure>
       </div>
