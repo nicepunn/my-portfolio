@@ -77,14 +77,14 @@
       "label": "Skills",
       "kind": "array",
       "path": "skills",
-      "addLabel": "+ Add group",
-      "itemLabel": "Group",
+      "addLabel": "+ Add skill group",
+      "itemLabel": "Skill group",
       "defaultItem": {
-        "label": "New group",
+        "label": "New skill group",
         "items": ["Skill"]
       },
       "fields": [
-        { "path": "label", "label": "Group label", "type": "text", "fullWidth": true },
+        { "path": "label", "label": "Skill group label", "type": "text", "fullWidth": true },
         {
           "path": "items",
           "label": "Items",

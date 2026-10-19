@@ -132,8 +132,8 @@ export function ResumeEditor({
           downloadJson(payload.data ?? data, locale);
         }
 
-        router.replace("/");
-        router.refresh();
+        // Full navigation so `/` re-fetches resume (soft nav keeps stale RSC cache).
+        window.location.assign("/");
       } catch (err) {
         const message = err instanceof Error ? err.message : "Save failed";
         setError(message);

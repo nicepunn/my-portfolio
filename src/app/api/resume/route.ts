@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { isLocale, resolveLocale, type Locale } from "@/i18n/config";
 import { isEditAuthenticated } from "@/lib/edit-auth";
@@ -8,6 +9,12 @@ import {
   saveResumes,
 } from "@/lib/resume-file";
 import { normalizeResume, resumeSchema, type Resume } from "@/lib/resume-schema";
+
+function revalidateResumePages() {
+  revalidatePath("/");
+  revalidatePath("/edit");
+  revalidatePath("/edit/review");
+}
 
 const persistMessages = {
   disk: "Saved to local resume JSON files",
@@ -148,6 +155,8 @@ export async function PUT(request: Request) {
           "Could not persist. Configure BLOB_READ_WRITE_TOKEN, or download JSON and redeploy.",
       });
     }
+
+    revalidateResumePages();
 
     return NextResponse.json({
       ok: true,

@@ -9,8 +9,8 @@ export function fieldValuesEqual(a: unknown, b: unknown): boolean {
 type ResumeItem = Record<string, unknown>;
 
 /**
- * Stable identity for dynamic array rows so add/remove/reorder still matches
- * the same logical entry across source original → source current → target.
+ * Stable identity within one language (for detecting add/remove/edit on source).
+ * Not used to match across locales — labels/names often differ after translation.
  */
 export function arrayItemIdentity(
   sectionPath: string,
@@ -33,7 +33,7 @@ export type AlignedArrayRow = {
   key: string;
   /** Index in the form's editable/display `data` array, or -1 if absent. */
   dataIndex: number;
-  /** Index in the "current" probe array (source current or form data). */
+  /** Index in the source/current list used for ordering. */
   currentIndex: number;
   /** Index in the original snapshot, or -1 if newly added. */
   originalIndex: number;
@@ -50,7 +50,6 @@ function indexByIdentity(
   const map = new Map<string, { item: ResumeItem; index: number }>();
   items.forEach((item, index) => {
     const key = arrayItemIdentity(sectionPath, item, index);
-    // First wins — duplicates keep earliest index.
     if (!map.has(key)) {
       map.set(key, { item, index });
     }
@@ -59,25 +58,23 @@ function indexByIdentity(
 }
 
 /**
- * Align dynamic array rows between an original snapshot and a current list,
- * optionally mapping onto a separate `data` list (e.g. target locale on the right).
+ * Same-language alignment (source original ↔ source current) by identity.
+ * Correctly detects middle-list removes without shifting false "changed" rows.
+ * Removed placeholders are spliced back at their original index.
  */
-export function alignArrayRows(
+export function alignArrayRowsSameLocale(
   sectionPath: string,
   originalItems: ResumeItem[],
   currentItems: ResumeItem[],
-  dataItems: ResumeItem[] = currentItems,
 ): AlignedArrayRow[] {
   const originalMap = indexByIdentity(sectionPath, originalItems);
-  const dataMap = indexByIdentity(sectionPath, dataItems);
-  const rows: AlignedArrayRow[] = [];
+  const currentRows: AlignedArrayRow[] = [];
   const seen = new Set<string>();
 
   currentItems.forEach((currentItem, currentIndex) => {
     const key = arrayItemIdentity(sectionPath, currentItem, currentIndex);
     seen.add(key);
     const original = originalMap.get(key);
-    const data = dataMap.get(key);
     const originalItem = original?.item ?? null;
     const status: AlignedArrayRow["status"] = !original
       ? "added"
@@ -85,33 +82,107 @@ export function alignArrayRows(
         ? "unchanged"
         : "changed";
 
-    rows.push({
+    currentRows.push({
       key,
-      dataIndex: data?.index ?? -1,
+      dataIndex: currentIndex,
       currentIndex,
       originalIndex: original?.index ?? -1,
       status,
-      dataItem: data?.item ?? null,
+      dataItem: currentItem,
       originalItem,
       currentItem,
     });
   });
 
+  const removedRows: AlignedArrayRow[] = [];
   originalItems.forEach((originalItem, originalIndex) => {
     const key = arrayItemIdentity(sectionPath, originalItem, originalIndex);
     if (seen.has(key)) return;
-    const data = dataMap.get(key);
-    rows.push({
-      key,
-      dataIndex: data?.index ?? -1,
+    removedRows.push({
+      key: `${key}:removed`,
+      dataIndex: -1,
       currentIndex: -1,
       originalIndex,
       status: "removed",
-      dataItem: data?.item ?? null,
+      dataItem: null,
       originalItem,
       currentItem: null,
     });
   });
+
+  const rows = [...currentRows];
+  for (const removed of removedRows.sort(
+    (a, b) => a.originalIndex - b.originalIndex,
+  )) {
+    rows.splice(Math.min(removed.originalIndex, rows.length), 0, removed);
+  }
+  return rows;
+}
+
+/**
+ * Target (right) pane: dirty status from same-locale source diff.
+ *
+ * Walk source rows in display order and consume target items with a cursor:
+ * - Live/added source rows take the next target item.
+ * - Removed source rows take a target item only while the target list is
+ *   longer than the remaining live rows (pending delete). After the user
+ *   removes that row on the right, the slot becomes empty (synced) and later
+ *   live rows keep the correct pairing — unlike a fixed originalIndex map.
+ */
+export function alignTargetRowsToSourceDiff(
+  sectionPath: string,
+  sourceOriginal: ResumeItem[],
+  sourceCurrent: ResumeItem[],
+  targetItems: ResumeItem[],
+): AlignedArrayRow[] {
+  const sourceRows = alignArrayRowsSameLocale(
+    sectionPath,
+    sourceOriginal,
+    sourceCurrent,
+  );
+  const rows: AlignedArrayRow[] = [];
+  let targetCursor = 0;
+  let survivorsLeft = sourceCurrent.length;
+  let targetLeft = targetItems.length;
+
+  for (const row of sourceRows) {
+    if (row.status === "removed") {
+      const extrasAvailable = targetLeft - survivorsLeft;
+      if (extrasAvailable > 0 && targetCursor < targetItems.length) {
+        const dataItem = targetItems[targetCursor]!;
+        rows.push({
+          ...row,
+          key: `${row.key}:target:${targetCursor}`,
+          dataIndex: targetCursor,
+          dataItem,
+        });
+        targetCursor += 1;
+        targetLeft -= 1;
+      } else {
+        rows.push({
+          ...row,
+          key: `${row.key}:target:synced`,
+          dataIndex: -1,
+          dataItem: null,
+        });
+      }
+      continue;
+    }
+
+    const dataItem =
+      targetCursor < targetItems.length ? targetItems[targetCursor]! : null;
+    rows.push({
+      ...row,
+      key: `${row.key}:target:${targetCursor}`,
+      dataIndex: dataItem ? targetCursor : -1,
+      dataItem,
+    });
+    if (dataItem) {
+      targetCursor += 1;
+      targetLeft -= 1;
+    }
+    survivorsLeft -= 1;
+  }
 
   return rows;
 }

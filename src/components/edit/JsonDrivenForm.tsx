@@ -13,7 +13,8 @@ import {
   type FormSection,
 } from "@/lib/edit-form";
 import {
-  alignArrayRows,
+  alignArrayRowsSameLocale,
+  alignTargetRowsToSourceDiff,
   fieldDirtyOnAlignedRow,
   fieldValuesEqual,
   type AlignedArrayRow,
@@ -259,12 +260,9 @@ function FieldsGrid({
               readOnly={readOnly}
               dirty={dirty}
               changedLabel={changedLabel}
-              lockDirty={Boolean(sourceDiff)}
-              baselineValue={
-                compareAgainst
-                  ? getAtPath(compareAgainst, absolutePath)
-                  : undefined
-              }
+              // Never live-diff while typing on /edit (no compare props).
+              lockDirty
+              baselineValue={undefined}
             />
           </div>
         );
@@ -299,35 +297,45 @@ function ArraySectionCard({
   const items = (getAtPath(data, section.path) as Record<string, unknown>[]) ?? [];
   const hasDiff = Boolean(sourceDiff || compareAgainst);
 
-  // Left pane: original = compareAgainst, current = data.
-  // Right pane (sourceDiff): original/current = source language; data = target locale.
-  const originalItems =
-    ((sourceDiff?.original ?? compareAgainst)
-      ? (getAtPath(
-          sourceDiff?.original ?? compareAgainst!,
-          section.path,
-        ) as Record<string, unknown>[])
-      : null) ?? [];
-  const currentItems =
-    ((sourceDiff?.current ?? data)
-      ? (getAtPath(sourceDiff?.current ?? data, section.path) as Record<
+  // Left pane: same-locale identity align (source original ↔ source current).
+  // Right pane: dirty from source diff; rows mapped onto target by order.
+  // Single /edit form: no diff props → never mark dirty.
+  const rows: AlignedArrayRow[] = (() => {
+    if (sourceDiff) {
+      const sourceOriginal =
+        (getAtPath(sourceDiff.original, section.path) as Record<
           string,
           unknown
-        >[])
-      : null) ?? [];
-
-  const rows: AlignedArrayRow[] = hasDiff
-    ? alignArrayRows(section.path, originalItems, currentItems, items)
-    : items.map((item, index) => ({
-        key: `${section.path}:plain:${index}`,
-        dataIndex: index,
-        currentIndex: index,
-        originalIndex: index,
-        status: "unchanged" as const,
-        dataItem: item,
-        originalItem: item,
-        currentItem: item,
-      }));
+        >[]) ?? [];
+      const sourceCurrent =
+        (getAtPath(sourceDiff.current, section.path) as Record<
+          string,
+          unknown
+        >[]) ?? [];
+      return alignTargetRowsToSourceDiff(
+        section.path,
+        sourceOriginal,
+        sourceCurrent,
+        items,
+      );
+    }
+    if (compareAgainst) {
+      const originalItems =
+        (getAtPath(compareAgainst, section.path) as Record<string, unknown>[]) ??
+        [];
+      return alignArrayRowsSameLocale(section.path, originalItems, items);
+    }
+    return items.map((item, index) => ({
+      key: `${section.path}:plain:${index}`,
+      dataIndex: index,
+      currentIndex: index,
+      originalIndex: index,
+      status: "unchanged" as const,
+      dataItem: item,
+      originalItem: null,
+      currentItem: item,
+    }));
+  })();
 
   function updateItems(nextItems: Record<string, unknown>[]) {
     onChange(setAtPath(data, section.path, nextItems));
@@ -352,7 +360,9 @@ function ArraySectionCard({
     <SectionCard id={section.id} title={section.label}>
       <div className="space-y-6">
         {rows.map((row, displayIndex) => {
-          if (row.status === "removed") {
+          // Source (left) remove: item is gone — dashed placeholder only.
+          // Target (right) remove: keep full fields from target data, whole group red.
+          if (row.status === "removed" && !row.dataItem) {
             return (
               <div
                 key={row.key}
@@ -458,12 +468,8 @@ function ArraySectionCard({
                         readOnly={readOnly}
                         dirty={dirty}
                         changedLabel={changedLabel}
-                        lockDirty={hasDiff}
-                        baselineValue={
-                          row.originalItem
-                            ? row.originalItem[field.path]
-                            : undefined
-                        }
+                        lockDirty
+                        baselineValue={undefined}
                         onChange={(next) => updateRowField(row, field.path, next)}
                       />
                     </div>
@@ -476,16 +482,18 @@ function ArraySectionCard({
 
         {readOnly ? null : (
           <div className="border-t border-[var(--border)] pt-4">
-            <GhostButton
+            <button
+              type="button"
               onClick={() =>
                 updateItems([
                   ...items,
                   structuredClone(section.defaultItem) as Record<string, unknown>,
                 ])
               }
+              className="inline-flex h-10 w-full items-center justify-center border border-[var(--border)] px-3 text-xs font-medium tracking-wide text-[var(--muted)] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)]"
             >
               {section.addLabel}
-            </GhostButton>
+            </button>
           </div>
         )}
       </div>

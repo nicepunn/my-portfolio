@@ -120,8 +120,8 @@ export function ResumeReviewEditor() {
 
         clearEditDraft();
         setStatus(payload.message ?? t.edit.published);
-        router.replace("/");
-        router.refresh();
+        // Full navigation so `/` re-fetches resume (soft nav keeps stale RSC cache).
+        window.location.assign("/");
       } catch (err) {
         setError(err instanceof Error ? err.message : "Save failed");
       }
