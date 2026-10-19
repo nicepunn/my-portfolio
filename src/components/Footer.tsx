@@ -9,8 +9,8 @@ export function Footer({ data }: { data: Resume }) {
   const { locale } = useLocale();
 
   return (
-    <footer className="border-t border-[var(--border)] px-6 py-16 sm:px-10 lg:px-16">
-      <div className="mx-auto flex max-w-5xl flex-col items-start gap-10 sm:flex-row sm:items-end sm:justify-between">
+    <footer className="px-6 pb-16 sm:px-10 lg:px-16">
+      <div className="mx-auto flex max-w-5xl flex-col items-start gap-10 border-t border-[var(--border)] pt-16 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="font-display text-2xl font-bold tracking-tight text-[var(--fg)]">
             {data.name}
