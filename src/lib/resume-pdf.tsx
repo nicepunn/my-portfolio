@@ -14,6 +14,7 @@ const accent = "#0f766e";
 const ink = "#111827";
 const muted = "#4b5563";
 const soft = "#e5e7eb";
+const font = "Sarabun";
 
 const styles = StyleSheet.create({
   page: {
@@ -21,9 +22,10 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
     paddingHorizontal: 48,
     fontSize: 10,
-    fontFamily: "Helvetica",
+    fontFamily: font,
+    fontWeight: 400,
     color: ink,
-    lineHeight: 1.4,
+    lineHeight: 1.45,
   },
   header: {
     marginBottom: 14,
@@ -36,21 +38,20 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 22,
-    fontFamily: "Helvetica-Bold",
+    fontFamily: font,
+    fontWeight: 700,
     color: ink,
-    letterSpacing: 0.2,
-    lineHeight: 1.15,
+    lineHeight: 1.2,
   },
   headlineWrap: {
     paddingBottom: 4,
   },
   headline: {
     fontSize: 10,
-    fontFamily: "Helvetica-Bold",
+    fontFamily: font,
+    fontWeight: 700,
     color: accent,
-    letterSpacing: 1,
-    textTransform: "uppercase",
-    lineHeight: 1.2,
+    lineHeight: 1.3,
   },
   accentBar: {
     height: 2.5,
@@ -84,7 +85,7 @@ const styles = StyleSheet.create({
   summary: {
     fontSize: 9.5,
     color: muted,
-    lineHeight: 1.45,
+    lineHeight: 1.5,
   },
   section: {
     marginTop: 14,
@@ -92,9 +93,8 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 10.5,
-    fontFamily: "Helvetica-Bold",
-    textTransform: "uppercase",
-    letterSpacing: 0.8,
+    fontFamily: font,
+    fontWeight: 700,
     color: ink,
     borderBottomWidth: 1,
     borderBottomColor: soft,
@@ -111,7 +111,8 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   itemTitle: {
-    fontFamily: "Helvetica-Bold",
+    fontFamily: font,
+    fontWeight: 700,
     fontSize: 10.5,
     flexGrow: 1,
     flexShrink: 1,
@@ -146,7 +147,8 @@ const styles = StyleSheet.create({
   },
   skillLabel: {
     width: 110,
-    fontFamily: "Helvetica-Bold",
+    fontFamily: font,
+    fontWeight: 700,
     fontSize: 9.5,
   },
   skillItems: {
