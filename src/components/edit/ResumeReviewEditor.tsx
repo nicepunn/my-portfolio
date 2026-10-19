@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { localeMeta, type Locale } from "@/i18n/config";
 import { useTranslations } from "@/i18n/LocaleProvider";
@@ -31,39 +31,54 @@ function downloadDrafts(drafts: Partial<Record<Locale, Resume>>) {
   }
 }
 
+/** Resolve a write-once baseline for a locale; never returns the live draft reference. */
+function freezeBaseline(locale: Locale, live: Resume): Resume {
+  ensureBaselines({ [locale]: live });
+  const stored = getBaseline(locale);
+  return structuredClone(stored ?? live);
+}
+
 export function ResumeReviewEditor() {
   const router = useRouter();
   const t = useTranslations();
   const [draft, setDraft] = useState<EditDraft | null>(null);
   const [hydrated, setHydrated] = useState(false);
-  const [targetBaseline, setTargetBaseline] = useState<Resume | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
+  /** In-memory baselines keyed by locale — never overwritten after first freeze. */
+  const baselineByLocaleRef = useRef<Partial<Record<Locale, Resume>>>({});
+  const [baselineLocale, setBaselineLocale] = useState<Locale | null>(null);
+
+  function syncBaselineFor(locale: Locale, live: Resume) {
+    if (!baselineByLocaleRef.current[locale]) {
+      baselineByLocaleRef.current[locale] = freezeBaseline(locale, live);
+    }
+    setBaselineLocale(locale);
+  }
+
   useEffect(() => {
     const loaded = readEditDraft();
     if (loaded) {
-      ensureBaselines(loaded.drafts);
+      const live = loaded.drafts[loaded.currentLocale];
+      if (live) {
+        ensureBaselines(loaded.drafts);
+        syncBaselineFor(loaded.currentLocale, live);
+      }
       setDraft(loaded);
     }
     setHydrated(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  // Freeze compare snapshot when the right-hand locale changes — never on edits.
-  useEffect(() => {
-    if (!draft) {
-      setTargetBaseline(null);
-      return;
-    }
-    ensureBaselines(draft.drafts);
-    const snap = getBaseline(draft.currentLocale);
-    setTargetBaseline(snap ? structuredClone(snap) : null);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- only re-freeze on locale switch
-  }, [draft?.currentLocale]);
 
   const sourceData = draft?.drafts[draft.sourceLocale] ?? null;
   const targetData = draft?.drafts[draft.currentLocale] ?? null;
+
+  const targetBaseline =
+    draft && baselineLocale && baselineByLocaleRef.current[draft.currentLocale]
+      ? baselineByLocaleRef.current[draft.currentLocale]!
+      : null;
 
   const queueLabels = useMemo(() => {
     if (!draft) return [];
@@ -89,6 +104,7 @@ export function ResumeReviewEditor() {
 
   function abandon() {
     clearEditDraft();
+    baselineByLocaleRef.current = {};
     setDraft(null);
     router.replace("/edit");
   }
@@ -125,6 +141,7 @@ export function ResumeReviewEditor() {
         }
 
         clearEditDraft();
+        baselineByLocaleRef.current = {};
         setStatus(payload.message ?? t.edit.published);
         router.replace("/edit");
         router.refresh();
@@ -158,6 +175,8 @@ export function ResumeReviewEditor() {
       currentLocale: nextLocale,
       queue,
     };
+    const nextLive = advanced.drafts[nextLocale];
+    if (nextLive) syncBaselineFor(nextLocale, nextLive);
     setDraft(advanced);
     writeEditDraft(advanced);
     setStatus(null);
@@ -242,6 +261,7 @@ export function ResumeReviewEditor() {
               data={targetData}
               onChange={updateTarget}
               compareAgainst={targetBaseline}
+              compareKey={draft.currentLocale}
               changedLabel={t.edit.fieldChanged}
               removedItemLabel={t.edit.itemRemoved}
               addedItemLabel={t.edit.itemAdded}

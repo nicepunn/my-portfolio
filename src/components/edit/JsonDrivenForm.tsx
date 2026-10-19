@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Resume } from "@/lib/resume-schema";
 import {
   editForm,
@@ -27,6 +27,8 @@ type JsonDrivenFormProps = {
   readOnly?: boolean;
   /** When set, fields that differ from this snapshot are marked. */
   compareAgainst?: Resume | null;
+  /** When this changes (e.g. locale), re-freeze compareAgainst. */
+  compareKey?: string;
   changedLabel?: string;
   /** Label for array rows that existed in the baseline but were removed. */
   removedItemLabel?: string;
@@ -432,11 +434,25 @@ export function JsonDrivenForm({
   onChange,
   readOnly = false,
   compareAgainst = null,
+  compareKey,
   changedLabel = "Changed",
   removedItemLabel = "Removed",
   addedItemLabel = "New",
 }: JsonDrivenFormProps) {
   const handleChange = onChange ?? (() => {});
+  const frozenRef = useRef<{ key: string; snapshot: Resume } | null>(null);
+
+  // Freeze once per compareKey so later parent re-renders cannot retarget the snapshot.
+  const key = compareKey ?? "__default__";
+  if (compareAgainst && frozenRef.current?.key !== key) {
+    frozenRef.current = {
+      key,
+      snapshot: structuredClone(compareAgainst),
+    };
+  }
+
+  const baseline =
+    frozenRef.current?.key === key ? frozenRef.current.snapshot : null;
 
   return (
     <>
@@ -446,7 +462,7 @@ export function JsonDrivenForm({
           data,
           handleChange,
           readOnly,
-          compareAgainst,
+          baseline,
           changedLabel,
           removedItemLabel,
           addedItemLabel,

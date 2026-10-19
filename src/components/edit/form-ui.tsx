@@ -60,11 +60,13 @@ export function TextInput({
   className = "",
   style,
   ...props
-}: InputHTMLAttributes<HTMLInputElement> & { changed?: boolean }) {
+}: Omit<InputHTMLAttributes<HTMLInputElement>, "changed"> & {
+  changed?: boolean;
+}) {
   return (
     <input
       {...props}
-      data-changed={changed ? "true" : undefined}
+      data-dirty={changed ? "true" : undefined}
       style={changed ? { ...style, ...changedStyle } : style}
       className={`${controlClass} ${className}`}
     />
@@ -76,11 +78,13 @@ export function TextArea({
   className = "",
   style,
   ...props
-}: TextareaHTMLAttributes<HTMLTextAreaElement> & { changed?: boolean }) {
+}: Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, "changed"> & {
+  changed?: boolean;
+}) {
   return (
     <textarea
       {...props}
-      data-changed={changed ? "true" : undefined}
+      data-dirty={changed ? "true" : undefined}
       style={changed ? { ...style, ...changedStyle } : style}
       className={`${controlClass} min-h-[88px] resize-y ${className}`}
     />
