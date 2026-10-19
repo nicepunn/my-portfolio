@@ -4,14 +4,18 @@ export type Locale = (typeof locales)[number];
 
 export const DEFAULT_LOCALE: Locale = "en";
 
-export const LOCALE_COOKIE_KEY = "resume-locale";
+/** Device-local preference key (localStorage). Mirrored to a cookie for SSR. */
+export const LOCALE_STORAGE_KEY = "resume-locale";
+
+/** @deprecated Use LOCALE_STORAGE_KEY — kept as alias for cookie + storage. */
+export const LOCALE_COOKIE_KEY = LOCALE_STORAGE_KEY;
 
 export const localeMeta: Record<
   Locale,
   { label: string; nativeLabel: string; htmlLang: string }
 > = {
   en: { label: "English", nativeLabel: "EN", htmlLang: "en" },
-  th: { label: "Thai", nativeLabel: "TH", htmlLang: "th" },
+  th: { label: "ไทย", nativeLabel: "TH", htmlLang: "th" },
 };
 
 export function isLocale(value: string | null | undefined): value is Locale {

@@ -12,7 +12,7 @@ import {
 import { useRouter } from "next/navigation";
 import {
   DEFAULT_LOCALE,
-  LOCALE_COOKIE_KEY,
+  LOCALE_STORAGE_KEY,
   localeMeta,
   resolveLocale,
   type Locale,
@@ -23,17 +23,27 @@ type LocaleContextValue = {
   locale: Locale;
   messages: Messages;
   setLocale: (locale: Locale) => void;
+  ready: boolean;
 };
 
 const LocaleContext = createContext<LocaleContextValue | null>(null);
 
+/** Persist on this device only (localStorage) and mirror cookie for SSR. */
 function persistLocale(locale: Locale) {
   document.documentElement.lang = localeMeta[locale].htmlLang;
-  document.cookie = `${LOCALE_COOKIE_KEY}=${locale};path=/;max-age=31536000;samesite=lax`;
   try {
-    localStorage.setItem(LOCALE_COOKIE_KEY, locale);
+    localStorage.setItem(LOCALE_STORAGE_KEY, locale);
   } catch {
-    // ignore
+    // Private mode / blocked storage — cookie still helps this session.
+  }
+  document.cookie = `${LOCALE_STORAGE_KEY}=${locale};path=/;max-age=31536000;samesite=lax`;
+}
+
+function readDeviceLocale(): Locale {
+  try {
+    return resolveLocale(localStorage.getItem(LOCALE_STORAGE_KEY));
+  } catch {
+    return DEFAULT_LOCALE;
   }
 }
 
@@ -46,17 +56,17 @@ export function LocaleProvider({
 }) {
   const router = useRouter();
   const [locale, setLocaleState] = useState<Locale>(initialLocale);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    const stored = resolveLocale(localStorage.getItem(LOCALE_COOKIE_KEY));
-    if (stored !== locale) {
-      setLocaleState(stored);
-      persistLocale(stored);
+    const stored = readDeviceLocale();
+    setLocaleState(stored);
+    persistLocale(stored);
+    setReady(true);
+    if (stored !== initialLocale) {
       router.refresh();
-    } else {
-      persistLocale(stored);
     }
-    // Only sync once on mount from storage.
+    // Hydrate once from this device's localStorage.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -74,8 +84,9 @@ export function LocaleProvider({
       locale,
       messages: getMessages(locale),
       setLocale,
+      ready,
     }),
-    [locale, setLocale],
+    [locale, setLocale, ready],
   );
 
   return (

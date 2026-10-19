@@ -8,6 +8,7 @@ export const th: Messages = {
     skills: "ทักษะ",
     about: "เกี่ยวกับ",
     pdf: "PDF",
+    settings: "ตั้งค่า",
   },
   hero: {
     emailMe: "ส่งอีเมล",
@@ -26,13 +27,26 @@ export const th: Messages = {
     viewPdf: "ดู PDF",
     github: "GitHub",
     editData: "แก้ไขข้อมูล",
+    settings: "ตั้งค่า",
     scanToOpen: "สแกนเพื่อเปิด",
     qrAlt: "คิวอาร์โค้ดลิงก์ไปยังเว็บเรซูเม่นี้",
+  },
+  settings: {
+    eyebrow: "การตั้งค่า",
+    title: "ตั้งค่า",
+    blurb:
+      "ภาษาถูกบันทึกเฉพาะบนอุปกรณ์นี้ เบราว์เซอร์หรือเครื่องอื่นจะมีค่าของตัวเอง",
+    backHome: "← กลับไปเรซูเม่",
+    language: {
+      title: "ภาษา",
+      description: "เลือกภาษาสำหรับเว็บไซต์นี้บนอุปกรณ์นี้",
+    },
   },
   common: {
     loadingResume: "กำลังโหลดเรซูเม่…",
   },
   a11y: {
     language: "ภาษา",
+    settings: "เปิดการตั้งค่า",
   },
 };

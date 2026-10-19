@@ -47,6 +47,12 @@ export function Footer({ data }: { data: Resume }) {
             >
               {t.footer.editData}
             </a>
+            <a
+              href="/settings"
+              className="text-[var(--muted)] underline-offset-4 hover:text-[var(--fg)] hover:underline"
+            >
+              {t.footer.settings}
+            </a>
           </div>
         </div>
 

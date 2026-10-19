@@ -6,6 +6,7 @@ export const en = {
     skills: "Skills",
     about: "About",
     pdf: "PDF",
+    settings: "Settings",
   },
   hero: {
     emailMe: "Email me",
@@ -24,14 +25,27 @@ export const en = {
     viewPdf: "View PDF",
     github: "GitHub",
     editData: "Edit data",
+    settings: "Settings",
     scanToOpen: "Scan to open",
     qrAlt: "QR code linking to this resume website",
+  },
+  settings: {
+    eyebrow: "Preferences",
+    title: "Settings",
+    blurb:
+      "Language is saved on this device only. Other browsers and devices keep their own choice.",
+    backHome: "← Back to resume",
+    language: {
+      title: "Language",
+      description: "Choose the language for this site on this device.",
+    },
   },
   common: {
     loadingResume: "Loading resume…",
   },
   a11y: {
     language: "Language",
+    settings: "Open settings",
   },
 } as const;
 
@@ -43,6 +57,7 @@ export type Messages = {
     skills: string;
     about: string;
     pdf: string;
+    settings: string;
   };
   hero: {
     emailMe: string;
@@ -61,13 +76,25 @@ export type Messages = {
     viewPdf: string;
     github: string;
     editData: string;
+    settings: string;
     scanToOpen: string;
     qrAlt: string;
+  };
+  settings: {
+    eyebrow: string;
+    title: string;
+    blurb: string;
+    backHome: string;
+    language: {
+      title: string;
+      description: string;
+    };
   };
   common: {
     loadingResume: string;
   };
   a11y: {
     language: string;
+    settings: string;
   };
 };
