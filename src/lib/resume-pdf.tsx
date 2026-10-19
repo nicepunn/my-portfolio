@@ -155,11 +155,37 @@ const styles = StyleSheet.create({
     flex: 1,
     color: "#374151",
   },
+  skillPrimary: {
+    fontFamily: font,
+    fontWeight: 700,
+    color: ink,
+  },
   link: {
     color: accent,
     textDecoration: "none",
   },
 });
+
+function SkillItems({ items }: { items: string[] }) {
+  const sorted = sortSkillsByEmphasis(items);
+  return (
+    <Text style={styles.skillItems}>
+      {sorted.map((item, index) => {
+        const skill = parseSkillItem(item);
+        return (
+          <Text key={`${skill.label}-${index}`}>
+            {index > 0 ? ", " : ""}
+            {skill.emphasis === "primary" ? (
+              <Text style={styles.skillPrimary}>{skill.label}</Text>
+            ) : (
+              skill.label
+            )}
+          </Text>
+        );
+      })}
+    </Text>
+  );
+}
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -264,11 +290,7 @@ export function ResumePdfDocument({ data }: { data: Resume }) {
           {data.skills.map((group) => (
             <View key={group.label} style={styles.skillRow} wrap={false}>
               <Text style={styles.skillLabel}>{group.label}</Text>
-              <Text style={styles.skillItems}>
-                {sortSkillsByEmphasis(group.items)
-                  .map((item) => parseSkillItem(item).label)
-                  .join(", ")}
-              </Text>
+              <SkillItems items={group.items} />
             </View>
           ))}
         </Section>
