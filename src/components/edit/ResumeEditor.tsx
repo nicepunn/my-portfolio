@@ -130,6 +130,32 @@ export function ResumeEditor({
             {pending ? "Saving…" : canPersist ? "Save to disk" : "Validate & download"}
           </button>
           <GhostButton onClick={() => downloadJson(data)}>Download JSON</GhostButton>
+          <GhostButton
+            onClick={() => {
+              startTransition(async () => {
+                try {
+                  const response = await fetch("/api/resume/pdf", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(data),
+                  });
+                  if (!response.ok) {
+                    const payload = (await response.json()) as { error?: string };
+                    setError(payload.error ?? "PDF generation failed");
+                    return;
+                  }
+                  const blob = await response.blob();
+                  const url = URL.createObjectURL(blob);
+                  window.open(url, "_blank", "noopener,noreferrer");
+                  setTimeout(() => URL.revokeObjectURL(url), 60_000);
+                } catch (err) {
+                  setError(err instanceof Error ? err.message : "PDF generation failed");
+                }
+              });
+            }}
+          >
+            Preview PDF
+          </GhostButton>
           {status ? (
             <p className="text-sm text-[var(--accent)]">{status}</p>
           ) : null}

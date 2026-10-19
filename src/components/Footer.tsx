@@ -15,10 +15,11 @@ export function Footer() {
           <div className="mt-6 flex flex-wrap gap-4 text-sm">
             <a
               href={resume.pdfPath}
+              target="_blank"
+              rel="noopener noreferrer"
               className="text-[var(--accent)] underline-offset-4 hover:underline"
-              download
             >
-              Download PDF
+              View PDF
             </a>
             <a
               href={`mailto:${resume.email}`}
