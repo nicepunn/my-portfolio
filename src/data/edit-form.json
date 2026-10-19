@@ -89,7 +89,7 @@
           "path": "items",
           "label": "Items",
           "type": "lines",
-          "hint": "One skill per line",
+          "hint": "One skill per line. Use [***Skill***] for strongest, [*Skill*] for medium, plain text for softest.",
           "fullWidth": true
         }
       ]
