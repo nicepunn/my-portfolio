@@ -9,65 +9,68 @@ export function Footer({ data }: { data: Resume }) {
   const { locale } = useLocale();
 
   return (
-    <footer className="px-6 pb-16 sm:px-10 lg:px-16">
-      <div className="mx-auto flex max-w-5xl flex-col items-start gap-10 border-t border-[var(--border)] pt-16 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="font-display text-2xl font-bold tracking-tight text-[var(--fg)]">
-            {data.name}
-          </p>
-          <p className="mt-2 max-w-sm text-sm text-[var(--muted)]">
-            {t.footer.blurb}
-          </p>
-          <div className="mt-6 flex flex-wrap gap-4 text-sm">
-            <a
-              href={`/api/resume/pdf?locale=${locale}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[var(--accent)] underline-offset-4 hover:underline"
-            >
-              {t.footer.viewPdf}
-            </a>
-            <a
-              href={`mailto:${data.email}`}
-              className="text-[var(--muted)] underline-offset-4 hover:text-[var(--fg)] hover:underline"
-            >
-              {data.email}
-            </a>
-            <a
-              href={data.github.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[var(--muted)] underline-offset-4 hover:text-[var(--fg)] hover:underline"
-            >
-              {t.footer.github}
-            </a>
-            <a
-              href="/edit"
-              className="text-[var(--muted)] underline-offset-4 hover:text-[var(--fg)] hover:underline"
-            >
-              {t.footer.editData}
-            </a>
-            <a
-              href="/settings"
-              className="text-[var(--muted)] underline-offset-4 hover:text-[var(--fg)] hover:underline"
-            >
-              {t.footer.settings}
-            </a>
+    <footer className="px-6 py-16 sm:px-10 lg:px-16">
+      <div className="mx-auto max-w-5xl">
+        <div className="section-rule mb-10" aria-hidden />
+        <div className="flex flex-col items-start gap-10 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="font-display text-2xl font-bold tracking-tight text-[var(--fg)]">
+              {data.name}
+            </p>
+            <p className="mt-2 max-w-sm text-sm text-[var(--muted)]">
+              {t.footer.blurb}
+            </p>
+            <div className="mt-6 flex flex-wrap gap-4 text-sm">
+              <a
+                href={`/api/resume/pdf?locale=${locale}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[var(--accent)] underline-offset-4 hover:underline"
+              >
+                {t.footer.viewPdf}
+              </a>
+              <a
+                href={`mailto:${data.email}`}
+                className="text-[var(--muted)] underline-offset-4 hover:text-[var(--fg)] hover:underline"
+              >
+                {data.email}
+              </a>
+              <a
+                href={data.github.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[var(--muted)] underline-offset-4 hover:text-[var(--fg)] hover:underline"
+              >
+                {t.footer.github}
+              </a>
+              <a
+                href="/edit"
+                className="text-[var(--muted)] underline-offset-4 hover:text-[var(--fg)] hover:underline"
+              >
+                {t.footer.editData}
+              </a>
+              <a
+                href="/settings"
+                className="text-[var(--muted)] underline-offset-4 hover:text-[var(--fg)] hover:underline"
+              >
+                {t.footer.settings}
+              </a>
+            </div>
           </div>
-        </div>
 
-        <figure className="shrink-0">
-          <Image
-            src="/qr/resume-qr.png"
-            alt={t.footer.qrAlt}
-            width={128}
-            height={128}
-            className="rounded-sm bg-white p-2"
-          />
-          <figcaption className="mt-2 text-center text-[10px] tracking-wide text-[var(--muted)] uppercase">
-            {t.footer.scanToOpen}
-          </figcaption>
-        </figure>
+          <figure className="shrink-0">
+            <Image
+              src="/qr/resume-qr.png"
+              alt={t.footer.qrAlt}
+              width={128}
+              height={128}
+              className="rounded-sm bg-white p-2"
+            />
+            <figcaption className="mt-2 text-center text-[10px] tracking-wide text-[var(--muted)] uppercase">
+              {t.footer.scanToOpen}
+            </figcaption>
+          </figure>
+        </div>
       </div>
     </footer>
   );

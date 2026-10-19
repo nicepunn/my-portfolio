@@ -11,9 +11,10 @@ export function Projects({ data }: { data: Resume }) {
   return (
     <section
       id="projects"
-      className="scroll-mt-20 px-6 pb-20 sm:px-10 sm:pb-28 lg:px-16"
+      className="scroll-mt-20 px-6 py-20 sm:px-10 sm:py-28 lg:px-16"
     >
-      <div className="mx-auto max-w-5xl border-t border-[var(--border)] pt-20 sm:pt-28">
+      <div className="mx-auto max-w-5xl">
+        <div className="section-rule mb-10" aria-hidden />
         <Reveal>
           <SectionHeading
             eyebrow={t.sections.projects.eyebrow}
@@ -21,7 +22,7 @@ export function Projects({ data }: { data: Resume }) {
           />
         </Reveal>
 
-        <ul className="divide-y divide-[var(--border)] border-y border-[var(--border)]">
+        <ul className="divide-y divide-[var(--border)]">
           {data.projects.map((project, index) => (
             <Reveal key={project.name} delay={index * 0.06}>
               <li className="group py-8 sm:py-10">

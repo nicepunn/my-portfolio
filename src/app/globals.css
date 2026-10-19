@@ -159,6 +159,14 @@ html[lang="th"] .tracking-widest {
   animation: scroll-pulse 1.8s ease-in-out infinite;
 }
 
+/* Major section break — short rule, distinct from full-width item dividers */
+.section-rule {
+  width: 3rem;
+  height: 2px;
+  background: color-mix(in oklab, var(--accent) 70%, var(--fg));
+  border-radius: 1px;
+}
+
 ::selection {
   background: color-mix(in oklab, var(--accent) 35%, transparent);
   color: var(--fg);

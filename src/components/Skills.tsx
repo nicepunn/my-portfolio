@@ -16,9 +16,10 @@ export function Skills({ data }: { data: Resume }) {
   return (
     <section
       id="skills"
-      className="scroll-mt-20 px-6 pb-20 sm:px-10 sm:pb-28 lg:px-16"
+      className="scroll-mt-20 px-6 py-20 sm:px-10 sm:py-28 lg:px-16"
     >
-      <div className="mx-auto max-w-5xl border-t border-[var(--border)] pt-20 sm:pt-28">
+      <div className="mx-auto max-w-5xl">
+        <div className="section-rule mb-10" aria-hidden />
         <Reveal>
           <SectionHeading
             eyebrow={t.sections.skills.eyebrow}

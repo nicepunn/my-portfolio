@@ -70,15 +70,6 @@ export function Hero({ data }: { data: Resume }) {
         </motion.div>
       </div>
 
-      <motion.div
-        className="absolute bottom-8 left-1/2 hidden -translate-x-1/2 sm:block"
-        aria-hidden
-        initial={reduce ? false : { opacity: 0 }}
-        animate={reduce ? undefined : { opacity: 1 }}
-        transition={{ delay: 1, duration: 0.6 }}
-      >
-        <span className="scroll-hint block h-8 w-px bg-[var(--border)]" />
-      </motion.div>
     </header>
   );
 }
