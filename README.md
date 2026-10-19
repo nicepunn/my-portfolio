@@ -1,36 +1,68 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Punnawat Lohanuit — Resume Web
 
-## Getting Started
+Single-page resume site generated from `public/punnawat-resume.pdf`, with a QR code that opens the live URL.
 
-First, run the development server:
+## Stack
+
+- Next.js (App Router) + TypeScript
+- Tailwind CSS v4
+- Framer Motion
+- Zod (resume schema)
+- Vercel hosting
+- `qrcode` (build-time script)
+
+## Content model
+
+| File | Role |
+|------|------|
+| `src/data/resume.json` | Resume values shown on the public page |
+| `src/data/edit-form.json` | **JSON-driven form schema** for `/edit` (sections, fields, add defaults) |
+| `src/lib/resume-schema.ts` | Zod validation |
+| `src/components/edit/JsonDrivenForm.tsx` | Renders the form from `edit-form.json` |
+
+To change form layout (labels, field order, new sections), edit **`edit-form.json`** — no React field markup required.
+
+## Develop
 
 ```bash
+npm install
+npm run generate:qr   # optional; uses SITE_URL / NEXT_PUBLIC_SITE_URL
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000/edit — enter password **`punpun`** (override with `RESUME_EDIT_PASSWORD`). **Save to disk** writes `src/data/resume.json` locally.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Production edits
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+`/edit` is password-gated. After unlocking:
 
-## Learn More
+1. Edit fields
+2. Click **Validate & download** (Vercel filesystem is read-only) or **Save to disk** locally
+3. Replace `src/data/resume.json` in the repo if you downloaded it
+4. Redeploy
 
-To learn more about Next.js, take a look at the following resources:
+Set `RESUME_EDIT_PASSWORD` in Vercel env if you want a different password than the default.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Generate QR
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+After you have a production URL:
 
-## Deploy on Vercel
+```bash
+SITE_URL=https://your-deployment.vercel.app npm run generate:qr
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Writes `public/qr/resume-qr.png`. Commit and redeploy so the footer QR matches production.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Live
+
+- Site: https://my-portfolio-two-tau-13.vercel.app
+- Edit: https://my-portfolio-two-tau-13.vercel.app/edit
+- QR: `public/qr/resume-qr.png` (points at the site URL above)
+
+## Deploy
+
+```bash
+npx vercel --prod
+```
+
+`NEXT_PUBLIC_SITE_URL` is set on the Vercel project for Open Graph `metadataBase`.

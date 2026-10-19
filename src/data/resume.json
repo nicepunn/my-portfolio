@@ -1,0 +1,143 @@
+{
+  "name": "Punnawat Lohanuit",
+  "headline": "Full-stack developer",
+  "summary": "I turn complex requirements into high-performance solutions, with a strong drive to learn new technologies quickly and deliver effective applications.",
+  "location": "Bangkok, Thailand",
+  "email": "punnawat58000@gmail.com",
+  "github": {
+    "label": "nicepunn",
+    "url": "https://github.com/nicepunn"
+  },
+  "pdfPath": "/punnawat-resume.pdf",
+  "experience": [
+    {
+      "company": "MyCourseville Co., Ltd",
+      "role": "Full-stack developer",
+      "period": "July 2025 – Present",
+      "bullets": [
+        "Built and shipped features for the learning platform (enrollment, assignments, grading, notifications).",
+        "Implemented responsive UI components and form flows, meeting accessibility best practices."
+      ]
+    },
+    {
+      "company": "Lodash (Thailand) Co., Ltd",
+      "role": "Full-stack developer",
+      "period": "April 2024 – Feb 2025",
+      "bullets": [
+        "Designed, developed, and managed projects from scratch with Next.js on the frontend and Node.js with Strapi on the backend.",
+        "Delivered scalable, maintainable solutions by integrating libraries and tools as project needs evolved.",
+        "Adapted quickly to emerging technologies and frameworks to meet dynamic requirements."
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "name": "Heathub",
+      "stack": "Next.js · Node.js · MongoDB · Redis · Docker",
+      "description": [
+        "Translated system architecture and requirements into a production-ready platform connecting pet owners with verified pet sitters.",
+        "Full-stack boarding marketplace delivered end to end."
+      ],
+      "url": "https://heathub.vercel.app"
+    },
+    {
+      "name": "Serper",
+      "stack": "Solo · JSON-driven UI · Next.js · TypeScript · Tailwind CSS",
+      "description": [
+        "Built a functional clone of serper.dev, simulating search and result interfaces."
+      ],
+      "url": "https://spotlight-ts-serper.vercel.app/serperMock/auth/playground"
+    },
+    {
+      "name": "Hiwhiw",
+      "stack": "Next.js · Golang · Microservices · RabbitMQ · gRPC",
+      "description": [
+        "Smart recipe management: fridge inventory, menu search/filter, and custom menus.",
+        "Microservices architecture for scalability and maintainability."
+      ]
+    },
+    {
+      "name": "CapyKnow",
+      "stack": "LLM · RAG · Late chunking · UX/UI · SDLC",
+      "description": [
+        "Capstone: integrated an LLM into myCourseVille, Chulalongkorn University’s learning platform.",
+        "Managed the end-to-end software development lifecycle."
+      ]
+    }
+  ],
+  "skills": [
+    {
+      "label": "Languages",
+      "items": [
+        "TypeScript",
+        "Python",
+        "Golang",
+        "JavaScript",
+        "Java",
+        "C++",
+        "PHP",
+        "Scala"
+      ]
+    },
+    {
+      "label": "Front-End",
+      "items": [
+        "React",
+        "Next.js",
+        "Tailwind CSS",
+        "Svelte"
+      ]
+    },
+    {
+      "label": "Back-End",
+      "items": [
+        "Node.js",
+        "Nest.js",
+        "Laravel",
+        "SQL",
+        "NoSQL",
+        "gRPC"
+      ]
+    },
+    {
+      "label": "Infra & Practice",
+      "items": [
+        "GitHub",
+        "Docker",
+        "Kubernetes",
+        "Terraform",
+        "AWS",
+        "Software Architecture",
+        "Microservices"
+      ]
+    },
+    {
+      "label": "Tools & Messaging",
+      "items": [
+        "Redis",
+        "RabbitMQ",
+        "Strapi",
+        "Postman",
+        "Figma",
+        "DBDiagram"
+      ]
+    }
+  ],
+  "education": {
+    "degree": "B.Eng. Computer Engineering",
+    "school": "Chulalongkorn University, TH",
+    "period": "Aug 2021 – May 2025",
+    "gpax": "3.39"
+  },
+  "activities": [
+    "FE Camp — Activity staff head",
+    "Vishnu20th Camp — Public Relations for a group",
+    "Core team in IMC (Intania Music Club)",
+    "CUNEX hackathon: Boost up Chula, Sustainable Lifestyle"
+  ],
+  "interests": [
+    "Music",
+    "Japanese language (JLPT N3)",
+    "Anime"
+  ]
+}

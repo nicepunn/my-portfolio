@@ -1,0 +1,130 @@
+{
+  "sections": [
+    {
+      "id": "edit-profile",
+      "label": "Profile",
+      "kind": "fields",
+      "fields": [
+        { "path": "name", "label": "Name", "type": "text" },
+        { "path": "headline", "label": "Headline", "type": "text" },
+        { "path": "location", "label": "Location", "type": "text" },
+        { "path": "email", "label": "Email", "type": "email" },
+        { "path": "github.label", "label": "GitHub label", "type": "text" },
+        { "path": "github.url", "label": "GitHub URL", "type": "url" },
+        { "path": "pdfPath", "label": "PDF path", "type": "text" },
+        {
+          "path": "summary",
+          "label": "Summary",
+          "type": "textarea",
+          "fullWidth": true
+        }
+      ]
+    },
+    {
+      "id": "edit-experience",
+      "label": "Experience",
+      "kind": "array",
+      "path": "experience",
+      "addLabel": "+ Add job",
+      "itemLabel": "Job",
+      "defaultItem": {
+        "company": "New company",
+        "role": "Role",
+        "period": "Month Year – Present",
+        "bullets": ["Describe impact"]
+      },
+      "fields": [
+        { "path": "company", "label": "Company", "type": "text" },
+        { "path": "role", "label": "Role", "type": "text" },
+        { "path": "period", "label": "Period", "type": "text" },
+        {
+          "path": "bullets",
+          "label": "Bullets",
+          "type": "lines",
+          "hint": "One bullet per line",
+          "fullWidth": true
+        }
+      ]
+    },
+    {
+      "id": "edit-projects",
+      "label": "Projects",
+      "kind": "array",
+      "path": "projects",
+      "addLabel": "+ Add project",
+      "itemLabel": "Project",
+      "defaultItem": {
+        "name": "New project",
+        "stack": "Stack · Tags",
+        "description": ["What you built"],
+        "url": ""
+      },
+      "fields": [
+        { "path": "name", "label": "Name", "type": "text" },
+        { "path": "url", "label": "URL (optional)", "type": "url" },
+        { "path": "stack", "label": "Stack", "type": "text", "fullWidth": true },
+        {
+          "path": "description",
+          "label": "Description",
+          "type": "lines",
+          "hint": "One point per line",
+          "fullWidth": true
+        }
+      ]
+    },
+    {
+      "id": "edit-skills",
+      "label": "Skills",
+      "kind": "array",
+      "path": "skills",
+      "addLabel": "+ Add group",
+      "itemLabel": "Group",
+      "defaultItem": {
+        "label": "New group",
+        "items": ["Skill"]
+      },
+      "fields": [
+        { "path": "label", "label": "Group label", "type": "text", "fullWidth": true },
+        {
+          "path": "items",
+          "label": "Items",
+          "type": "lines",
+          "hint": "One skill per line",
+          "fullWidth": true
+        }
+      ]
+    },
+    {
+      "id": "edit-education",
+      "label": "Education",
+      "kind": "fields",
+      "fields": [
+        { "path": "education.degree", "label": "Degree", "type": "text" },
+        { "path": "education.school", "label": "School", "type": "text" },
+        { "path": "education.period", "label": "Period", "type": "text" },
+        { "path": "education.gpax", "label": "GPAX", "type": "text" }
+      ]
+    },
+    {
+      "id": "edit-extras",
+      "label": "Extras",
+      "kind": "fields",
+      "fields": [
+        {
+          "path": "activities",
+          "label": "Activities",
+          "type": "lines",
+          "hint": "One per line",
+          "fullWidth": true
+        },
+        {
+          "path": "interests",
+          "label": "Interests",
+          "type": "lines",
+          "hint": "One per line",
+          "fullWidth": true
+        }
+      ]
+    }
+  ]
+}
