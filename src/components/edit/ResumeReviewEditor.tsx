@@ -6,6 +6,8 @@ import { localeMeta, type Locale } from "@/i18n/config";
 import { useTranslations } from "@/i18n/LocaleProvider";
 import {
   clearEditDraft,
+  ensureBaselines,
+  getBaseline,
   readEditDraft,
   writeEditDraft,
   type EditDraft,
@@ -34,20 +36,34 @@ export function ResumeReviewEditor() {
   const t = useTranslations();
   const [draft, setDraft] = useState<EditDraft | null>(null);
   const [hydrated, setHydrated] = useState(false);
+  const [targetBaseline, setTargetBaseline] = useState<Resume | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+
   useEffect(() => {
     const loaded = readEditDraft();
-    // Persist migrated baselines so later edits keep a stable compare snapshot.
-    if (loaded) writeEditDraft(loaded);
-    setDraft(loaded);
+    if (loaded) {
+      ensureBaselines(loaded.drafts);
+      setDraft(loaded);
+    }
     setHydrated(true);
   }, []);
 
+  // Freeze compare snapshot when the right-hand locale changes — never on edits.
+  useEffect(() => {
+    if (!draft) {
+      setTargetBaseline(null);
+      return;
+    }
+    ensureBaselines(draft.drafts);
+    const snap = getBaseline(draft.currentLocale);
+    setTargetBaseline(snap ? structuredClone(snap) : null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only re-freeze on locale switch
+  }, [draft?.currentLocale]);
+
   const sourceData = draft?.drafts[draft.sourceLocale] ?? null;
   const targetData = draft?.drafts[draft.currentLocale] ?? null;
-  const targetBaseline = draft?.baselines[draft.currentLocale] ?? null;
 
   const queueLabels = useMemo(() => {
     if (!draft) return [];
@@ -59,7 +75,9 @@ export function ResumeReviewEditor() {
   function updateTarget(next: Resume) {
     if (!draft) return;
     const updated: EditDraft = {
-      ...draft,
+      sourceLocale: draft.sourceLocale,
+      queue: draft.queue,
+      currentLocale: draft.currentLocale,
       drafts: {
         ...draft.drafts,
         [draft.currentLocale]: next,
@@ -120,7 +138,9 @@ export function ResumeReviewEditor() {
     if (!draft || !targetData) return;
 
     const withCurrent: EditDraft = {
-      ...draft,
+      sourceLocale: draft.sourceLocale,
+      queue: draft.queue,
+      currentLocale: draft.currentLocale,
       drafts: {
         ...draft.drafts,
         [draft.currentLocale]: targetData,
@@ -185,7 +205,7 @@ export function ResumeReviewEditor() {
             {t.edit.reviewQueue}: {queueLabels.join(" → ")}
           </p>
         ) : null}
-        <p className="flex items-center gap-2 text-xs text-red-400">
+        <p className="flex items-center gap-2 text-xs text-red-500">
           <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
             !
           </span>

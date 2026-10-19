@@ -7,8 +7,8 @@ import { useTranslations } from "@/i18n/LocaleProvider";
 import {
   clearEditDraft,
   otherLocales,
+  replaceBaselines,
   resumesEqual,
-  snapshotBaselines,
   writeEditDraft,
 } from "@/lib/edit-draft";
 import type { Resume } from "@/lib/resume-schema";
@@ -159,10 +159,10 @@ export function ResumeEditor({
         );
 
         const [currentLocale, ...queue] = selected;
+        replaceBaselines(drafts);
         writeEditDraft({
           sourceLocale: locale,
           drafts,
-          baselines: snapshotBaselines(drafts),
           queue,
           currentLocale,
         });

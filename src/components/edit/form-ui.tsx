@@ -15,11 +15,18 @@ export function Field({
 }) {
   // Use a div (not <label>) so Enter in textareas is not treated as label activation.
   return (
-    <div className="block space-y-1.5">
+    <div
+      className="block space-y-1.5"
+      style={
+        changed
+          ? { borderLeft: "3px solid #ef4444", paddingLeft: "0.75rem" }
+          : undefined
+      }
+    >
       <div className="flex items-center gap-2">
         <span
           className={`font-mono text-[11px] tracking-[0.18em] uppercase ${
-            changed ? "text-red-400" : "text-[var(--muted)]"
+            changed ? "text-red-500" : "text-[var(--muted)]"
           }`}
         >
           {label}
@@ -43,18 +50,23 @@ export function Field({
 const controlClass =
   "w-full border border-[var(--border)] bg-[var(--bg)] px-3 py-2.5 text-sm text-[var(--fg)] outline-none transition-[border-color,box-shadow,color,opacity] placeholder:text-[var(--muted)] focus:border-[var(--accent)] read-only:cursor-not-allowed read-only:bg-[color-mix(in_oklab,var(--fg)_4%,var(--bg))] read-only:text-[var(--muted)] read-only:opacity-75";
 
-const changedControlClass =
-  "!border-red-500 !ring-2 !ring-red-500/40 focus:!border-red-500";
+const changedStyle = {
+  borderColor: "#ef4444",
+  boxShadow: "0 0 0 2px rgba(239, 68, 68, 0.35)",
+} as const;
 
 export function TextInput({
   changed = false,
   className = "",
+  style,
   ...props
 }: InputHTMLAttributes<HTMLInputElement> & { changed?: boolean }) {
   return (
     <input
       {...props}
-      className={`${controlClass} ${changed ? changedControlClass : ""} ${className}`}
+      data-changed={changed ? "true" : undefined}
+      style={changed ? { ...style, ...changedStyle } : style}
+      className={`${controlClass} ${className}`}
     />
   );
 }
@@ -62,12 +74,15 @@ export function TextInput({
 export function TextArea({
   changed = false,
   className = "",
+  style,
   ...props
 }: TextareaHTMLAttributes<HTMLTextAreaElement> & { changed?: boolean }) {
   return (
     <textarea
       {...props}
-      className={`${controlClass} min-h-[88px] resize-y ${changed ? changedControlClass : ""} ${className}`}
+      data-changed={changed ? "true" : undefined}
+      style={changed ? { ...style, ...changedStyle } : style}
+      className={`${controlClass} min-h-[88px] resize-y ${className}`}
     />
   );
 }

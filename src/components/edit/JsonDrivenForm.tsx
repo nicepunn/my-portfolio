@@ -34,55 +34,6 @@ type JsonDrivenFormProps = {
   addedItemLabel?: string;
 };
 
-function LinesTextArea({
-  value,
-  onChange,
-  readOnly,
-  changed,
-}: {
-  value: unknown;
-  onChange: (value: unknown) => void;
-  readOnly?: boolean;
-  changed?: boolean;
-}) {
-  const committed = listToLines(value);
-  const [text, setText] = useState(committed);
-  const [focused, setFocused] = useState(false);
-
-  useEffect(() => {
-    if (!focused) {
-      setText(listToLines(value));
-    }
-  }, [value, focused]);
-
-  return (
-    <TextArea
-      value={focused ? text : committed}
-      readOnly={readOnly}
-      changed={changed}
-      onFocus={() => {
-        if (readOnly) return;
-        setFocused(true);
-        setText(listToLines(value));
-      }}
-      onChange={(event) => {
-        if (readOnly) return;
-        setText(event.target.value);
-      }}
-      onBlur={() => {
-        if (readOnly) return;
-        setFocused(false);
-        onChange(linesToList(text));
-      }}
-      onKeyDown={(event) => {
-        if (event.key === "Enter") {
-          event.stopPropagation();
-        }
-      }}
-    />
-  );
-}
-
 function FieldControl({
   field,
   value,
@@ -90,6 +41,7 @@ function FieldControl({
   readOnly,
   changed,
   changedLabel,
+  baselineValue,
 }: {
   field: FormFieldConfig;
   value: unknown;
@@ -97,6 +49,7 @@ function FieldControl({
   readOnly?: boolean;
   changed?: boolean;
   changedLabel?: string;
+  baselineValue?: unknown;
 }) {
   if (field.type === "textarea") {
     return (
@@ -123,19 +76,15 @@ function FieldControl({
 
   if (field.type === "lines") {
     return (
-      <Field
-        label={field.label}
-        hint={field.hint}
+      <LinesField
+        field={field}
+        value={value}
+        onChange={onChange}
+        readOnly={readOnly}
         changed={changed}
         changedLabel={changedLabel}
-      >
-        <LinesTextArea
-          value={value}
-          onChange={onChange}
-          readOnly={readOnly}
-          changed={changed}
-        />
-      </Field>
+        baselineValue={baselineValue}
+      />
     );
   }
 
@@ -155,6 +104,69 @@ function FieldControl({
         onChange={(event) => onChange(event.target.value)}
         readOnly={readOnly}
         changed={changed}
+      />
+    </Field>
+  );
+}
+
+function LinesField({
+  field,
+  value,
+  onChange,
+  readOnly,
+  changed,
+  changedLabel,
+  baselineValue,
+}: {
+  field: FormFieldConfig;
+  value: unknown;
+  onChange: (value: unknown) => void;
+  readOnly?: boolean;
+  changed?: boolean;
+  changedLabel?: string;
+  baselineValue?: unknown;
+}) {
+  const committed = listToLines(value);
+  const [text, setText] = useState(committed);
+  const [focused, setFocused] = useState(false);
+
+  useEffect(() => {
+    if (!focused) setText(listToLines(value));
+  }, [value, focused]);
+
+  const liveChanged =
+    baselineValue !== undefined
+      ? !fieldValuesEqual(baselineValue, focused ? linesToList(text) : value)
+      : Boolean(changed);
+
+  return (
+    <Field
+      label={field.label}
+      hint={field.hint}
+      changed={liveChanged}
+      changedLabel={changedLabel}
+    >
+      <TextArea
+        value={focused ? text : committed}
+        readOnly={readOnly}
+        changed={liveChanged}
+        onFocus={() => {
+          if (readOnly) return;
+          setFocused(true);
+          setText(listToLines(value));
+        }}
+        onChange={(event) => {
+          if (readOnly) return;
+          setText(event.target.value);
+        }}
+        onBlur={() => {
+          if (readOnly) return;
+          setFocused(false);
+          onChange(linesToList(text));
+        }}
+        onKeyDown={(event) => {
+          if (event.key === "Enter") event.stopPropagation();
+        }}
       />
     </Field>
   );
@@ -205,6 +217,11 @@ function FieldsGrid({
               readOnly={readOnly}
               changed={isChanged(compareAgainst, absolutePath, value)}
               changedLabel={changedLabel}
+              baselineValue={
+                compareAgainst
+                  ? getAtPath(compareAgainst, absolutePath)
+                  : undefined
+              }
             />
           </div>
         );
@@ -300,6 +317,11 @@ function ArraySectionCard({
                         readOnly={readOnly}
                         changed={isChanged(compareAgainst, absolutePath, value)}
                         changedLabel={changedLabel}
+                        baselineValue={
+                          compareAgainst
+                            ? getAtPath(compareAgainst, absolutePath)
+                            : undefined
+                        }
                         onChange={(next) => {
                           if (readOnly) return;
                           const nextItems = items.map((current, itemIndex) =>
