@@ -3,12 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { useLocale, useTranslations } from "@/i18n/LocaleProvider";
 
-const homeSectionLinks = [
-  { id: "experience", label: "Experience" },
-  { id: "projects", label: "Projects" },
-  { id: "skills", label: "Skills" },
-  { id: "about", label: "About" },
+const homeSectionIds = [
+  "experience",
+  "projects",
+  "skills",
+  "about",
 ] as const;
 
 function smoothScrollTo(id: string) {
@@ -21,13 +22,27 @@ function smoothScrollTo(id: string) {
 export function Navbar() {
   const pathname = usePathname();
   const isHome = pathname === "/";
+  const t = useTranslations();
+  const { locale } = useLocale();
+
+  const homeSectionLinks = [
+    { id: "experience" as const, label: t.nav.experience },
+    { id: "projects" as const, label: t.nav.projects },
+    { id: "skills" as const, label: t.nav.skills },
+    { id: "about" as const, label: t.nav.about },
+  ].filter((link) => homeSectionIds.includes(link.id));
+
+  const brandClass =
+    locale === "th"
+      ? "font-display shrink-0 text-sm font-semibold text-[var(--muted)] transition-colors hover:text-[var(--fg)]"
+      : "font-display shrink-0 text-sm font-semibold tracking-[0.2em] text-[var(--muted)] uppercase transition-colors hover:text-[var(--fg)]";
 
   return (
     <nav className="sticky top-0 z-50 border-b border-[var(--border)] bg-[color-mix(in_oklab,var(--bg)_88%,transparent)] backdrop-blur-md">
       <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-4 px-6 sm:h-16 sm:px-10 lg:px-0">
         <Link
           href="/"
-          className="font-display shrink-0 text-sm font-semibold tracking-[0.2em] text-[var(--muted)] uppercase transition-colors hover:text-[var(--fg)]"
+          className={brandClass}
           onClick={(event) => {
             if (!isHome) return;
             event.preventDefault();
@@ -35,10 +50,10 @@ export function Navbar() {
             history.replaceState(null, "", "/");
           }}
         >
-          Resume
+          {t.nav.brand}
         </Link>
 
-        <div className="flex min-w-0 items-center gap-4 sm:gap-6">
+        <div className="flex min-w-0 items-center gap-3 sm:gap-5">
           {isHome ? (
             <div className="hidden items-center gap-5 md:flex">
               {homeSectionLinks.map((link) => (
@@ -58,12 +73,12 @@ export function Navbar() {
           ) : null}
 
           <a
-            href="/api/resume/pdf"
+            href={`/api/resume/pdf?locale=${locale}`}
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm text-[var(--muted)] transition-colors hover:text-[var(--accent)]"
           >
-            PDF
+            {t.nav.pdf}
           </a>
 
           <ThemeToggle />

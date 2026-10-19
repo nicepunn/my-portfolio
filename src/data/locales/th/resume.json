@@ -1,0 +1,143 @@
+{
+  "name": "Punnawat Lohanuit",
+  "headline": "นักพัฒนา Full-stack",
+  "summary": "เปลี่ยนความต้องการที่ซับซ้อนให้เป็นโซลูชันประสิทธิภาพสูง พร้อมเรียนรู้เทคโนโลยีใหม่ได้อย่างรวดเร็ว และส่งมอบแอปพลิเคชันที่ใช้งานได้จริง",
+  "location": "กรุงเทพฯ ประเทศไทย",
+  "email": "punnawat58000@gmail.com",
+  "github": {
+    "label": "nicepunn",
+    "url": "https://github.com/nicepunn"
+  },
+  "pdfPath": "/api/resume/pdf?locale=th",
+  "experience": [
+    {
+      "company": "MyCourseville Co., Ltd",
+      "role": "นักพัฒนา Full-stack",
+      "period": "กรกฎาคม 2025 – ปัจจุบัน",
+      "bullets": [
+        "พัฒนาและปล่อยฟีเจอร์สำหรับแพลตฟอร์มการเรียน เช่น การลงทะเบียน งานมอบหมาย การให้คะแนน และการแจ้งเตือน",
+        "สร้างคอมโพเนนต์ UI แบบรองรับหลายขนาดหน้าจอ และโฟลว์ฟอร์มตามแนวทาง accessibility"
+      ]
+    },
+    {
+      "company": "Lodash (Thailand) Co., Ltd",
+      "role": "นักพัฒนา Full-stack",
+      "period": "เมษายน 2024 – กุมภาพันธ์ 2025",
+      "bullets": [
+        "ออกแบบ พัฒนา และดูแลโปรเจกต์ตั้งแต่ต้น ด้วย Next.js ฝั่ง frontend และ Node.js กับ Strapi ฝั่ง backend",
+        "ส่งมอบโซลูชันที่ขยายและดูแลต่อได้ง่าย โดยเลือกใช้ไลบรารีและเครื่องมือตามความต้องการของโปรเจกต์",
+        "ปรับตัวเร็วกับเทคโนโลยีและเฟรมเวิร์กใหม่เพื่อตอบโจทย์ที่เปลี่ยนไป"
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "name": "Heathub",
+      "stack": "Next.js · Node.js · MongoDB · Redis · Docker",
+      "description": [
+        "แปลงสถาปัตยกรรมและความต้องการระบบเป็นแพลตฟอร์มจริงที่เชื่อมเจ้าของสัตว์เลี้ยงกับผู้รับฝากที่ผ่านการยืนยันแล้ว",
+        "ตลาดกลางรับฝากสัตว์เลี้ยงแบบ Full-stack ส่งมอบครบวงจร"
+      ],
+      "url": "https://heathub.vercel.app"
+    },
+    {
+      "name": "Serper",
+      "stack": "Solo · JSON-driven UI · Next.js · TypeScript · Tailwind CSS",
+      "description": [
+        "สร้างโคลนฟังก์ชันของ serper.dev เพื่อจำลองหน้าค้นหาและหน้าแสดงผล"
+      ],
+      "url": "https://spotlight-ts-serper.vercel.app/serperMock/auth/playground"
+    },
+    {
+      "name": "Hiwhiw",
+      "stack": "Next.js · Golang · Microservices · RabbitMQ · gRPC",
+      "description": [
+        "ระบบจัดการสูตรอาหารอัจฉริยะ ครอบคลุมสต็อกในตู้เย็น การค้นหาและกรองเมนู รวมถึงเมนูกำหนดเอง",
+        "ออกแบบแบบ microservices เพื่อให้ขยายระบบและดูแลต่อได้ง่าย"
+      ]
+    },
+    {
+      "name": "CapyKnow",
+      "stack": "LLM · RAG · Late chunking · UX/UI · SDLC",
+      "description": [
+        "โปรเจกต์จบการศึกษา: ผสาน LLM เข้ากับ myCourseVille แพลตฟอร์มการเรียนของจุฬาลงกรณ์มหาวิทยาลัย",
+        "ดูแลวงจรการพัฒนาซอฟต์แวร์ตั้งแต่ต้นจนจบ"
+      ]
+    }
+  ],
+  "skills": [
+    {
+      "label": "ภาษาโปรแกรม",
+      "items": [
+        "[***TypeScript***]",
+        "[*Python*]",
+        "[*Golang*]",
+        "[*JavaScript*]",
+        "Java",
+        "C++",
+        "PHP",
+        "Scala"
+      ]
+    },
+    {
+      "label": "Front-End",
+      "items": [
+        "[***React***]",
+        "[***Next.js***]",
+        "[*Tailwind CSS*]",
+        "Svelte"
+      ]
+    },
+    {
+      "label": "Back-End",
+      "items": [
+        "[***Node.js***]",
+        "[*Nest.js*]",
+        "Laravel",
+        "[*SQL*]",
+        "[*NoSQL*]",
+        "gRPC"
+      ]
+    },
+    {
+      "label": "Infra & Practice",
+      "items": [
+        "[*GitHub*]",
+        "[*Docker*]",
+        "Kubernetes",
+        "Terraform",
+        "[*AWS*]",
+        "[*Software Architecture*]",
+        "Microservices"
+      ]
+    },
+    {
+      "label": "Tools & Messaging",
+      "items": [
+        "[*Redis*]",
+        "RabbitMQ",
+        "Strapi",
+        "[*Postman*]",
+        "Figma",
+        "DBDiagram"
+      ]
+    }
+  ],
+  "education": {
+    "degree": "วศ.บ. วิศวกรรมคอมพิวเตอร์",
+    "school": "จุฬาลงกรณ์มหาวิทยาลัย",
+    "period": "ส.ค. 2021 – พ.ค. 2025",
+    "gpax": "3.39"
+  },
+  "activities": [
+    "FE Camp — หัวหน้าฝ่ายกิจกรรม",
+    "Vishnu20th Camp — ประชาสัมพันธ์ประจำกลุ่ม",
+    "ทีมหลัก IMC (Intania Music Club)",
+    "CUNEX hackathon: Boost up Chula, Sustainable Lifestyle"
+  ],
+  "interests": [
+    "ดนตรี",
+    "ภาษาญี่ปุ่น (JLPT N3)",
+    "อนิเมะ"
+  ]
+}

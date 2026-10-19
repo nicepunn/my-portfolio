@@ -1,7 +1,12 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { list, put } from "@vercel/blob";
-import { resume as bundledResume } from "@/data/resume";
+import {
+  DEFAULT_LOCALE,
+  resolveLocale,
+  type Locale,
+} from "@/i18n/config";
+import { getBundledResume } from "@/i18n/resume-locales";
 import {
   normalizeResume,
   resumeSchema,
@@ -137,7 +142,7 @@ async function writeResumeToGitHub(data: Resume): Promise<void> {
   }
 }
 
-export async function getResume(): Promise<Resume> {
+async function getDefaultResume(): Promise<Resume> {
   const fromBlob = await readResumeFromBlob();
   if (fromBlob) return fromBlob;
 
@@ -145,11 +150,22 @@ export async function getResume(): Promise<Resume> {
     try {
       return await readResumeFromDisk();
     } catch {
-      return bundledResume;
+      return getBundledResume(DEFAULT_LOCALE);
     }
   }
 
-  return bundledResume;
+  return getBundledResume(DEFAULT_LOCALE);
+}
+
+export async function getResume(localeInput?: string | null): Promise<Resume> {
+  const locale: Locale = resolveLocale(localeInput);
+
+  // Editable / persisted source of truth is the default locale only.
+  if (locale === DEFAULT_LOCALE) {
+    return getDefaultResume();
+  }
+
+  return getBundledResume(locale);
 }
 
 export async function saveResume(data: Resume): Promise<{

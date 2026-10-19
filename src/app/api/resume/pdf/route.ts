@@ -14,9 +14,10 @@ function pdfResponse(buffer: Buffer, filename = "punnawat-resume.pdf") {
   });
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const data = await getResume();
+    const locale = new URL(request.url).searchParams.get("locale");
+    const data = await getResume(locale);
     const buffer = await renderResumePdf(data);
     return pdfResponse(buffer);
   } catch (error) {

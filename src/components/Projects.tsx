@@ -1,8 +1,13 @@
+"use client";
+
 import type { Resume } from "@/lib/resume-schema";
 import { Reveal } from "@/components/Reveal";
 import { SectionHeading } from "@/components/SectionHeading";
+import { useTranslations } from "@/i18n/LocaleProvider";
 
 export function Projects({ data }: { data: Resume }) {
+  const t = useTranslations();
+
   return (
     <section
       id="projects"
@@ -10,7 +15,10 @@ export function Projects({ data }: { data: Resume }) {
     >
       <div className="mx-auto max-w-5xl">
         <Reveal>
-          <SectionHeading eyebrow="Selected work" title="Projects" />
+          <SectionHeading
+            eyebrow={t.sections.projects.eyebrow}
+            title={t.sections.projects.title}
+          />
         </Reveal>
 
         <ul className="divide-y divide-[var(--border)] border-y border-[var(--border)]">
@@ -36,7 +44,7 @@ export function Projects({ data }: { data: Resume }) {
                       </h3>
                       {project.url ? (
                         <span className="font-mono text-xs text-[var(--muted)]">
-                          ↗ live
+                          ↗ {t.sections.projects.live}
                         </span>
                       ) : null}
                     </div>

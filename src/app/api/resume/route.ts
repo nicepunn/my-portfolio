@@ -7,12 +7,14 @@ import {
 } from "@/lib/resume-file";
 import { normalizeResume, resumeSchema } from "@/lib/resume-schema";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const data = await getResume();
+    const locale = new URL(request.url).searchParams.get("locale");
+    const data = await getResume(locale);
 
     return NextResponse.json({
       data,
+      locale,
       canPersist: canPersistResume(),
       authenticated: await isEditAuthenticated(),
     });

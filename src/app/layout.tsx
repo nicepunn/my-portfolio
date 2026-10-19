@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
-import { JetBrains_Mono, Outfit, Syne } from "next/font/google";
+import { JetBrains_Mono, Noto_Sans_Thai, Outfit, Syne } from "next/font/google";
 import { Navbar } from "@/components/Navbar";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { ThemeScript } from "@/components/ThemeScript";
+import { LocaleProvider } from "@/i18n/LocaleProvider";
+import { LocaleScript } from "@/i18n/LocaleScript";
 import "./globals.css";
 
 const outfit = Outfit({
@@ -20,6 +22,13 @@ const syne = Syne({
 const jetbrains = JetBrains_Mono({
   variable: "--font-jetbrains",
   subsets: ["latin"],
+  display: "swap",
+});
+
+const notoThai = Noto_Sans_Thai({
+  variable: "--font-thai",
+  subsets: ["thai", "latin"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
@@ -54,15 +63,18 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${outfit.variable} ${syne.variable} ${jetbrains.variable} h-full antialiased`}
+      className={`${outfit.variable} ${syne.variable} ${jetbrains.variable} ${notoThai.variable} h-full antialiased`}
       suppressHydrationWarning
       data-theme="dark"
     >
       <body className="min-h-full flex flex-col bg-[var(--bg)] text-[var(--fg)]">
         <ThemeScript />
+        <LocaleScript />
         <ThemeProvider>
-          <Navbar />
-          {children}
+          <LocaleProvider>
+            <Navbar />
+            {children}
+          </LocaleProvider>
         </ThemeProvider>
       </body>
     </html>

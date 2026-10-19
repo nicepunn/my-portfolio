@@ -6,11 +6,14 @@ import { Footer } from "@/components/Footer";
 import { Hero } from "@/components/Hero";
 import { Projects } from "@/components/Projects";
 import { Skills } from "@/components/Skills";
+import { getRequestLocale } from "@/i18n/get-request-locale";
+import { getMessages } from "@/i18n/messages";
 import { getResume } from "@/lib/resume-file";
 
 async function HomeContent() {
   await connection();
-  const data = await getResume();
+  const locale = await getRequestLocale();
+  const data = await getResume(locale);
 
   return (
     <div className="flex flex-1 flex-col">
@@ -26,15 +29,18 @@ async function HomeContent() {
   );
 }
 
+function HomeFallback() {
+  const messages = getMessages("en");
+  return (
+    <div className="flex flex-1 items-center justify-center px-6 py-24 text-sm text-[var(--muted)]">
+      {messages.common.loadingResume}
+    </div>
+  );
+}
+
 export default function Home() {
   return (
-    <Suspense
-      fallback={
-        <div className="flex flex-1 items-center justify-center px-6 py-24 text-sm text-[var(--muted)]">
-          Loading resume…
-        </div>
-      }
-    >
+    <Suspense fallback={<HomeFallback />}>
       <HomeContent />
     </Suspense>
   );
