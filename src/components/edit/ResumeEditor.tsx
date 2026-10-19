@@ -142,7 +142,8 @@ export function ResumeEditor({
           downloadJson(payload.data ?? data, locale);
         }
 
-        // Full navigation so `/` re-fetches resume (soft nav keeps stale RSC cache).
+        // Brief pause so the success status is readable, then hard-nav home.
+        await new Promise((resolve) => setTimeout(resolve, 3000));
         window.location.assign("/");
       } catch (err) {
         const message = err instanceof Error ? err.message : "Save failed";
