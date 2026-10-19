@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import type { Resume } from "@/lib/resume-schema";
 import {
   editForm,
@@ -25,6 +26,54 @@ type JsonDrivenFormProps = {
   readOnly?: boolean;
 };
 
+/** Keep raw text while typing so Enter can insert blank lines before blur commit. */
+function LinesTextArea({
+  value,
+  onChange,
+  readOnly,
+}: {
+  value: unknown;
+  onChange: (value: unknown) => void;
+  readOnly?: boolean;
+}) {
+  const committed = listToLines(value);
+  const [text, setText] = useState(committed);
+  const [focused, setFocused] = useState(false);
+
+  useEffect(() => {
+    if (!focused) {
+      setText(listToLines(value));
+    }
+  }, [value, focused]);
+
+  return (
+    <TextArea
+      value={focused ? text : committed}
+      readOnly={readOnly}
+      onFocus={() => {
+        if (readOnly) return;
+        setFocused(true);
+        setText(listToLines(value));
+      }}
+      onChange={(event) => {
+        if (readOnly) return;
+        setText(event.target.value);
+      }}
+      onBlur={() => {
+        if (readOnly) return;
+        setFocused(false);
+        onChange(linesToList(text));
+      }}
+      onKeyDown={(event) => {
+        // Ensure Enter always inserts a newline (never bubbles as a click/submit).
+        if (event.key === "Enter") {
+          event.stopPropagation();
+        }
+      }}
+    />
+  );
+}
+
 function FieldControl({
   field,
   value,
@@ -43,7 +92,11 @@ function FieldControl({
           value={typeof value === "string" ? value : ""}
           onChange={(event) => onChange(event.target.value)}
           readOnly={readOnly}
-          disabled={readOnly}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              event.stopPropagation();
+            }
+          }}
         />
       </Field>
     );
@@ -52,11 +105,10 @@ function FieldControl({
   if (field.type === "lines") {
     return (
       <Field label={field.label} hint={field.hint}>
-        <TextArea
-          value={listToLines(value)}
-          onChange={(event) => onChange(linesToList(event.target.value))}
+        <LinesTextArea
+          value={value}
+          onChange={onChange}
           readOnly={readOnly}
-          disabled={readOnly}
         />
       </Field>
     );
@@ -72,7 +124,6 @@ function FieldControl({
         value={typeof value === "string" ? value : value == null ? "" : String(value)}
         onChange={(event) => onChange(event.target.value)}
         readOnly={readOnly}
-        disabled={readOnly}
       />
     </Field>
   );

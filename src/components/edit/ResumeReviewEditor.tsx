@@ -166,8 +166,8 @@ export function ResumeReviewEditor() {
   const isLast = draft.queue.length === 0;
 
   return (
-    <div className="relative mx-auto max-w-7xl space-y-8 px-4 py-10 sm:px-6 lg:px-8">
-      <header className="space-y-3">
+    <div className="relative mx-auto flex min-h-[calc(100svh-4rem)] max-w-7xl flex-col px-4 py-6 sm:px-6 lg:px-8">
+      <header className="shrink-0 space-y-3 pb-6">
         <p className="font-mono text-xs tracking-[0.25em] text-[var(--accent)] uppercase">
           {t.edit.eyebrow}
         </p>
@@ -184,9 +184,9 @@ export function ResumeReviewEditor() {
         ) : null}
       </header>
 
-      <div className="grid gap-6 lg:grid-cols-2 lg:gap-8">
-        <section className="space-y-4">
-          <div className="border border-[var(--border)] px-4 py-3">
+      <div className="grid min-h-0 flex-1 gap-6 lg:grid-cols-2 lg:gap-8">
+        <section className="flex min-h-0 flex-col gap-4">
+          <div className="shrink-0 border border-[var(--border)] px-4 py-3">
             <p className="font-mono text-[11px] tracking-[0.18em] text-[var(--muted)] uppercase">
               {t.edit.reviewSource}
             </p>
@@ -194,13 +194,13 @@ export function ResumeReviewEditor() {
               {sourceMeta.label} ({sourceMeta.nativeLabel})
             </p>
           </div>
-          <div className="opacity-90">
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain opacity-90 max-lg:max-h-[60svh]">
             <JsonDrivenForm data={sourceData} readOnly />
           </div>
         </section>
 
-        <section className="space-y-4">
-          <div className="border border-[var(--accent)]/40 px-4 py-3">
+        <section className="flex min-h-0 flex-col gap-4">
+          <div className="shrink-0 border border-[var(--accent)]/40 px-4 py-3">
             <p className="font-mono text-[11px] tracking-[0.18em] text-[var(--accent)] uppercase">
               {t.edit.reviewTarget}
             </p>
@@ -208,11 +208,13 @@ export function ResumeReviewEditor() {
               {targetMeta.label} ({targetMeta.nativeLabel})
             </p>
           </div>
-          <JsonDrivenForm data={targetData} onChange={updateTarget} />
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain max-lg:max-h-[60svh]">
+            <JsonDrivenForm data={targetData} onChange={updateTarget} />
+          </div>
         </section>
       </div>
 
-      <div className="sticky bottom-0 z-10 border-t border-[var(--border)] bg-[color-mix(in_oklab,var(--bg)_92%,transparent)] py-4 backdrop-blur-md">
+      <div className="sticky bottom-0 z-10 shrink-0 border-t border-[var(--border)] bg-[color-mix(in_oklab,var(--bg)_92%,transparent)] py-4 backdrop-blur-md">
         <div className="flex flex-wrap items-center gap-3">
           <button
             type="button"

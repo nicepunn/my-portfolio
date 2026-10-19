@@ -9,14 +9,15 @@ export function Field({
   children: ReactNode;
   hint?: string;
 }) {
+  // Use a div (not <label>) so Enter in textareas is not treated as label activation.
   return (
-    <label className="block space-y-1.5">
+    <div className="block space-y-1.5">
       <span className="font-mono text-[11px] tracking-[0.18em] text-[var(--muted)] uppercase">
         {label}
       </span>
       {children}
       {hint ? <span className="block text-xs text-[var(--muted)]">{hint}</span> : null}
-    </label>
+    </div>
   );
 }
 
