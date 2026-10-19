@@ -132,6 +132,7 @@ export function ResumeEditor({
           downloadJson(payload.data ?? data, locale);
         }
 
+        router.replace("/");
         router.refresh();
       } catch (err) {
         const message = err instanceof Error ? err.message : "Save failed";

@@ -120,7 +120,7 @@ export function ResumeReviewEditor() {
 
         clearEditDraft();
         setStatus(payload.message ?? t.edit.published);
-        router.replace("/edit");
+        router.replace("/");
         router.refresh();
       } catch (err) {
         setError(err instanceof Error ? err.message : "Save failed");
