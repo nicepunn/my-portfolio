@@ -108,13 +108,16 @@ const comboCases: ComboCase[] = [
     expectTargetCompanies: ["Acme", "Beta", "Coral"],
   },
   {
-    name: "changing period breaks identity (remove old + add new)",
+    name: "changing period keeps the same job and marks that field",
     apply: (items) =>
       updateArrayItemField(items, 0, "period", "2025 – Now"),
-    expectStatuses: ["removed", "added", "unchanged", "unchanged"],
-    expectCurrentCompanies: [null, "Acme", "Beta", "Coral"],
-    // Pending-remove keeps the TH row; the new-period Acme is treated as added/missing.
-    expectTargetCompanies: ["Acme", null, "Beta", "Coral"],
+    expectStatuses: ["changed", "unchanged", "unchanged"],
+    expectCurrentCompanies: ["Acme", "Beta", "Coral"],
+    expectTargetCompanies: ["Acme", "Beta", "Coral"],
+    dirty: {
+      company: "Acme",
+      fields: { period: true, company: false, role: false },
+    },
   },
   {
     name: "add only (prepend D)",

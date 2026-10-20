@@ -1,4 +1,4 @@
-import { matchTargetIndexes } from "@/lib/array-item-match";
+import { assignItemIndexes, matchTargetIndexes } from "@/lib/array-item-match";
 
 /** Deep equality for form field values (strings, arrays, nested lists). */
 export function fieldValuesEqual(a: unknown, b: unknown): boolean {
@@ -45,50 +45,42 @@ export type AlignedArrayRow = {
   currentItem: ResumeItem | null;
 };
 
-function indexByIdentity(
-  sectionPath: string,
-  items: ResumeItem[],
-): Map<string, { item: ResumeItem; index: number }> {
-  const map = new Map<string, { item: ResumeItem; index: number }>();
-  items.forEach((item, index) => {
-    const key = arrayItemIdentity(sectionPath, item, index);
-    if (!map.has(key)) {
-      map.set(key, { item, index });
-    }
-  });
-  return map;
-}
-
 /**
- * Same-language alignment (source original ↔ source current) by identity.
- * Correctly detects middle-list removes without shifting false "changed" rows.
- * Removed placeholders are spliced back at their original index.
+ * Same-language alignment (source original ↔ source current).
+ * Items are paired across every field, so a renamed key stays the same row
+ * when the rest still matches. Unmatched current rows are added; unmatched
+ * original rows are removed and spliced back at their original index.
  */
 export function alignArrayRowsSameLocale(
   sectionPath: string,
   originalItems: ResumeItem[],
   currentItems: ResumeItem[],
 ): AlignedArrayRow[] {
-  const originalMap = indexByIdentity(sectionPath, originalItems);
+  const pairs = assignItemIndexes(sectionPath, originalItems, currentItems);
+  const originalIndexByCurrent = new Map(
+    pairs.map((pair) => [pair.right, pair.left]),
+  );
+  const matchedOriginals = new Set(pairs.map((pair) => pair.left));
   const currentRows: AlignedArrayRow[] = [];
-  const seen = new Set<string>();
 
   currentItems.forEach((currentItem, currentIndex) => {
-    const key = arrayItemIdentity(sectionPath, currentItem, currentIndex);
-    seen.add(key);
-    const original = originalMap.get(key);
-    const originalItem = original?.item ?? null;
-    const status: AlignedArrayRow["status"] = !original
+    const originalIndex = originalIndexByCurrent.get(currentIndex) ?? -1;
+    const originalItem =
+      originalIndex >= 0 ? (originalItems[originalIndex] ?? null) : null;
+    const status: AlignedArrayRow["status"] = !originalItem
       ? "added"
       : fieldValuesEqual(originalItem, currentItem)
         ? "unchanged"
         : "changed";
 
     currentRows.push({
-      key,
+      key:
+        originalIndex >= 0
+          ? arrayItemIdentity(sectionPath, originalItem ?? currentItem, originalIndex)
+          : `${sectionPath}:added:${currentIndex}`,
       dataIndex: currentIndex,
       currentIndex,
-      originalIndex: original?.index ?? -1,
+      originalIndex,
       status,
       dataItem: currentItem,
       originalItem,
@@ -98,10 +90,9 @@ export function alignArrayRowsSameLocale(
 
   const removedRows: AlignedArrayRow[] = [];
   originalItems.forEach((originalItem, originalIndex) => {
-    const key = arrayItemIdentity(sectionPath, originalItem, originalIndex);
-    if (seen.has(key)) return;
+    if (matchedOriginals.has(originalIndex)) return;
     removedRows.push({
-      key: `${key}:removed`,
+      key: `${arrayItemIdentity(sectionPath, originalItem, originalIndex)}:removed`,
       dataIndex: -1,
       currentIndex: -1,
       originalIndex,
@@ -124,9 +115,8 @@ export function alignArrayRowsSameLocale(
 /**
  * Target (right) pane: dirty status from same-locale source diff.
  *
- * Display order follows source rows. Target items are paired by
- * field-compatibility (company / name / url / skill overlap), with
- * positional fallback only for leftovers that could not be scored.
+ * Display order follows source rows. Target items are paired by the same
+ * all-field assignment. Unmatched rows stay added or removed.
  */
 export function alignTargetRowsToSourceDiff(
   sectionPath: string,
@@ -180,31 +170,23 @@ export function fieldDirtyOnAlignedRow(
   );
 }
 
-function identitySequence(
-  sectionPath: string,
-  items: ResumeItem[],
-): string[] {
-  return items.map((item, index) =>
-    arrayItemIdentity(sectionPath, item, index),
-  );
-}
-
 /**
- * True when the relative order of shared identities differs between lists.
- * Pure reorder is detected even when every row's field status is unchanged.
+ * True when the relative order of paired items differs between lists.
+ * Pairing uses every field, so a renamed key still counts as the same row.
  */
 export function arrayOrderChanged(
   sectionPath: string,
   originalItems: ResumeItem[],
   currentItems: ResumeItem[],
 ): boolean {
-  const originalIds = identitySequence(sectionPath, originalItems);
-  const currentIds = identitySequence(sectionPath, currentItems);
-  const currentSet = new Set(currentIds);
-  const originalSet = new Set(originalIds);
-  const originalShared = originalIds.filter((id) => currentSet.has(id));
-  const currentShared = currentIds.filter((id) => originalSet.has(id));
-  return JSON.stringify(originalShared) !== JSON.stringify(currentShared);
+  const pairs = assignItemIndexes(sectionPath, originalItems, currentItems);
+  const originalOrder = [...pairs]
+    .sort((a, b) => a.left - b.left)
+    .map((pair) => pair.left);
+  const currentOrder = [...pairs]
+    .sort((a, b) => a.right - b.right)
+    .map((pair) => pair.left);
+  return JSON.stringify(originalOrder) !== JSON.stringify(currentOrder);
 }
 
 /**
@@ -220,21 +202,13 @@ export function applySourceOrderToTarget(
 ): ResumeItem[] {
   if (targetItems.length === 0) return targetItems;
 
-  const originalIndexById = new Map<string, number>();
-  sourceOriginal.forEach((item, index) => {
-    const id = arrayItemIdentity(sectionPath, item, index);
-    if (!originalIndexById.has(id)) originalIndexById.set(id, index);
-  });
-
-  const orderedOriginalIndexes: number[] = [];
-  const seen = new Set<number>();
-  sourceCurrent.forEach((item, index) => {
-    const id = arrayItemIdentity(sectionPath, item, index);
-    const originalIndex = originalIndexById.get(id);
-    if (originalIndex == null || seen.has(originalIndex)) return;
-    orderedOriginalIndexes.push(originalIndex);
-    seen.add(originalIndex);
-  });
+  const orderedOriginalIndexes = assignItemIndexes(
+    sectionPath,
+    sourceOriginal,
+    sourceCurrent,
+  )
+    .sort((a, b) => a.right - b.right)
+    .map((pair) => pair.left);
 
   const used = new Set<number>();
   const next: ResumeItem[] = [];
