@@ -31,8 +31,11 @@ export function Experience({ data }: { data: Resume }) {
               <li className="relative overflow-visible pl-8 sm:pl-10">
                 <span
                   aria-hidden
-                  className="absolute top-1.5 left-[5px] z-10 h-2.5 w-2.5 -translate-x-1/2 rounded-full bg-[var(--accent)] shadow-[0_0_0_4px_color-mix(in_oklab,var(--accent)_25%,transparent)]"
-                />
+                  className="absolute top-1.5 left-[5px] z-10 h-2.5 w-2.5 -translate-x-1/2"
+                >
+                  <span className="timeline-dot-ring absolute top-1/2 left-1/2 size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[color-mix(in_oklab,var(--accent)_35%,transparent)]" />
+                  <span className="relative z-10 block size-2.5 rounded-full bg-[var(--accent)]" />
+                </span>
                 <div className="flex flex-col gap-1.5 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6">
                   <h3 className="font-display text-[1.35rem] leading-tight font-semibold text-[var(--fg)] sm:text-2xl">
                     {job.company}

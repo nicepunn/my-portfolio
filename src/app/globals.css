@@ -184,12 +184,32 @@ html[lang="th"] .tracking-widest {
   z-index: -10;
 }
 
+@keyframes timeline-dot-pulse {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.55;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(2.35);
+    opacity: 0.12;
+  }
+}
+
+.timeline-dot-ring {
+  animation: timeline-dot-pulse 2.2s ease-in-out infinite;
+}
+
 ::selection {
   background: color-mix(in oklab, var(--accent) 35%, transparent);
   color: var(--fg);
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .timeline-dot-ring {
+    animation: none;
+  }
+
   body {
     transition: none;
   }
