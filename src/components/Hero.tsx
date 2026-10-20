@@ -26,7 +26,7 @@ export function Hero({ data }: { data: Resume }) {
       {/* Soft full-bleed wash — stronger on phone so first glance feels cinematic */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-[55%] bg-[radial-gradient(ellipse_90%_70%_at_50%_-10%,var(--hero-glow-a),transparent_70%)] sm:hidden"
+        className="hero-wash pointer-events-none absolute inset-x-0 top-0 h-[55%] bg-[radial-gradient(ellipse_90%_70%_at_50%_-10%,var(--hero-glow-a),transparent_70%)] sm:hidden"
       />
 
       <div className="relative mx-auto w-full max-w-5xl">

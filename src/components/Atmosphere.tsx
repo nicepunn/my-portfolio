@@ -8,6 +8,7 @@ export function Atmosphere({ orb = "left" }: { orb?: "left" | "right" }) {
   return (
     <div aria-hidden className="atmosphere">
       <div className="hero-backdrop absolute inset-0" />
+      <div className="hero-grid absolute inset-0" />
       <div className="grain absolute inset-0" />
       <div className={`hero-orb ${orbClass}`} />
     </div>

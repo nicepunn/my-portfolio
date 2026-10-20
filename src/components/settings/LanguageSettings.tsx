@@ -21,7 +21,7 @@ export function LanguageSettings() {
       <div
         role="radiogroup"
         aria-label={t.settings.language.title}
-        className="divide-y divide-[var(--border)] border-y border-[var(--border)]"
+        className="choice-list divide-y divide-[var(--border)] border-y border-[var(--border)]"
       >
         {locales.map((code) => {
           const active = code === locale;

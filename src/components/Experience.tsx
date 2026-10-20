@@ -24,7 +24,7 @@ export function Experience({ data }: { data: Resume }) {
         <ol className="relative space-y-10 sm:space-y-12">
           <span
             aria-hidden
-            className="absolute top-2 bottom-2 left-[5px] w-px bg-[var(--border)]"
+            className="timeline-line absolute top-2 bottom-2 left-[5px] w-px bg-[var(--border)]"
           />
           {data.experience.map((job, index) => (
             <Reveal key={job.company} delay={index * 0.08} className="relative">

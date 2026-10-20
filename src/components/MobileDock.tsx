@@ -2,16 +2,21 @@
 
 import type { Resume } from "@/lib/resume-schema";
 import { useLocale, useTranslations } from "@/i18n/LocaleProvider";
+import { useHideOnScroll } from "@/lib/use-hide-on-scroll";
 
 export function MobileDock({ data }: { data: Resume }) {
   const t = useTranslations();
   const { locale } = useLocale();
+  const chromeHidden = useHideOnScroll(true);
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-0 z-50 md:hidden">
+    <div
+      className={`site-dock pointer-events-none fixed inset-x-0 bottom-0 z-50 transition-transform duration-300 ease-out motion-reduce:transition-none md:hidden ${
+        chromeHidden ? "translate-y-[calc(100%+1.5rem)]" : ""
+      }`}
+    >
       <div
-        className="pointer-events-auto border-t border-[var(--border)] bg-[color-mix(in_oklab,var(--bg)_86%,transparent)] px-3 pt-2 backdrop-blur-xl"
-        style={{ paddingBottom: "max(0.65rem, env(safe-area-inset-bottom))" }}
+        className="site-dock-bar pointer-events-auto border-t border-[var(--border)] bg-[color-mix(in_oklab,var(--bg)_86%,transparent)] px-3 pt-2 pb-[max(0.65rem,env(safe-area-inset-bottom))] backdrop-blur-xl"
       >
         <div className="mx-auto grid max-w-lg grid-cols-3 gap-2">
           <a

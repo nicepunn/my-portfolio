@@ -41,7 +41,7 @@ export function Skills({ data }: { data: Resume }) {
                       return (
                         <li key={item}>
                           <span
-                            className={`inline-flex border px-2.5 py-1 text-sm ${
+                            className={`skill-chip inline-flex border px-2.5 py-1 text-sm ${
                               skill.emphasis === "primary"
                                 ? "border-[var(--accent)]/50 bg-[color-mix(in_oklab,var(--accent)_12%,transparent)] font-semibold text-[var(--fg)]"
                                 : skill.emphasis === "secondary"

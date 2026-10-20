@@ -33,8 +33,31 @@ export const en = {
     eyebrow: "Preferences",
     title: "Settings",
     blurb:
-      "Language is saved on this device only. Other browsers and devices keep their own choice.",
+      "Language and appearance are saved on this device only. Other browsers and devices keep their own choice.",
     backHome: "← Back to resume",
+    appearance: {
+      title: "Appearance",
+      description:
+        "Choose a look for this site. Light and dark still switch from the header.",
+      skins: {
+        editorial: {
+          name: "Editorial",
+          description: "Teal and paper, the original look",
+        },
+        brick: {
+          name: "Brick",
+          description: "Warm clay and sharp edges",
+        },
+        soft: {
+          name: "Soft",
+          description: "Lilac washes and rounded controls",
+        },
+        cyber: {
+          name: "Cyber",
+          description: "Cyan, mono headings, and a grid",
+        },
+      },
+    },
     language: {
       title: "Language",
       description: "Choose the language for this site on this device.",
@@ -146,6 +169,16 @@ export type Messages = {
     title: string;
     blurb: string;
     backHome: string;
+    appearance: {
+      title: string;
+      description: string;
+      skins: {
+        editorial: { name: string; description: string };
+        brick: { name: string; description: string };
+        soft: { name: string; description: string };
+        cyber: { name: string; description: string };
+      };
+    };
     language: {
       title: string;
       description: string;

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useLocale, useTranslations } from "@/i18n/LocaleProvider";
+import { useHideOnScroll } from "@/lib/use-hide-on-scroll";
 
 const homeSectionIds = [
   "experience",
@@ -22,6 +23,7 @@ function smoothScrollTo(id: string) {
 export function Navbar() {
   const pathname = usePathname();
   const isHome = pathname === "/";
+  const chromeHidden = useHideOnScroll(isHome);
   const t = useTranslations();
   const { locale } = useLocale();
 
@@ -34,14 +36,19 @@ export function Navbar() {
 
   const brandClass =
     locale === "th"
-      ? "font-display shrink-0 text-sm font-semibold text-[var(--fg)] transition-colors hover:text-[var(--accent)] sm:text-[var(--muted)] sm:hover:text-[var(--fg)]"
-      : "font-display shrink-0 text-sm font-semibold tracking-[0.18em] text-[var(--fg)] uppercase transition-colors hover:text-[var(--accent)] sm:tracking-[0.2em] sm:text-[var(--muted)] sm:hover:text-[var(--fg)]";
+      ? "site-brand font-display shrink-0 text-sm font-semibold text-[var(--fg)] transition-colors hover:text-[var(--accent)] sm:text-[var(--muted)] sm:hover:text-[var(--fg)]"
+      : "site-brand font-display shrink-0 text-sm font-semibold tracking-[0.18em] text-[var(--fg)] uppercase transition-colors hover:text-[var(--accent)] sm:tracking-[0.2em] sm:text-[var(--muted)] sm:hover:text-[var(--fg)]";
 
   return (
-    <nav className="fixed top-0 right-0 left-0 z-50 border-b border-transparent bg-[color-mix(in_oklab,var(--bg)_55%,transparent)] backdrop-blur-md sm:sticky sm:border-[var(--border)] sm:bg-[color-mix(in_oklab,var(--bg)_88%,transparent)]">
+    <nav
+      className={`site-nav fixed top-0 right-0 left-0 z-50 border-b border-transparent bg-[color-mix(in_oklab,var(--bg)_55%,transparent)] backdrop-blur-md transition-transform duration-300 ease-out motion-reduce:transition-none sm:sticky sm:translate-y-0 sm:border-[var(--border)] sm:bg-[color-mix(in_oklab,var(--bg)_88%,transparent)] ${
+        chromeHidden
+          ? "max-sm:-translate-y-[calc(100%+1.25rem)] max-sm:pointer-events-none"
+          : ""
+      }`}
+    >
       <div
-        className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-3 px-5 sm:h-16 sm:px-10 lg:px-0"
-        style={{ paddingTop: "env(safe-area-inset-top)" }}
+        className="site-nav-bar mx-auto flex h-14 max-w-5xl items-center justify-between gap-3 px-5 pt-[env(safe-area-inset-top)] sm:h-16 sm:px-10 lg:px-0"
       >
         <Link
           href="/"
