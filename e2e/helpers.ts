@@ -56,3 +56,11 @@ export function reviewExperience(page: Page, pane: "source" | "target") {
   const index = pane === "source" ? 0 : 1;
   return page.locator('[data-array-path="experience"]').nth(index);
 }
+
+export async function inputValues(root: Locator, fieldPath: string) {
+  return root
+    .locator(`[data-field-path="${fieldPath}"] input, [data-field-path="${fieldPath}"] textarea`)
+    .evaluateAll((nodes) =>
+      nodes.map((node) => (node as HTMLInputElement | HTMLTextAreaElement).value),
+    );
+}
