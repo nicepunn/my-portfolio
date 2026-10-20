@@ -447,28 +447,33 @@ function ArraySectionCard({
     updateItems(nextItems);
   }
 
+  const prependNew = section.path === "experience";
+
+  function addBlankItem() {
+    const blank = structuredClone(section.defaultItem) as Record<string, unknown>;
+    updateItems(prependNew ? [blank, ...items] : [...items, blank]);
+  }
+
   function addMissingFromSource(row: AlignedArrayRow) {
     if (readOnly || !row.currentItem) return;
-    updateItems([...items, structuredClone(row.currentItem)]);
+    const copy = structuredClone(row.currentItem);
+    updateItems(prependNew ? [copy, ...items] : [...items, copy]);
   }
+
+  const addButton = readOnly ? null : (
+    <button
+      type="button"
+      onClick={addBlankItem}
+      className="inline-flex h-10 w-full items-center justify-center border border-[var(--border)] px-3 text-xs font-medium tracking-wide text-[var(--muted)] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)]"
+    >
+      {section.addLabel}
+    </button>
+  );
 
   return (
     <SectionCard id={section.id} title={section.label}>
       <div className="space-y-6">
-        {readOnly ? null : (
-          <button
-            type="button"
-            onClick={() =>
-              updateItems([
-                structuredClone(section.defaultItem) as Record<string, unknown>,
-                ...items,
-              ])
-            }
-            className="inline-flex h-10 w-full items-center justify-center border border-[var(--border)] px-3 text-xs font-medium tracking-wide text-[var(--muted)] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)]"
-          >
-            {section.addLabel}
-          </button>
-        )}
+        {prependNew ? addButton : null}
         {rows.map((row, displayIndex) => {
           const rowKey = reviewRowKey(section.path, row);
 
@@ -642,6 +647,9 @@ function ArraySectionCard({
             </div>
           );
         })}
+        {prependNew ? null : (
+          <div className="border-t border-[var(--border)] pt-4">{addButton}</div>
+        )}
       </div>
     </SectionCard>
   );
