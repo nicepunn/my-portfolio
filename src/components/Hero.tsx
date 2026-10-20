@@ -77,22 +77,6 @@ export function Hero({ data }: { data: Resume }) {
         </motion.div>
       </div>
 
-      <motion.div
-        className="absolute bottom-[calc(4.75rem+env(safe-area-inset-bottom))] left-1/2 flex -translate-x-1/2 flex-col items-center gap-2 sm:bottom-8"
-        aria-hidden
-        {...(reduce
-          ? {}
-          : {
-              initial: { opacity: 0 },
-              animate: { opacity: 1 },
-              transition: { delay: 0.9, duration: 0.6 },
-            })}
-      >
-        <span className="font-mono text-[10px] tracking-[0.2em] text-[var(--muted)] uppercase">
-          {t.hero.scroll}
-        </span>
-        <span className="scroll-hint block h-7 w-px bg-[var(--accent)]" />
-      </motion.div>
     </header>
   );
 }

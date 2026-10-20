@@ -169,24 +169,6 @@ html[lang="th"] .tracking-widest {
   opacity: var(--grain-opacity);
 }
 
-@keyframes scroll-pulse {
-  0%,
-  100% {
-    transform: scaleY(0.35);
-    opacity: 0.35;
-    transform-origin: top;
-  }
-  50% {
-    transform: scaleY(1);
-    opacity: 0.9;
-    transform-origin: top;
-  }
-}
-
-.scroll-hint {
-  animation: scroll-pulse 1.8s ease-in-out infinite;
-}
-
 /* Major section break — short rule, distinct from full-width item dividers */
 .section-rule {
   width: min(18rem, 55%);
@@ -208,10 +190,6 @@ html[lang="th"] .tracking-widest {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .scroll-hint {
-    animation: none;
-  }
-
   body {
     transition: none;
   }

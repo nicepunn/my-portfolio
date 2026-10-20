@@ -13,7 +13,6 @@ export const th: Messages = {
   hero: {
     emailMe: "ส่งอีเมล",
     github: "GitHub",
-    scroll: "เลื่อนดู",
   },
   sections: {
     experience: { eyebrow: "เส้นทางอาชีพ", title: "ประสบการณ์ทำงาน" },

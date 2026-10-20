@@ -11,7 +11,6 @@ export const en = {
   hero: {
     emailMe: "Email me",
     github: "GitHub",
-    scroll: "Scroll",
   },
   sections: {
     experience: { eyebrow: "Career", title: "Work experience" },
@@ -120,7 +119,6 @@ export type Messages = {
   hero: {
     emailMe: string;
     github: string;
-    scroll: string;
   };
   sections: {
     experience: { eyebrow: string; title: string };
