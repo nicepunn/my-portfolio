@@ -523,6 +523,7 @@ function ArraySectionCard({
   const rows = buildArraySectionRows(section.path, items, {
     sourceDiff,
     compareAgainst,
+    resolveAgainst,
   });
   const insertPosition = insertPositionForSection(section.path);
   const prependNew = prependsNewItems(section.path);
@@ -586,6 +587,7 @@ function ArraySectionCard({
         orderSourceOriginal,
         orderSourceCurrent,
         items,
+        targetBaselineItems,
       ) as ArrayItem[],
     );
   }

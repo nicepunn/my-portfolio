@@ -72,6 +72,19 @@ describe("applySourceOrderToTarget", () => {
     expect(next.map((item) => item.company)).toEqual(["C", "A", "B", "Extra"]);
   });
 
+  it("follows baseline slots when the target list was already permuted", () => {
+    const baseline = [a, b, c];
+    const already = [b, c, a];
+    const next = applySourceOrderToTarget(
+      "experience",
+      [a, b, c],
+      [c, a, b],
+      already,
+      baseline,
+    );
+    expect(next.map((item) => item.company)).toEqual(["C", "A", "B"]);
+  });
+
   it("marks a match only against the pre-review baseline", () => {
     const baseline = [a, b, c];
     const applied = applySourceOrderToTarget(

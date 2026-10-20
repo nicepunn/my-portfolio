@@ -125,20 +125,29 @@ export function buildArraySectionRows(
   options: {
     sourceDiff?: ArraySourceDiff | null;
     compareAgainst?: Resume | null;
+    resolveAgainst?: Resume | null;
   } = {},
 ): AlignedArrayRow[] {
-  const { sourceDiff = null, compareAgainst = null } = options;
+  const {
+    sourceDiff = null,
+    compareAgainst = null,
+    resolveAgainst = null,
+  } = options;
 
   if (sourceDiff) {
     const sourceOriginal =
       (getAtPath(sourceDiff.original, sectionPath) as ArrayItem[]) ?? [];
     const sourceCurrent =
       (getAtPath(sourceDiff.current, sectionPath) as ArrayItem[]) ?? [];
+    const targetBaseline = resolveAgainst
+      ? ((getAtPath(resolveAgainst, sectionPath) as ArrayItem[]) ?? [])
+      : undefined;
     return alignTargetRowsToSourceDiff(
       sectionPath,
       sourceOriginal,
       sourceCurrent,
       items,
+      targetBaseline,
     );
   }
 

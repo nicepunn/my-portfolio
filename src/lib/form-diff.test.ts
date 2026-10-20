@@ -171,6 +171,29 @@ describe("alignTargetRowsToSourceDiff", () => {
     expect(rows.every((r) => r.dataIndex >= 0)).toBe(true);
   });
 
+  it("keeps the renamed job red after the target list is reordered", () => {
+    const enMy = job("MyCourseville", "2025");
+    const enLodash = job("Lodash", "2024");
+    const enLodashEdited = job("Lodashh", "2024");
+    const thMy = job("มายคอร์สวิลล์", "กรกฎาคม 2025");
+    const thLodash = job("โลแดช", "เมษายน 2024");
+    const rows = alignTargetRowsToSourceDiff(
+      "experience",
+      [enMy, enLodash],
+      [enLodashEdited, enMy],
+      [thLodash, thMy],
+      [thMy, thLodash],
+    );
+    expect(rows.map((row) => row.status)).toEqual(["changed", "unchanged"]);
+    expect(rows.map((row) => (row.dataItem as { company: string }).company)).toEqual([
+      "โลแดช",
+      "มายคอร์สวิลล์",
+    ]);
+    expect(fieldDirtyOnAlignedRow(rows[0]!, "company")).toBe(true);
+    expect(fieldDirtyOnAlignedRow(rows[0]!, "period")).toBe(false);
+    expect(fieldDirtyOnAlignedRow(rows[1]!, "company")).toBe(false);
+  });
+
   it("falls back to position when company names differ", () => {
     const rows = alignTargetRowsToSourceDiff(
       "experience",

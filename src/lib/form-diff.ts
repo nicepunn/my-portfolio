@@ -1,4 +1,8 @@
-import { assignItemIndexes, matchTargetIndexes } from "@/lib/array-item-match";
+import {
+  assignItemIndexes,
+  matchTargetIndexes,
+  targetBaselineSlots,
+} from "@/lib/array-item-match";
 
 /** Deep equality for form field values (strings, arrays, nested lists). */
 export function fieldValuesEqual(a: unknown, b: unknown): boolean {
@@ -115,14 +119,16 @@ export function alignArrayRowsSameLocale(
 /**
  * Target (right) pane: dirty status from same-locale source diff.
  *
- * Display order follows source rows. Target items are paired by the same
- * all-field assignment. Unmatched rows stay added or removed.
+ * Display order follows source rows. With a review baseline, each target
+ * item keeps the slot it had when review opened. Unmatched rows stay added
+ * or removed.
  */
 export function alignTargetRowsToSourceDiff(
   sectionPath: string,
   sourceOriginal: ResumeItem[],
   sourceCurrent: ResumeItem[],
   targetItems: ResumeItem[],
+  targetBaseline?: ResumeItem[],
 ): AlignedArrayRow[] {
   const sourceRows = alignArrayRowsSameLocale(
     sectionPath,
@@ -133,6 +139,7 @@ export function alignTargetRowsToSourceDiff(
     sectionPath,
     sourceRows,
     targetItems,
+    targetBaseline,
   );
 
   return sourceRows.map((row, rowIndex) => {
@@ -191,14 +198,16 @@ export function arrayOrderChanged(
 
 /**
  * Reorder `targetItems` to follow sourceCurrent's order of identities that
- * existed in sourceOriginal (index permutation). Extra target rows (pending
- * deletes / unmatched) are appended in their previous relative order.
+ * existed in sourceOriginal. Slots come from the review baseline when it is
+ * passed, so a list that was already permuted is not permuted again by raw
+ * index. Extra target rows are appended in their previous relative order.
  */
 export function applySourceOrderToTarget(
   sectionPath: string,
   sourceOriginal: ResumeItem[],
   sourceCurrent: ResumeItem[],
   targetItems: ResumeItem[],
+  targetBaseline?: ResumeItem[],
 ): ResumeItem[] {
   if (targetItems.length === 0) return targetItems;
 
@@ -210,12 +219,23 @@ export function applySourceOrderToTarget(
     .sort((a, b) => a.right - b.right)
     .map((pair) => pair.left);
 
+  const slots = targetBaseline?.length
+    ? targetBaselineSlots(sectionPath, targetBaseline, targetItems)
+    : targetItems.map((_, index) => index);
+  const targetIndexBySlot = new Map<number, number>();
+  slots.forEach((slot, index) => {
+    if (slot >= 0 && !targetIndexBySlot.has(slot)) {
+      targetIndexBySlot.set(slot, index);
+    }
+  });
+
   const used = new Set<number>();
   const next: ResumeItem[] = [];
   for (const originalIndex of orderedOriginalIndexes) {
-    if (originalIndex < 0 || originalIndex >= targetItems.length) continue;
-    next.push(targetItems[originalIndex]!);
-    used.add(originalIndex);
+    const targetIndex = targetIndexBySlot.get(originalIndex);
+    if (targetIndex == null || used.has(targetIndex)) continue;
+    next.push(targetItems[targetIndex]!);
+    used.add(targetIndex);
   }
   targetItems.forEach((item, index) => {
     if (!used.has(index)) next.push(item);

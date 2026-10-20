@@ -373,25 +373,84 @@ function pairSurvivorsAfterSyncedDeletes(
 }
 
 /**
+ * Baseline index for each current target row, using same-language matching.
+ * The slot stays with the item after a reorder. -1 means the row was added
+ * on the target after review opened.
+ */
+export function targetBaselineSlots(
+  sectionPath: string,
+  baselineItems: ResumeItem[],
+  targetItems: ResumeItem[],
+): number[] {
+  const slots = targetItems.map(() => -1);
+  const pairs = assignItemIndexes(sectionPath, baselineItems, targetItems);
+  for (const pair of pairs) {
+    slots[pair.right] = pair.left;
+  }
+  return slots;
+}
+
+function pairByBaselineSlot(
+  sourceRows: MatchableSourceRow[],
+  slots: number[],
+  result: number[],
+): void {
+  const targetIndexBySlot = new Map<number, number>();
+  slots.forEach((slot, targetIndex) => {
+    if (slot >= 0 && !targetIndexBySlot.has(slot)) {
+      targetIndexBySlot.set(slot, targetIndex);
+    }
+  });
+  const used = new Set(result.filter((index) => index >= 0));
+  sourceRows.forEach((row, rowIndex) => {
+    if ((result[rowIndex] ?? -1) >= 0) return;
+    const slot = originalSlot(row);
+    if (slot < 0) return;
+    const targetIndex = targetIndexBySlot.get(slot);
+    if (targetIndex == null || used.has(targetIndex)) return;
+    result[rowIndex] = targetIndex;
+    used.add(targetIndex);
+  });
+}
+
+/**
  * Pick a target index for each source display row (or -1 if unpaired).
- * Pairs are a global assignment over every field. Rows that do not clear
- * the score fall back to their original index when the target list is still
- * the parallel translation. Added rows stay unmatched.
+ * When a review baseline is present, each target row keeps the slot it had
+ * at review open, so a later reorder does not move the red field.
+ * Added rows still pair by field score. Without a baseline, leftover rows
+ * fall back to their original index while the lists are still parallel.
  */
 export function matchTargetIndexes(
   sectionPath: string,
   sourceRows: MatchableSourceRow[],
   targetItems: ResumeItem[],
+  baselineItems?: ResumeItem[],
 ): number[] {
-  const scores = sourceRows.map((row) =>
-    targetItems.map((target) => rowMatchScore(sectionPath, row, target)),
+  const result = sourceRows.map(() => -1);
+  const useBaseline = Boolean(baselineItems && baselineItems.length > 0);
+  if (useBaseline && baselineItems) {
+    pairByBaselineSlot(
+      sourceRows,
+      targetBaselineSlots(sectionPath, baselineItems, targetItems),
+      result,
+    );
+  }
+
+  const usedTargets = new Set(result.filter((index) => index >= 0));
+  const scores = sourceRows.map((row, rowIndex) =>
+    targetItems.map((target, targetIndex) => {
+      if ((result[rowIndex] ?? -1) >= 0 || usedTargets.has(targetIndex)) return 0;
+      return rowMatchScore(sectionPath, row, target);
+    }),
   );
   const pairs = assignByScore(scores, matchThreshold(sectionPath));
-  const result = sourceRows.map(() => -1);
   for (const pair of pairs) {
+    if ((result[pair.left] ?? -1) >= 0) continue;
     result[pair.left] = pair.right;
   }
-  pairAnchoredRowsByOriginalIndex(sourceRows, targetItems.length, result);
-  pairSurvivorsAfterSyncedDeletes(sourceRows, targetItems.length, result);
+  if (!useBaseline) {
+    pairAnchoredRowsByOriginalIndex(sourceRows, targetItems.length, result);
+    pairSurvivorsAfterSyncedDeletes(sourceRows, targetItems.length, result);
+  }
   return result;
 }
