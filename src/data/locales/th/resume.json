@@ -11,7 +11,7 @@
   "pdfPath": "/api/resume/pdf?locale=th",
   "experience": [
     {
-      "company": "MyCourseville Co., Ltd",
+      "company": "บริษัทมายคอร์สวิลล์ จำกัด",
       "role": "นักพัฒนา Full-stack",
       "period": "กรกฎาคม 2025 – ปัจจุบัน",
       "bullets": [
@@ -20,7 +20,7 @@
       ]
     },
     {
-      "company": "Lodash (Thailand) Co., Ltd",
+      "company": "บริษัทโลแดช(ไยแลนด์) จำกัด",
       "role": "นักพัฒนา Full-stack",
       "period": "เมษายน 2024 – กุมภาพันธ์ 2025",
       "bullets": [
