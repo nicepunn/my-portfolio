@@ -540,11 +540,15 @@ function ArraySectionCard({
     </button>
   );
 
+  const orderReviewKey = `${section.path}#order`;
   const orderBanner =
     orderChanged && hasDiff ? (
       <div
         data-testid="array-order-banner"
+        data-review-key={orderReviewKey}
+        data-review-pane={reviewPane}
         data-review-mark={orderMark ?? undefined}
+        data-review-leaf={orderMark ? "true" : undefined}
         className={`flex flex-wrap items-center justify-between gap-3 border px-3 py-2 ${
           orderMark === "resolved"
             ? "border-emerald-500/60 bg-emerald-500/5"

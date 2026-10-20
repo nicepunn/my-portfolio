@@ -340,6 +340,17 @@ test.describe("dynamic form — review compare", () => {
     const banner = target.getByTestId("array-order-banner");
     await expect(banner).toBeVisible();
     await expect(banner).toHaveAttribute("data-review-mark", "pending");
+    await expect(banner).toHaveAttribute("data-review-leaf", "true");
+
+    await page.getByRole("button", { name: "Jump to next red field" }).click();
+    await expect(
+      page
+        .locator(
+          '[data-review-pane="target"][data-review-leaf="true"][data-review-mark="pending"]',
+        )
+        .first(),
+    ).toHaveAttribute("data-testid", "array-order-banner");
+
     await target.getByTestId("array-apply-order").click();
 
     await expect(fieldInput(arrayRow(target, 0), "company")).toHaveValue(

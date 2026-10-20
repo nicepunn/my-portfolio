@@ -36,7 +36,8 @@ function scrollPairedPending(
   sourcePane: HTMLElement | null,
 ) {
   if (!targetPane) return;
-  // Only leaf anchors — skip row wrappers that can stay "pending" after a field turns green.
+  // Leaf anchors only: field marks and the order-changed banner.
+  // Skip row wrappers that can stay "pending" after a field turns green.
   const pending = targetPane.querySelector<HTMLElement>(
     '[data-review-leaf="true"][data-review-mark="pending"]',
   );
