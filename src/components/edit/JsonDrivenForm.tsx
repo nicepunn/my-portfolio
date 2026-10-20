@@ -151,11 +151,7 @@ function ArrayDragRow({
       }
     >
       <div
-        className={`flex items-start gap-2 ${
-          lifted
-            ? "border border-[var(--accent)] bg-[var(--bg)] px-3 py-3 shadow-[0_22px_48px_rgba(0,0,0,0.38)]"
-            : ""
-        }`}
+        className={`flex items-start gap-2 ${lifted ? "edit-lift" : ""}`}
       >
         <div
           role="button"

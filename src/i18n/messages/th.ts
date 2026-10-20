@@ -46,19 +46,21 @@ export const th: Messages = {
           name: "Editorial",
           description: "เขียวอมฟ้ากับกระดาษ ลุคเดิม",
         },
-        brick: {
-          name: "Brick",
-          description: "โทนดินเผา มุมคม",
-        },
         soft: {
           name: "Soft",
           description: "ม่วงไลแลค มุมโค้ง",
+        },
+        glass: {
+          name: "(beta) Liquid Glass",
+          description: "โทน Soft แบบกระจกฝ้า โปร่งให้เห็นพื้นหลัง",
         },
         cyber: {
           name: "Cyber",
           description: "ไซแอน หัวข้อโมโน และเส้นกริด",
         },
       },
+      transparency: "ความโปร่งใส",
+      transparencyHint: "ใช้กับ Liquid Glass เท่านั้น เลื่อนไปทางขวาจะโปร่งขึ้น",
     },
     language: {
       title: "ภาษา",

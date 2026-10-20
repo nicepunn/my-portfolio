@@ -76,7 +76,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${outfit.variable} ${syne.variable} ${jetbrains.variable} ${notoThai.variable} h-full antialiased`}
       suppressHydrationWarning
       data-theme="dark"
-      data-ui="editorial"
+      data-ui="soft"
+      data-soft=""
     >
       <body className="min-h-full flex flex-col bg-[var(--bg)] text-[var(--fg)]">
         <ThemeScript />

@@ -40,49 +40,13 @@ html[data-theme="light"] {
   --grain-opacity: 0.28;
 }
 
-html[data-ui="brick"] {
-  --radius-control: 0px;
-}
-
-html[data-ui="brick"][data-theme="dark"] {
-  --bg: #1c1210;
-  --fg: #f6eadf;
-  --muted: #b39a8c;
-  --accent: #e07848;
-  --accent-bright: #f4a574;
-  --border: rgba(246, 234, 223, 0.22);
-  --hero-glow-a: rgba(224, 120, 72, 0.24);
-  --hero-glow-b: rgba(180, 60, 40, 0.18);
-  --hero-glow-c: rgba(224, 120, 72, 0.12);
-  --hero-base-start: #1c1210;
-  --hero-base-mid: #2a1a16;
-  --hero-base-end: #140e0c;
-  --grain-opacity: 0.4;
-}
-
-html[data-ui="brick"][data-theme="light"] {
-  --bg: #f7f0e8;
-  --fg: #2c1812;
-  --muted: #7d5e52;
-  --accent: #b8432f;
-  --accent-bright: #d4654a;
-  --border: rgba(44, 24, 18, 0.18);
-  --hero-glow-a: rgba(184, 67, 47, 0.22);
-  --hero-glow-b: rgba(196, 130, 55, 0.2);
-  --hero-glow-c: rgba(184, 67, 47, 0.12);
-  --hero-base-start: #ead9cc;
-  --hero-base-mid: #f7f0e8;
-  --hero-base-end: #f3e6da;
-  --grain-opacity: 0.22;
-}
-
-html[data-ui="soft"] {
+html[data-soft] {
   --font-display-active: var(--font-outfit), system-ui, sans-serif;
   --radius-control: 999px;
   --shadow-soft: 0 14px 36px rgba(90, 48, 62, 0.1);
 }
 
-html[data-ui="soft"][data-theme="dark"] {
+html[data-soft][data-theme="dark"] {
   --bg: #16131b;
   --fg: #f7eef3;
   --muted: #b7a8b3;
@@ -99,7 +63,7 @@ html[data-ui="soft"][data-theme="dark"] {
   --shadow-soft: 0 16px 40px rgba(0, 0, 0, 0.38);
 }
 
-html[data-ui="soft"][data-theme="light"] {
+html[data-soft][data-theme="light"] {
   --bg: #f7f2ec;
   --fg: #3d3034;
   --muted: #8d746c;
@@ -214,7 +178,7 @@ html[lang="th"] .label-caps {
     var(--font-thai), var(--font-outfit), "Noto Sans Thai", system-ui, sans-serif;
 }
 
-html[data-ui="soft"] .label-caps {
+html[data-soft] .label-caps {
   letter-spacing: 0.12em;
 }
 
@@ -296,11 +260,6 @@ html[lang="th"] .tracking-widest {
   border-radius: 1px;
 }
 
-html[data-ui="brick"] .section-rule {
-  height: 3px;
-  border-radius: 0;
-}
-
 html[data-ui="cyber"] .section-rule {
   height: 1px;
   border-radius: 0;
@@ -314,21 +273,9 @@ html[data-ui="cyber"] a.inline-flex {
   border-radius: var(--radius-control);
 }
 
-html[data-ui="soft"] [role="switch"],
+html[data-soft] [role="switch"],
 html[data-ui="cyber"] [role="switch"] {
   border-radius: 9999px;
-}
-
-html[data-ui="brick"] .border,
-html[data-ui="brick"] .border-y,
-html[data-ui="brick"] .border-x,
-html[data-ui="brick"] .border-t,
-html[data-ui="brick"] .border-b,
-html[data-ui="brick"] .border-l,
-html[data-ui="brick"] .border-r {
-  border-width: 2px;
-  border-block-width: 2px;
-  border-inline-width: 2px;
 }
 
 html[data-ui="cyber"] .hero-backdrop {
@@ -370,40 +317,40 @@ html[data-ui="cyber"] .hero-grid {
   background-size: 48px 48px, 48px 48px;
 }
 
-html[data-ui="soft"] button,
-html[data-ui="soft"] a,
-html[data-ui="soft"] input,
-html[data-ui="soft"] select {
+html[data-soft] button,
+html[data-soft] a,
+html[data-soft] input,
+html[data-soft] select {
   border-radius: 999px;
 }
 
-html[data-ui="soft"] textarea {
+html[data-soft] textarea {
   border-radius: 1rem;
 }
 
-html[data-ui="soft"] h1,
-html[data-ui="soft"] h2,
-html[data-ui="soft"] h3 {
+html[data-soft] h1,
+html[data-soft] h2,
+html[data-soft] h3 {
   letter-spacing: -0.02em;
 }
 
-html[data-ui="soft"] h1 {
+html[data-soft] h1 {
   line-height: 1.05;
 }
 
-html[data-ui="soft"] .site-brand {
+html[data-soft] .site-brand {
   letter-spacing: 0.04em;
   text-transform: none;
 }
 
-html[data-ui="soft"] .section-rule {
+html[data-soft] .section-rule {
   width: 4.5rem;
   height: 0.3rem;
   border-radius: 999px;
   background: color-mix(in oklab, var(--accent) 70%, transparent);
 }
 
-html[data-ui="soft"] .hero-backdrop {
+html[data-soft] .hero-backdrop {
   background-image:
     radial-gradient(
       ellipse 75% 55% at 12% 0%,
@@ -428,7 +375,7 @@ html[data-ui="soft"] .hero-backdrop {
     );
 }
 
-html[data-ui="soft"] .hero-orb {
+html[data-soft] .hero-orb {
   filter: blur(28px);
 }
 
@@ -478,33 +425,33 @@ html[data-ui="soft"] .hero-orb {
   }
 }
 
-html[data-ui="soft"] .timeline-line {
+html[data-soft] .timeline-line {
   width: 2px;
   border-radius: 999px;
   background: color-mix(in oklab, var(--accent) 35%, var(--border));
 }
 
-html[data-ui="soft"] .skill-chip {
+html[data-soft] .skill-chip {
   border-radius: 999px;
 }
 
-html[data-ui="soft"] .project-list {
+html[data-soft] .project-list {
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
 }
 
-html[data-ui="soft"] .project-list > *,
-html[data-ui="soft"] .project-list > :not(:last-child),
-html[data-ui="soft"] .choice-list > *,
-html[data-ui="soft"] .choice-list > :not(:last-child) {
+html[data-soft] .project-list > *,
+html[data-soft] .project-list > :not(:last-child),
+html[data-soft] .choice-list > *,
+html[data-soft] .choice-list > :not(:last-child) {
   border-style: none;
   border-width: 0;
   border-block-start-width: 0;
   border-block-end-width: 0;
 }
 
-html[data-ui="soft"] .project-list .project-card {
+html[data-soft] .project-list .project-card {
   margin: 0;
   border-style: none;
   border-left-width: 0;
@@ -513,7 +460,7 @@ html[data-ui="soft"] .project-list .project-card {
   padding: 1.05rem 1rem;
 }
 
-html[data-ui="soft"] .choice-list {
+html[data-soft] .choice-list {
   display: flex;
   flex-direction: column;
   gap: 0.65rem;
@@ -525,34 +472,34 @@ html[data-ui="soft"] .choice-list {
   padding: 0;
 }
 
-html[data-ui="soft"] .choice-list button {
+html[data-soft] .choice-list button {
   border-radius: 1.15rem;
   background: color-mix(in oklab, var(--fg) 5%, transparent);
   padding: 0.9rem 1rem;
 }
 
-html[data-ui="soft"] .choice-list button[aria-checked="true"] {
+html[data-soft] .choice-list button[aria-checked="true"] {
   background: color-mix(in oklab, var(--accent) 16%, transparent);
   box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--accent) 40%, transparent);
 }
 
-html[data-ui="soft"] .skin-dot {
+html[data-soft] .skin-dot {
   border-color: transparent;
 }
 
-html[data-ui="soft"] .site-nav {
+html[data-soft] .site-nav {
   border-color: transparent;
   background: color-mix(in oklab, var(--bg) 78%, transparent);
   box-shadow: none;
 }
 
 @media (max-width: 639px) {
-  html[data-ui="soft"] h1 {
+  html[data-soft] h1 {
     font-size: 2.55rem;
     line-height: 1.08;
   }
 
-  html[data-ui="soft"] .site-nav {
+  html[data-soft] .site-nav {
     top: 0.55rem;
     right: 0.7rem;
     left: 0.7rem;
@@ -564,30 +511,30 @@ html[data-ui="soft"] .site-nav {
     box-shadow: var(--shadow-soft);
   }
 
-  html[data-ui="soft"] .site-nav-bar {
+  html[data-soft] .site-nav-bar {
     height: 3.15rem;
     padding-top: 0;
   }
 
-  html[data-ui="soft"] .settings-page {
+  html[data-soft] .settings-page {
     padding-top: 5.25rem;
   }
 }
 
 @media (min-width: 640px) {
-  html[data-ui="soft"] .project-card {
+  html[data-soft] .project-card {
     padding: 1.35rem 1.5rem;
   }
 }
 
 @media (max-width: 767px) {
-  html[data-ui="soft"] .site-dock {
+  html[data-soft] .site-dock {
     padding-right: 0.7rem;
     padding-bottom: calc(0.55rem + env(safe-area-inset-bottom));
     padding-left: 0.7rem;
   }
 
-  html[data-ui="soft"] .site-dock-bar {
+  html[data-soft] .site-dock-bar {
     border-style: solid;
     border-width: 1px;
     border-color: color-mix(in oklab, var(--fg) 8%, transparent);
@@ -600,14 +547,14 @@ html[data-ui="soft"] .site-nav {
   }
 }
 
-html[data-ui="soft"] .edit-page {
+html[data-soft] .edit-page {
   --edit-surface: color-mix(in oklab, var(--accent) 6%, var(--bg));
 }
 
-html[data-ui="soft"] .edit-page .edit-header,
-html[data-ui="soft"] .edit-page .edit-card,
-html[data-ui="soft"] .edit-page .edit-modal,
-html[data-ui="soft"] .edit-page .edit-pane {
+html[data-soft] .edit-page .edit-header,
+html[data-soft] .edit-page .edit-card,
+html[data-soft] .edit-page .edit-modal,
+html[data-soft] .edit-page .edit-pane {
   border-style: none;
   border-width: 0;
   border-radius: 1.35rem;
@@ -615,26 +562,26 @@ html[data-ui="soft"] .edit-page .edit-pane {
   box-shadow: none;
 }
 
-html[data-ui="soft"] .edit-page .edit-pane-target {
+html[data-soft] .edit-page .edit-pane-target {
   background: color-mix(in oklab, var(--accent) 10%, var(--bg));
 }
 
-html[data-ui="soft"] .edit-review .edit-stack > .edit-card + .edit-card {
+html[data-soft] .edit-review .edit-stack > .edit-card + .edit-card {
   margin-top: 1rem;
 }
 
-html[data-ui="soft"] .edit-page .edit-header {
+html[data-soft] .edit-page .edit-header {
   padding: 1.25rem 1.35rem;
 }
 
-html[data-ui="soft"] .edit-page .edit-kicker,
-html[data-ui="soft"] .edit-page .edit-label {
+html[data-soft] .edit-page .edit-kicker,
+html[data-soft] .edit-page .edit-label {
   font-family: var(--font-outfit), system-ui, sans-serif;
   letter-spacing: 0.04em;
   text-transform: none;
 }
 
-html[data-ui="soft"] .edit-page .edit-control {
+html[data-soft] .edit-page .edit-control {
   border-style: none;
   border-width: 0;
   border-radius: 0.95rem;
@@ -642,13 +589,13 @@ html[data-ui="soft"] .edit-page .edit-control {
   box-shadow: none;
 }
 
-html[data-ui="soft"] .edit-page .edit-control:focus {
+html[data-soft] .edit-page .edit-control:focus {
   border-color: transparent;
   background: color-mix(in oklab, var(--accent) 18%, var(--edit-surface));
   box-shadow: none;
 }
 
-html[data-ui="soft"] .edit-page .edit-row {
+html[data-soft] .edit-page .edit-row {
   border-style: none;
   border-width: 0;
   border-block-start-width: 0;
@@ -659,12 +606,34 @@ html[data-ui="soft"] .edit-page .edit-row {
   padding: 1rem 1rem 1.05rem;
 }
 
-html[data-ui="soft"] .edit-page .edit-row:first-child {
+html[data-soft] .edit-page .edit-row:first-child {
   margin-top: 0;
 }
 
-html[data-ui="soft"] .edit-page .edit-add,
-html[data-ui="soft"] .edit-page .edit-ghost {
+.edit-lift {
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-control);
+  background: var(--bg);
+  padding: 0.75rem 0.85rem;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.18);
+}
+
+html[data-soft] .edit-page .edit-lift {
+  border-style: none;
+  border-width: 0;
+  border-radius: 1.05rem;
+  background: color-mix(in oklab, var(--accent) 16%, var(--bg));
+  box-shadow: var(--shadow-soft);
+}
+
+html[data-ui="cyber"] .edit-lift {
+  border-radius: 2px;
+  background: color-mix(in oklab, var(--accent) 10%, var(--bg));
+  box-shadow: 0 14px 32px rgba(46, 230, 255, 0.16);
+}
+
+html[data-soft] .edit-page .edit-add,
+html[data-soft] .edit-page .edit-ghost {
   border-style: none;
   border-width: 0;
   border-radius: 999px;
@@ -672,36 +641,36 @@ html[data-ui="soft"] .edit-page .edit-ghost {
   color: var(--fg);
 }
 
-html[data-ui="soft"] .edit-page .edit-add:hover,
-html[data-ui="soft"] .edit-page .edit-ghost:hover {
+html[data-soft] .edit-page .edit-add:hover,
+html[data-soft] .edit-page .edit-ghost:hover {
   border-color: transparent;
   background: color-mix(in oklab, var(--accent) 10%, transparent);
   color: var(--fg);
 }
 
-html[data-ui="soft"] .edit-page .edit-ghost-danger {
+html[data-soft] .edit-page .edit-ghost-danger {
   background: color-mix(in oklab, #e06a78 8%, transparent);
   color: #a84d68;
 }
 
-html[data-ui="soft"] .edit-page .edit-ghost-danger:hover {
+html[data-soft] .edit-page .edit-ghost-danger:hover {
   background: color-mix(in oklab, #e06a78 12%, transparent);
   color: #a84d68;
 }
 
-html[data-ui="soft"][data-theme="dark"] .edit-page .edit-ghost-danger,
-html[data-ui="soft"][data-theme="dark"] .edit-page .edit-ghost-danger:hover {
+html[data-soft][data-theme="dark"] .edit-page .edit-ghost-danger,
+html[data-soft][data-theme="dark"] .edit-page .edit-ghost-danger:hover {
   color: #f7d4e0;
 }
 
-html[data-ui="soft"] .edit-page .edit-add-wrap {
+html[data-soft] .edit-page .edit-add-wrap {
   border-style: none;
   border-width: 0;
   border-block-start-width: 0;
   padding-top: 0.35rem;
 }
 
-html[data-ui="soft"] .edit-page .edit-bar {
+html[data-soft] .edit-page .edit-bar {
   border-style: none;
   border-width: 0;
   border-block-start-width: 0;
@@ -715,20 +684,20 @@ html[data-ui="soft"] .edit-page .edit-bar {
 
 /* Review only. One 1rem between flow items, so space-y and .edit-row
    margin-top do not both apply. /edit does not use edit-flow-item. */
-html[data-ui="soft"] .edit-review .edit-flow-item {
+html[data-soft] .edit-review .edit-flow-item {
   margin-top: 1rem;
   margin-bottom: 0;
 }
 
-html[data-ui="soft"] .edit-review .edit-flow-item:first-child {
+html[data-soft] .edit-review .edit-flow-item:first-child {
   margin-top: 0;
 }
 
-html[data-ui="soft"] .edit-review .edit-add-wrap {
+html[data-soft] .edit-review .edit-add-wrap {
   padding-top: 0;
 }
 
-html[data-ui="soft"] .edit-review .edit-bar {
+html[data-soft] .edit-review .edit-bar {
   margin-bottom: 0;
   padding: 1.25rem 1.35rem;
 }
@@ -744,23 +713,23 @@ html[data-ui="soft"] .edit-review .edit-bar {
   line-height: 1.25rem;
 }
 
-html[data-ui="soft"] .edit-page .edit-choice {
+html[data-soft] .edit-page .edit-choice {
   border-style: none;
   border-width: 0;
   border-radius: 1rem;
   background: color-mix(in oklab, var(--fg) 5%, var(--edit-surface));
 }
 
-html[data-ui="soft"] .edit-page .edit-choice-on {
+html[data-soft] .edit-page .edit-choice-on {
   background: color-mix(in oklab, var(--accent) 12%, var(--bg));
 }
 
-html[data-ui="soft"] .edit-page .edit-nav button span:first-child {
+html[data-soft] .edit-page .edit-nav button span:first-child {
   border-style: none;
   background: color-mix(in oklab, var(--fg) 18%, transparent);
 }
 
-html[data-ui="soft"] .edit-page .edit-nav button[aria-current="true"] span:first-child {
+html[data-soft] .edit-page .edit-nav button[aria-current="true"] span:first-child {
   background: var(--accent);
 }
 
@@ -801,4 +770,205 @@ html[data-ui="soft"] .edit-page .edit-nav button[aria-current="true"] span:first
   body {
     transition: none;
   }
+}
+
+/* Liquid Glass reuses the Soft look, then clears the panes. */
+html[data-ui="glass"] {
+  --glass-alpha: 25%;
+}
+
+html[data-ui="glass"] body {
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(
+      ellipse 90% 55% at 8% -8%,
+      var(--hero-glow-a),
+      transparent 62%
+    ),
+    radial-gradient(
+      ellipse 70% 48% at 100% 6%,
+      var(--hero-glow-b),
+      transparent 58%
+    ),
+    radial-gradient(
+      ellipse 80% 42% at 50% 110%,
+      var(--hero-glow-c),
+      transparent 60%
+    );
+  background-attachment: fixed;
+}
+
+html[data-ui="glass"][data-soft] .site-nav,
+html[data-ui="glass"][data-soft] .site-dock-bar,
+html[data-ui="glass"][data-soft] .site-dock-bar a.border,
+html[data-ui="glass"][data-soft] header a.border,
+html[data-ui="glass"][data-soft] [role="switch"],
+html[data-ui="glass"][data-soft] .project-list .project-card,
+html[data-ui="glass"][data-soft] .choice-list button,
+html[data-ui="glass"][data-soft] .skill-chip,
+html[data-ui="glass"][data-soft] .edit-page .edit-card,
+html[data-ui="glass"][data-soft] .edit-page .edit-header,
+html[data-ui="glass"][data-soft] .edit-page .edit-modal,
+html[data-ui="glass"][data-soft] .edit-page .edit-bar,
+html[data-ui="glass"][data-soft] .edit-page .edit-pane,
+html[data-ui="glass"][data-soft] .edit-page .edit-lift,
+html[data-ui="glass"][data-soft] .edit-page .edit-row,
+html[data-ui="glass"][data-soft] .edit-page .edit-control,
+html[data-ui="glass"][data-soft] .edit-page .edit-choice {
+  background-color: color-mix(in oklab, var(--bg) var(--glass-alpha), transparent);
+  background-image: none;
+  border-style: none;
+  border-width: 0;
+  border-color: transparent;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.05);
+  -webkit-backdrop-filter: blur(4px) saturate(1.15);
+  backdrop-filter: blur(4px) saturate(1.15);
+}
+
+html[data-ui="glass"][data-soft] .choice-list button[aria-checked="true"],
+html[data-ui="glass"][data-soft] .edit-page .edit-choice-on,
+html[data-ui="glass"][data-soft] .edit-page .edit-pane-target,
+html[data-ui="glass"][data-soft] .edit-page .edit-control:focus {
+  background-color: color-mix(in oklab, var(--accent) var(--glass-alpha), transparent);
+  background-image: none;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.05);
+}
+
+/* Selected Liquid Glass row is one clear pane; the slider sits in it. */
+html[data-ui="glass"][data-soft] .choice-list .glass-choice-open {
+  border-radius: 1.15rem;
+  border-style: none;
+  border-width: 0;
+  outline: none;
+  background-color: color-mix(in oklab, var(--accent) var(--glass-alpha), transparent);
+  background-image: none;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.05);
+  -webkit-backdrop-filter: blur(4px) saturate(1.15);
+  backdrop-filter: blur(4px) saturate(1.15);
+}
+
+html[data-ui="glass"][data-soft] .choice-list .glass-choice-open > button,
+html[data-ui="glass"][data-soft] .choice-list .glass-choice-open > button[aria-checked="true"] {
+  background-color: transparent;
+  background-image: none;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  padding-bottom: 0.2rem;
+}
+
+html[data-ui="glass"] .glass-transparency {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0 1rem 1rem;
+}
+
+html[data-ui="glass"] .glass-transparency-swatch {
+  width: 3.125rem;
+  flex-shrink: 0;
+}
+
+html[data-ui="glass"] .glass-transparency-radio {
+  width: 1.25rem;
+  flex-shrink: 0;
+}
+
+html[data-ui="glass"] .glass-transparency-value {
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  min-width: 1.5rem;
+  text-align: right;
+}
+
+html[data-ui="glass"] .glass-range {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: 1.15rem;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+  accent-color: var(--accent);
+}
+
+html[data-ui="glass"] .glass-range:focus {
+  outline: none;
+}
+
+html[data-ui="glass"] .glass-range:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 999px;
+}
+
+html[data-ui="glass"] .glass-range::-webkit-slider-runnable-track {
+  height: 0.35rem;
+  border-radius: 999px;
+  border-width: 0;
+  background-color: color-mix(in oklab, var(--fg) 16%, transparent);
+  background-image: linear-gradient(
+    90deg,
+    var(--accent) var(--glass-fill, 46%),
+    transparent var(--glass-fill, 46%)
+  );
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.38);
+}
+
+html[data-ui="glass"] .glass-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 1.15rem;
+  height: 1.15rem;
+  margin-top: -0.4rem;
+  border-radius: 999px;
+  border-width: 0;
+  background-color: var(--accent);
+  background-image: linear-gradient(
+    160deg,
+    rgba(255, 255, 255, 0.88),
+    rgba(255, 255, 255, 0.08) 58%,
+    transparent
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.75),
+    0 4px 14px rgba(0, 0, 0, 0.22);
+}
+
+html[data-ui="glass"] .glass-range::-moz-range-track {
+  height: 0.35rem;
+  border-radius: 999px;
+  border-width: 0;
+  background-color: color-mix(in oklab, var(--fg) 16%, transparent);
+  background-image: linear-gradient(
+    90deg,
+    var(--accent) var(--glass-fill, 46%),
+    transparent var(--glass-fill, 46%)
+  );
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.38);
+}
+
+html[data-ui="glass"] .glass-range::-moz-range-thumb {
+  width: 1.15rem;
+  height: 1.15rem;
+  border-radius: 999px;
+  border-width: 0;
+  background-color: var(--accent);
+  background-image: linear-gradient(
+    160deg,
+    rgba(255, 255, 255, 0.88),
+    rgba(255, 255, 255, 0.08) 58%,
+    transparent
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.75),
+    0 4px 14px rgba(0, 0, 0, 0.22);
 }

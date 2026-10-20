@@ -44,19 +44,21 @@ export const en = {
           name: "Editorial",
           description: "Teal and paper, the original look",
         },
-        brick: {
-          name: "Brick",
-          description: "Warm clay and sharp edges",
-        },
         soft: {
           name: "Soft",
           description: "Lilac washes and rounded controls",
+        },
+        glass: {
+          name: "(beta) Liquid Glass",
+          description: "Soft color, frosted and see-through",
         },
         cyber: {
           name: "Cyber",
           description: "Cyan, mono headings, and a grid",
         },
       },
+      transparency: "Transparency",
+      transparencyHint: "Liquid Glass only. Further right is more see-through.",
     },
     language: {
       title: "Language",
@@ -174,10 +176,12 @@ export type Messages = {
       description: string;
       skins: {
         editorial: { name: string; description: string };
-        brick: { name: string; description: string };
         soft: { name: string; description: string };
+        glass: { name: string; description: string };
         cyber: { name: string; description: string };
       };
+      transparency: string;
+      transparencyHint: string;
     };
     language: {
       title: string;

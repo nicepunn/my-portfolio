@@ -10,12 +10,16 @@ import {
   type ReactNode,
 } from "react";
 import {
+  DEFAULT_GLASS,
   DEFAULT_THEME,
   DEFAULT_UI,
+  GLASS_STORAGE_KEY,
   THEME_STORAGE_KEY,
   UI_STORAGE_KEY,
+  applyGlass,
   applyTheme,
   applyUi,
+  resolveGlass,
   resolveTheme,
   resolveUi,
   type Theme,
@@ -28,6 +32,8 @@ type ThemeContextValue = {
   toggleTheme: () => void;
   ui: UiSkin;
   setUi: (ui: UiSkin) => void;
+  glass: number;
+  setGlass: (slider: number) => void;
   ready: boolean;
 };
 
@@ -49,32 +55,45 @@ function readStoredUi(): UiSkin {
   }
 }
 
+function readStoredGlass(): number {
+  try {
+    return resolveGlass(localStorage.getItem(GLASS_STORAGE_KEY));
+  } catch {
+    return DEFAULT_GLASS;
+  }
+}
+
 function syncFromStorage(
   setThemeState: (theme: Theme) => void,
   setUiState: (ui: UiSkin) => void,
+  setGlassState: (slider: number) => void,
 ) {
   const nextTheme = readStoredTheme();
   const nextUi = readStoredUi();
+  const nextGlass = readStoredGlass();
   setThemeState(nextTheme);
   setUiState(nextUi);
+  setGlassState(nextGlass);
   applyTheme(nextTheme);
   applyUi(nextUi);
-  return { nextTheme, nextUi };
+  applyGlass(nextGlass);
+  return { nextTheme, nextUi, nextGlass };
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(DEFAULT_THEME);
   const [ui, setUiState] = useState<UiSkin>(DEFAULT_UI);
+  const [glass, setGlassState] = useState(DEFAULT_GLASS);
   const [ready, setReady] = useState(false);
 
   useLayoutEffect(() => {
-    syncFromStorage(setThemeState, setUiState);
+    syncFromStorage(setThemeState, setUiState, setGlassState);
     setReady(true);
 
     // bfcache / history restore must re-apply device prefs (not a draft on leave).
     const onPageShow = (event: PageTransitionEvent) => {
       if (!event.persisted) return;
-      syncFromStorage(setThemeState, setUiState);
+      syncFromStorage(setThemeState, setUiState, setGlassState);
     };
     window.addEventListener("pageshow", onPageShow);
     return () => window.removeEventListener("pageshow", onPageShow);
@@ -96,9 +115,16 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     applyUi(next);
   }, []);
 
+  const setGlass = useCallback((slider: number) => {
+    const next = resolveGlass(String(slider));
+    localStorage.setItem(GLASS_STORAGE_KEY, String(next));
+    setGlassState(next);
+    applyGlass(next);
+  }, []);
+
   const value = useMemo(
-    () => ({ theme, setTheme, toggleTheme, ui, setUi, ready }),
-    [theme, setTheme, toggleTheme, ui, setUi, ready],
+    () => ({ theme, setTheme, toggleTheme, ui, setUi, glass, setGlass, ready }),
+    [theme, setTheme, toggleTheme, ui, setUi, glass, setGlass, ready],
   );
 
   return (

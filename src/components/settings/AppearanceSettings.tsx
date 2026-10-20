@@ -1,11 +1,12 @@
 "use client";
 
+import { cloneElement } from "react";
 import { useTheme } from "@/components/ThemeProvider";
 import { useTranslations } from "@/i18n/LocaleProvider";
-import { UI_SKINS, UI_SKIN_SWATCHES } from "@/lib/theme";
+import { GLASS_MAX, GLASS_MIN, UI_SKINS, UI_SKIN_SWATCHES } from "@/lib/theme";
 
 export function AppearanceSettings() {
-  const { ui, setUi, ready } = useTheme();
+  const { ui, setUi, glass, setGlass, ready } = useTheme();
   const t = useTranslations();
 
   return (
@@ -29,9 +30,8 @@ export function AppearanceSettings() {
           const active = ready && id === ui;
           const copy = t.settings.appearance.skins[id];
           const [bg, accent, fg] = UI_SKIN_SWATCHES[id];
-          return (
+          const option = (
             <button
-              key={id}
               type="button"
               role="radio"
               aria-checked={active}
@@ -62,6 +62,65 @@ export function AppearanceSettings() {
                 ) : null}
               </span>
             </button>
+          );
+
+          if (id !== "glass" || !active) return cloneElement(option, { key: id });
+
+          const fill = ((glass - GLASS_MIN) / (GLASS_MAX - GLASS_MIN)) * 100;
+
+          return (
+            <div
+              key={id}
+              className={active ? "glass-choice-open" : "contents"}
+            >
+              {option}
+              {active ? (
+                <div className="glass-transparency">
+                  <div className="flex min-w-0 flex-1 items-start gap-3">
+                    <span className="glass-transparency-swatch" aria-hidden />
+                    <div className="min-w-0 flex-1">
+                      <span className="flex items-baseline justify-between gap-3">
+                        <label
+                          htmlFor="glass-transparency"
+                          className="text-xs font-medium text-[var(--fg)]"
+                        >
+                          {t.settings.appearance.transparency}
+                        </label>
+                        <span
+                          className="glass-transparency-value font-mono text-xs"
+                          aria-hidden
+                        >
+                          {glass}
+                        </span>
+                      </span>
+                      <input
+                        id="glass-transparency"
+                        type="range"
+                        className="glass-range mt-2 w-full"
+                        min={GLASS_MIN}
+                        max={GLASS_MAX}
+                        value={glass}
+                        aria-valuemin={GLASS_MIN}
+                        aria-valuemax={GLASS_MAX}
+                        aria-valuenow={glass}
+                        aria-describedby="glass-transparency-hint"
+                        style={{ ["--glass-fill" as string]: `${fill}%` }}
+                        onChange={(event) =>
+                          setGlass(Number(event.target.value))
+                        }
+                      />
+                      <p
+                        id="glass-transparency-hint"
+                        className="mt-1.5 text-xs leading-snug text-[var(--muted)]"
+                      >
+                        {t.settings.appearance.transparencyHint}
+                      </p>
+                    </div>
+                  </div>
+                  <span className="glass-transparency-radio" aria-hidden />
+                </div>
+              ) : null}
+            </div>
           );
         })}
       </div>
