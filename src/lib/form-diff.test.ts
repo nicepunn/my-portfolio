@@ -108,16 +108,35 @@ describe("alignTargetRowsToSourceDiff", () => {
   const enA = job("Acme", "2025");
   const enB = job("Beta", "2024");
   const enC = job("Coral", "2023");
-  const thA = job("แอคมี", "2025");
-  const thB = job("เบต้า", "2024");
-  const thC = job("คอรัล", "2023");
+  // Same legal company names across locales (as in real resume data).
+  const thA = job("Acme", "กรกฎาคม 2025", "นักพัฒนา");
+  const thB = job("Beta", "เมษายน 2024", "นักพัฒนา");
+  const thC = job("Coral", "2023", "นักพัฒนา");
+  // Fully translated names — force positional fallback.
+  const thATrans = job("แอคมี", "2025");
+  const thBTrans = job("เบต้า", "2024");
+  const thCTrans = job("คอรัล", "2023");
 
-  it("pairs target rows by cursor in source current order", () => {
+  it("pairs target rows by compatible company when order matches", () => {
     const rows = alignTargetRowsToSourceDiff(
       "experience",
       [enA, enB, enC],
       [enA, enB, enC],
       [thA, thB, thC],
+    );
+    expect(rows.map((r) => (r.dataItem as { company: string }).company)).toEqual([
+      "Acme",
+      "Beta",
+      "Coral",
+    ]);
+  });
+
+  it("falls back to position when company names differ", () => {
+    const rows = alignTargetRowsToSourceDiff(
+      "experience",
+      [enA, enB, enC],
+      [enA, enB, enC],
+      [thATrans, thBTrans, thCTrans],
     );
     expect(rows.map((r) => (r.dataItem as { company: string }).company)).toEqual([
       "แอคมี",
@@ -159,7 +178,7 @@ describe("alignTargetRowsToSourceDiff", () => {
     expect(rows[2]?.dataItem).toEqual(thC);
   });
 
-  it("consumes target rows by cursor when source adds; trailing source may be missing", () => {
+  it("keeps existing target jobs paired when source prepends a new job", () => {
     const enD = job("Delta", "2026");
     const rows = alignTargetRowsToSourceDiff(
       "experience",
@@ -168,30 +187,60 @@ describe("alignTargetRowsToSourceDiff", () => {
       [thA, thB],
     );
     expect(rows.map((r) => r.status)).toEqual(["added", "unchanged", "unchanged"]);
-    // Added source row still takes the next target slot (positional, not identity).
-    expect(rows[0]?.dataItem).toEqual(thA);
-    expect(rows[1]?.dataItem).toEqual(thB);
-    expect(rows[2]?.dataIndex).toBe(-1);
-    expect(rows[2]?.dataItem).toBeNull();
+    expect(rows[0]?.dataIndex).toBe(-1);
+    expect(rows[0]?.dataItem).toBeNull();
+    expect(rows[1]?.dataItem).toEqual(thA);
+    expect(rows[2]?.dataItem).toEqual(thB);
   });
 
-  it("mis-pairs target fields after source reorder (documents current risk)", () => {
+  it("pairs the same company after source reorder", () => {
     const rows = alignTargetRowsToSourceDiff(
       "experience",
       [enA, enB, enC],
       [enC, enA, enB],
       [thA, thB, thC],
     );
-    // Cursor pairs by position in source current order, not identity across locales.
-    expect(rows.map((r) => (r.dataItem as { company: string }).company)).toEqual([
-      "แอคมี",
-      "เบต้า",
-      "คอรัล",
-    ]);
     expect(rows.map((r) => (r.currentItem as { company: string }).company)).toEqual([
       "Coral",
       "Acme",
       "Beta",
+    ]);
+    expect(rows.map((r) => (r.dataItem as { company: string }).company)).toEqual([
+      "Coral",
+      "Acme",
+      "Beta",
+    ]);
+  });
+
+  it("pairs projects by url or name across locales", () => {
+    const en = [
+      { name: "Heathub", url: "https://heathub.vercel.app", stack: "Next" },
+      { name: "Hiwhiw", url: "", stack: "Go" },
+    ];
+    const th = [
+      { name: "Hiwhiw", url: "", stack: "Go" },
+      { name: "Heathub", url: "https://heathub.vercel.app", stack: "Next.js" },
+    ];
+    const rows = alignTargetRowsToSourceDiff("projects", en, en, th);
+    expect(rows.map((r) => (r.dataItem as { name: string }).name)).toEqual([
+      "Heathub",
+      "Hiwhiw",
+    ]);
+  });
+
+  it("pairs skill groups by item overlap when labels are translated", () => {
+    const en = [
+      { label: "Languages", items: ["[***TypeScript***]", "[*Python*]"] },
+      { label: "Front-End", items: ["[***React***]", "[***Next.js***]"] },
+    ];
+    const th = [
+      { label: "Front-End", items: ["[***React***]", "[***Next.js***]"] },
+      { label: "ภาษาโปรแกรม", items: ["[***TypeScript***]", "[*Python*]"] },
+    ];
+    const rows = alignTargetRowsToSourceDiff("skills", en, en, th);
+    expect(rows.map((r) => (r.dataItem as { label: string }).label)).toEqual([
+      "ภาษาโปรแกรม",
+      "Front-End",
     ]);
   });
 });

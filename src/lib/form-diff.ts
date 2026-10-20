@@ -1,3 +1,5 @@
+import { matchTargetIndexes } from "@/lib/array-item-match";
+
 /** Deep equality for form field values (strings, arrays, nested lists). */
 export function fieldValuesEqual(a: unknown, b: unknown): boolean {
   if (a === b) return true;
@@ -122,12 +124,9 @@ export function alignArrayRowsSameLocale(
 /**
  * Target (right) pane: dirty status from same-locale source diff.
  *
- * Walk source rows in display order and consume target items with a cursor:
- * - Live/added source rows take the next target item.
- * - Removed source rows take a target item only while the target list is
- *   longer than the remaining live rows (pending delete). After the user
- *   removes that row on the right, the slot becomes empty (synced) and later
- *   live rows keep the correct pairing — unlike a fixed originalIndex map.
+ * Display order follows source rows. Target items are paired by
+ * field-compatibility (company / name / url / skill overlap), with
+ * positional fallback only for leftovers that could not be scored.
  */
 export function alignTargetRowsToSourceDiff(
   sectionPath: string,
@@ -140,51 +139,33 @@ export function alignTargetRowsToSourceDiff(
     sourceOriginal,
     sourceCurrent,
   );
-  const rows: AlignedArrayRow[] = [];
-  let targetCursor = 0;
-  let survivorsLeft = sourceCurrent.length;
-  let targetLeft = targetItems.length;
+  const targetIndexes = matchTargetIndexes(
+    sectionPath,
+    sourceRows,
+    targetItems,
+  );
 
-  for (const row of sourceRows) {
-    if (row.status === "removed") {
-      const extrasAvailable = targetLeft - survivorsLeft;
-      if (extrasAvailable > 0 && targetCursor < targetItems.length) {
-        const dataItem = targetItems[targetCursor]!;
-        rows.push({
-          ...row,
-          key: `${row.key}:target:${targetCursor}`,
-          dataIndex: targetCursor,
-          dataItem,
-        });
-        targetCursor += 1;
-        targetLeft -= 1;
-      } else {
-        rows.push({
-          ...row,
-          key: `${row.key}:target:synced`,
-          dataIndex: -1,
-          dataItem: null,
-        });
-      }
-      continue;
+  return sourceRows.map((row, rowIndex) => {
+    const dataIndex = targetIndexes[rowIndex] ?? -1;
+    if (dataIndex < 0) {
+      return {
+        ...row,
+        key:
+          row.status === "removed"
+            ? `${row.key}:target:synced`
+            : `${row.key}:target:missing`,
+        dataIndex: -1,
+        dataItem: null,
+      };
     }
 
-    const dataItem =
-      targetCursor < targetItems.length ? targetItems[targetCursor]! : null;
-    rows.push({
+    return {
       ...row,
-      key: `${row.key}:target:${targetCursor}`,
-      dataIndex: dataItem ? targetCursor : -1,
-      dataItem,
-    });
-    if (dataItem) {
-      targetCursor += 1;
-      targetLeft -= 1;
-    }
-    survivorsLeft -= 1;
-  }
-
-  return rows;
+      key: `${row.key}:target:${dataIndex}`,
+      dataIndex,
+      dataItem: targetItems[dataIndex] ?? null,
+    };
+  });
 }
 
 export function fieldDirtyOnAlignedRow(
