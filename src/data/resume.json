@@ -70,8 +70,8 @@
       "label": "Languages",
       "items": [
         "[***TypeScript***]",
-        "[*Python*]",
-        "[*Golang*]",
+        "[***Python***]",
+        "[***Golang***]",
         "[*JavaScript*]",
         "Java",
         "C++",
@@ -119,7 +119,8 @@
         "Strapi",
         "[*Postman*]",
         "Figma",
-        "DBDiagram"
+        "DBDiagram",
+        "Notion"
       ]
     }
   ],
