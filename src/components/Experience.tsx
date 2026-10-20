@@ -33,7 +33,7 @@ export function Experience({ data }: { data: Resume }) {
                   aria-hidden
                   className="absolute top-1.5 left-[5px] z-10 flex size-2.5 -translate-x-1/2 items-center justify-center"
                 >
-                  <span className="timeline-dot-ring absolute inset-0 rounded-full bg-[color-mix(in_oklab,var(--accent)_35%,transparent)]" />
+                  <span className="timeline-dot-ring absolute inset-0 rounded-full bg-[color-mix(in_oklab,var(--accent)_70%,transparent)]" />
                   <span className="relative z-10 size-2.5 shrink-0 rounded-full bg-[var(--accent)]" />
                 </span>
                 <div className="flex flex-col gap-1.5 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6">
