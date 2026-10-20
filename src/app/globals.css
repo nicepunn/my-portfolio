@@ -187,16 +187,17 @@ html[lang="th"] .tracking-widest {
 @keyframes timeline-dot-pulse {
   0%,
   100% {
-    transform: translate(-50%, -50%) scale(1);
+    scale: 1;
     opacity: 0.55;
   }
   50% {
-    transform: translate(-50%, -50%) scale(2.35);
+    scale: 2.35;
     opacity: 0.12;
   }
 }
 
 .timeline-dot-ring {
+  transform-origin: center;
   animation: timeline-dot-pulse 2.2s ease-in-out infinite;
 }
 
