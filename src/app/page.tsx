@@ -7,6 +7,7 @@ import { Hero } from "@/components/Hero";
 import { MobileDock } from "@/components/MobileDock";
 import { Projects } from "@/components/Projects";
 import { Skills } from "@/components/Skills";
+import { DEFAULT_LOCALE } from "@/i18n/config";
 import { getRequestLocale } from "@/i18n/get-request-locale";
 import { getMessages } from "@/i18n/messages";
 import { getResume } from "@/lib/resume-file";
@@ -31,9 +32,9 @@ async function HomeContent() {
   );
 }
 
-async function HomeFallback() {
-  const locale = await getRequestLocale();
-  const messages = getMessages(locale);
+/** Must stay sync — Suspense fallbacks cannot read cookies during prerender. */
+function HomeFallback() {
+  const messages = getMessages(DEFAULT_LOCALE);
   return (
     <div className="flex flex-1 items-center justify-center px-6 py-24 text-sm text-[var(--muted)]">
       {messages.common.loadingResume}
