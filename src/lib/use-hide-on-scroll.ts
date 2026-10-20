@@ -1,9 +1,11 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 /** Hide chrome while scrolling down; reveal it when scrolling up or near the top. */
 export function useHideOnScroll(enabled: boolean) {
+  const pathname = usePathname();
   const [hidden, setHidden] = useState(false);
 
   useEffect(() => {
@@ -12,6 +14,7 @@ export function useHideOnScroll(enabled: boolean) {
       return;
     }
 
+    setHidden(false);
     let lastY = window.scrollY;
     let frame = 0;
 
@@ -35,7 +38,7 @@ export function useHideOnScroll(enabled: boolean) {
       window.removeEventListener("scroll", onScroll);
       if (frame) cancelAnimationFrame(frame);
     };
-  }, [enabled]);
+  }, [enabled, pathname]);
 
   return hidden;
 }

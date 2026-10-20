@@ -23,7 +23,7 @@ function smoothScrollTo(id: string) {
 export function Navbar() {
   const pathname = usePathname();
   const isHome = pathname === "/";
-  const chromeHidden = useHideOnScroll(isHome);
+  const chromeHidden = useHideOnScroll(true);
   const t = useTranslations();
   const { locale } = useLocale();
 
