@@ -34,12 +34,15 @@ export function Navbar() {
 
   const brandClass =
     locale === "th"
-      ? "font-display shrink-0 text-sm font-semibold text-[var(--muted)] transition-colors hover:text-[var(--fg)]"
-      : "font-display shrink-0 text-sm font-semibold tracking-[0.2em] text-[var(--muted)] uppercase transition-colors hover:text-[var(--fg)]";
+      ? "font-display shrink-0 text-sm font-semibold text-[var(--fg)] transition-colors hover:text-[var(--accent)] sm:text-[var(--muted)] sm:hover:text-[var(--fg)]"
+      : "font-display shrink-0 text-sm font-semibold tracking-[0.18em] text-[var(--fg)] uppercase transition-colors hover:text-[var(--accent)] sm:tracking-[0.2em] sm:text-[var(--muted)] sm:hover:text-[var(--fg)]";
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-[var(--border)] bg-[color-mix(in_oklab,var(--bg)_88%,transparent)] backdrop-blur-md">
-      <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-4 px-6 sm:h-16 sm:px-10 lg:px-0">
+    <nav className="fixed top-0 right-0 left-0 z-50 border-b border-transparent bg-[color-mix(in_oklab,var(--bg)_55%,transparent)] backdrop-blur-md sm:sticky sm:border-[var(--border)] sm:bg-[color-mix(in_oklab,var(--bg)_88%,transparent)]">
+      <div
+        className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-3 px-5 sm:h-16 sm:px-10 lg:px-0"
+        style={{ paddingTop: "env(safe-area-inset-top)" }}
+      >
         <Link
           href="/"
           className={brandClass}
@@ -53,7 +56,7 @@ export function Navbar() {
           {t.nav.brand}
         </Link>
 
-        <div className="flex min-w-0 items-center gap-3 sm:gap-5">
+        <div className="flex min-w-0 items-center gap-2.5 sm:gap-5">
           {isHome ? (
             <div className="hidden items-center gap-5 md:flex">
               {homeSectionLinks.map((link) => (
@@ -76,7 +79,7 @@ export function Navbar() {
             href={`/api/resume/pdf?locale=${locale}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm text-[var(--muted)] transition-colors hover:text-[var(--accent)]"
+            className="hidden text-sm text-[var(--muted)] transition-colors hover:text-[var(--accent)] sm:inline"
           >
             {t.nav.pdf}
           </a>

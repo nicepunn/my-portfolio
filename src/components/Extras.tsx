@@ -11,11 +11,11 @@ export function Extras({ data }: { data: Resume }) {
   return (
     <section
       id="about"
-      className="scroll-mt-20 px-6 py-12 sm:px-10 sm:py-16 lg:px-16"
+      className="scroll-mt-20 px-5 py-14 sm:px-10 sm:py-16 lg:px-16"
     >
       <div className="mx-auto max-w-5xl">
-        <div className="section-rule mb-10" aria-hidden />
-        <div className="grid gap-16 lg:grid-cols-3">
+        <div className="section-rule mb-8 sm:mb-10" aria-hidden />
+        <div className="grid gap-12 sm:gap-16 lg:grid-cols-3">
           <Reveal className="lg:col-span-1">
             <SectionHeading
               eyebrow={t.sections.education.eyebrow}

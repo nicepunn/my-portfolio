@@ -4,6 +4,7 @@ import { Extras } from "@/components/Extras";
 import { Experience } from "@/components/Experience";
 import { Footer } from "@/components/Footer";
 import { Hero } from "@/components/Hero";
+import { MobileDock } from "@/components/MobileDock";
 import { Projects } from "@/components/Projects";
 import { Skills } from "@/components/Skills";
 import { getRequestLocale } from "@/i18n/get-request-locale";
@@ -25,6 +26,7 @@ async function HomeContent() {
         <Extras data={data} />
       </main>
       <Footer data={data} />
+      <MobileDock data={data} />
     </div>
   );
 }

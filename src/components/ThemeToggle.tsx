@@ -14,7 +14,7 @@ export function ThemeToggle() {
       aria-label={isDark ? "Dark mode on" : "Light mode on"}
       title={isDark ? "Switch to light mode" : "Switch to dark mode"}
       onClick={toggleTheme}
-      className="relative inline-flex h-7 w-12 shrink-0 items-center justify-center rounded-full border border-[var(--border)] bg-[color-mix(in_oklab,var(--fg)_8%,transparent)] transition-colors hover:border-[var(--accent)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+      className="relative inline-flex h-8 w-12 shrink-0 items-center justify-center rounded-full border border-[var(--border)] bg-[color-mix(in_oklab,var(--fg)_8%,transparent)] transition-colors hover:border-[var(--accent)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] sm:h-7"
     >
       <span
         aria-hidden

@@ -16,10 +16,10 @@ export function Skills({ data }: { data: Resume }) {
   return (
     <section
       id="skills"
-      className="scroll-mt-20 px-6 py-12 sm:px-10 sm:py-16 lg:px-16"
+      className="scroll-mt-20 px-5 py-14 sm:px-10 sm:py-16 lg:px-16"
     >
       <div className="mx-auto max-w-5xl">
-        <div className="section-rule mb-10" aria-hidden />
+        <div className="section-rule mb-8 sm:mb-10" aria-hidden />
         <Reveal>
           <SectionHeading
             eyebrow={t.sections.skills.eyebrow}
@@ -27,14 +27,35 @@ export function Skills({ data }: { data: Resume }) {
           />
         </Reveal>
 
-        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-8 sm:grid-cols-2 sm:gap-10 lg:grid-cols-3">
           {data.skills.map((group, index) => {
             const items = sortSkillsByEmphasis(group.items);
             return (
               <Reveal key={group.label} delay={index * 0.05}>
                 <div>
                   <h3 className="label-caps mb-3">{group.label}</h3>
-                  <ul className="space-y-2">
+                  {/* Mobile: flowing chips; desktop: stacked emphasis list */}
+                  <ul className="flex flex-wrap gap-2 sm:hidden">
+                    {items.map((item) => {
+                      const skill = parseSkillItem(item);
+                      return (
+                        <li key={item}>
+                          <span
+                            className={`inline-flex border px-2.5 py-1 text-sm ${
+                              skill.emphasis === "primary"
+                                ? "border-[var(--accent)]/50 bg-[color-mix(in_oklab,var(--accent)_12%,transparent)] font-semibold text-[var(--fg)]"
+                                : skill.emphasis === "secondary"
+                                  ? "border-[var(--border)] text-[var(--fg)]/90"
+                                  : "border-transparent text-[var(--muted)]/70"
+                            }`}
+                          >
+                            {skill.label}
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                  <ul className="hidden space-y-2 sm:block">
                     {items.map((item) => {
                       const skill = parseSkillItem(item);
                       return (

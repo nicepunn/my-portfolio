@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { JetBrains_Mono, Noto_Sans_Thai, Outfit, Syne } from "next/font/google";
 import { Navbar } from "@/components/Navbar";
 import { ThemeProvider } from "@/components/ThemeProvider";
@@ -35,6 +35,16 @@ const notoThai = Noto_Sans_Thai({
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ??
   "https://my-portfolio-two-tau-13.vercel.app";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: dark)", color: "#070a0d" },
+    { media: "(prefers-color-scheme: light)", color: "#f3f5f4" },
+  ],
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
