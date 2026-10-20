@@ -455,6 +455,20 @@ function ArraySectionCard({
   return (
     <SectionCard id={section.id} title={section.label}>
       <div className="space-y-6">
+        {readOnly ? null : (
+          <button
+            type="button"
+            onClick={() =>
+              updateItems([
+                structuredClone(section.defaultItem) as Record<string, unknown>,
+                ...items,
+              ])
+            }
+            className="inline-flex h-10 w-full items-center justify-center border border-[var(--border)] px-3 text-xs font-medium tracking-wide text-[var(--muted)] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)]"
+          >
+            {section.addLabel}
+          </button>
+        )}
         {rows.map((row, displayIndex) => {
           const rowKey = reviewRowKey(section.path, row);
 
@@ -628,23 +642,6 @@ function ArraySectionCard({
             </div>
           );
         })}
-
-        {readOnly ? null : (
-          <div className="border-t border-[var(--border)] pt-4">
-            <button
-              type="button"
-              onClick={() =>
-                updateItems([
-                  ...items,
-                  structuredClone(section.defaultItem) as Record<string, unknown>,
-                ])
-              }
-              className="inline-flex h-10 w-full items-center justify-center border border-[var(--border)] px-3 text-xs font-medium tracking-wide text-[var(--muted)] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)]"
-            >
-              {section.addLabel}
-            </button>
-          </div>
-        )}
       </div>
     </SectionCard>
   );
