@@ -8,6 +8,7 @@ import {
   fieldInput,
   goToReview,
   reviewExperience,
+  reviewRow,
   sectionById,
 } from "./helpers";
 
@@ -188,12 +189,23 @@ test.describe("dynamic form — review compare", () => {
 
     await goToReview(page);
 
-    await expect(
-      fieldInput(arrayRow(reviewExperience(page, "source"), 0), "company"),
-    ).toHaveValue(firstCompany);
-    await expect(
-      fieldInput(arrayRow(reviewExperience(page, "target"), 0), "company"),
-    ).toHaveValue(firstCompany);
+    const source = reviewExperience(page, "source");
+    const target = reviewExperience(page, "target");
+    await expect(fieldInput(reviewRow(source, "experience#0"), "company")).toHaveValue(
+      firstCompany,
+    );
+    await expect(fieldInput(reviewRow(source, "experience#0"), "role")).toHaveAttribute(
+      "data-mark",
+      "pending",
+    );
+    await expect(reviewRow(target, "experience#0")).toHaveAttribute(
+      "data-array-index",
+      "0",
+    );
+    await expect(fieldInput(reviewRow(target, "experience#0"), "role")).toHaveAttribute(
+      "data-mark",
+      "pending",
+    );
 
     await abandonReview(page);
   });
@@ -259,16 +271,14 @@ test.describe("dynamic form — review compare", () => {
     await goToReview(page);
 
     const target = reviewExperience(page, "target");
-    await expect(target.getByText(/Removed/i).first()).toBeVisible();
-    await expect
-      .poll(async () =>
-        target
-          .locator('[data-field-path="company"] input')
-          .evaluateAll((inputs) =>
-            inputs.map((input) => (input as HTMLInputElement).value),
-          ),
-      )
-      .toContain(removedCompany);
+    const pending = reviewRow(target, "experience#removed#1");
+    await expect(pending.getByText(/Removed/i)).toBeVisible();
+    expect((await fieldInput(pending, "company").inputValue()).length).toBeGreaterThan(
+      0,
+    );
+    await expect(
+      reviewExperience(page, "source").getByText(removedCompany, { exact: true }),
+    ).toHaveCount(0);
 
     await abandonReview(page);
   });
@@ -333,9 +343,22 @@ test.describe("dynamic form — review compare", () => {
     await expect(fieldInput(arrayRow(source, 1), "company")).toHaveValue(
       firstCompany,
     );
-    await expect(fieldInput(arrayRow(target, 0), "company")).toHaveValue(
-      firstCompany,
+    await expect(reviewRow(source, "experience#1")).toHaveAttribute(
+      "data-array-index",
+      "0",
     );
+    await expect(reviewRow(target, "experience#0")).toHaveAttribute(
+      "data-array-index",
+      "0",
+    );
+    const targetFirst = await fieldInput(
+      reviewRow(target, "experience#0"),
+      "company",
+    ).inputValue();
+    const targetSecond = await fieldInput(
+      reviewRow(target, "experience#1"),
+      "company",
+    ).inputValue();
 
     const banner = target.getByTestId("array-order-banner");
     await expect(banner).toBeVisible();
@@ -353,11 +376,15 @@ test.describe("dynamic form — review compare", () => {
 
     await target.getByTestId("array-apply-order").click();
 
+    await expect(reviewRow(target, "experience#1")).toHaveAttribute(
+      "data-array-index",
+      "0",
+    );
     await expect(fieldInput(arrayRow(target, 0), "company")).toHaveValue(
-      secondCompany,
+      targetSecond,
     );
     await expect(fieldInput(arrayRow(target, 1), "company")).toHaveValue(
-      firstCompany,
+      targetFirst,
     );
     await expect(banner).toHaveAttribute("data-review-mark", "resolved");
 

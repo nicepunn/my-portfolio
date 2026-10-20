@@ -83,6 +83,11 @@ export function reviewExperience(page: Page, pane: "source" | "target") {
   return page.locator('[data-array-path="experience"]').nth(index);
 }
 
+/** Row wrapper. Field anchors use keys like `experience#0.company`, so the exact key is the row. */
+export function reviewRow(section: Locator, reviewKey: string) {
+  return section.locator(`[data-review-key="${reviewKey}"]`);
+}
+
 export async function inputValues(root: Locator, fieldPath: string) {
   return root
     .locator(`[data-field-path="${fieldPath}"] input, [data-field-path="${fieldPath}"] textarea`)

@@ -6,7 +6,9 @@ import {
   clearEditStorage,
   fieldInput,
   goToReview,
+  inputValues,
   reviewExperience,
+  reviewRow,
 } from "./helpers";
 
 test.describe("dynamic form — operation combinations", () => {
@@ -62,21 +64,17 @@ test.describe("dynamic form — operation combinations", () => {
     await expect(target.getByText(/Added on source/i)).toBeVisible();
     await expect(target.getByText(/Removed/i).first()).toBeVisible();
 
-    // data-array-index is the data slot, not display order — assert by values.
-    const sourceCompanies = await source
-      .locator('[data-field-path="company"] input')
-      .evaluateAll((inputs) =>
-        inputs.map((input) => (input as HTMLInputElement).value),
-      );
-    const targetCompanies = await target
-      .locator('[data-field-path="company"] input')
-      .evaluateAll((inputs) =>
-        inputs.map((input) => (input as HTMLInputElement).value),
-      );
+    const sourceCompanies = await inputValues(source, "company");
     expect(sourceCompanies).toContain("Combo New Co");
     expect(sourceCompanies).toContain(keepCompany);
-    expect(targetCompanies).toContain(keepCompany);
-    expect(targetCompanies).toContain(dropCompany);
+    expect(sourceCompanies).not.toContain(dropCompany);
+
+    const kept = reviewRow(target, "experience#0");
+    const dropped = reviewRow(target, "experience#removed#1");
+    expect((await inputValues(kept, "company"))[0]?.length).toBeGreaterThan(0);
+    await expect(fieldInput(kept, "role")).toHaveAttribute("data-mark", "pending");
+    await expect(dropped.getByText(/Removed/i)).toBeVisible();
+    expect((await inputValues(dropped, "company"))[0]?.length).toBeGreaterThan(0);
 
     const editedRole = await source.locator("[data-array-index]").evaluateAll(
       (rows, company) => {
@@ -162,30 +160,26 @@ test.describe("dynamic form — operation combinations", () => {
 
     await goToReview(page);
 
-    const target = reviewExperience(page, "target");
-    await target.getByTestId("array-add-from-source").click();
-    await expect(fieldInput(arrayRow(target, 0), "company")).toHaveValue(
-      "Resolve Co",
+    const source = reviewExperience(page, "source");
+    await expect(fieldInput(reviewRow(source, "experience#0"), "company")).toHaveValue(
+      survivor,
+    );
+    await expect(fieldInput(reviewRow(source, "experience#0"), "role")).toHaveValue(
+      "Survivor EN",
     );
 
-    // Find survivor row on target by company and resolve role
-    const targetRows = target.locator("[data-array-index]");
-    const count = await targetRows.count();
-    let resolved = false;
-    for (let i = 0; i < count; i += 1) {
-      const row = arrayRow(target, i);
-      const company = await fieldInput(row, "company").inputValue();
-      if (company === survivor) {
-        await fieldInput(row, "role").fill("Survivor TH");
-        await expect(fieldInput(row, "role")).toHaveAttribute(
-          "data-mark",
-          "resolved",
-        );
-        resolved = true;
-        break;
-      }
-    }
-    expect(resolved).toBe(true);
+    const target = reviewExperience(page, "target");
+    await target.getByTestId("array-add-from-source").click();
+    await expect(
+      fieldInput(reviewRow(target, "experience#added#0"), "company"),
+    ).toHaveValue("Resolve Co");
+
+    const survivorRow = reviewRow(target, "experience#0");
+    await fieldInput(survivorRow, "role").fill("Survivor TH");
+    await expect(fieldInput(survivorRow, "role")).toHaveAttribute(
+      "data-mark",
+      "resolved",
+    );
 
     await abandonReview(page);
   });

@@ -7,6 +7,7 @@ import {
   fieldInput,
   goToReview,
   reviewExperience,
+  reviewRow,
   sectionById,
 } from "./helpers";
 
@@ -15,9 +16,7 @@ test.describe("dynamic form — high-value flows", () => {
     await clearEditStorage(page);
   });
 
-  test("changing period breaks identity (removed + added) on review", async ({
-    page,
-  }) => {
+  test("changing only the period keeps the same job", async ({ page }) => {
     const experience = arraySection(page, "experience");
     await experience.scrollIntoViewIfNeeded();
 
@@ -28,18 +27,24 @@ test.describe("dynamic form — high-value flows", () => {
     await goToReview(page);
 
     const source = reviewExperience(page, "source");
-    await expect(source.getByText(/Removed/i).first()).toBeVisible();
-    await expect(source.getByText(/New/i).first()).toBeVisible();
-
-    const companies = await source
-      .locator('[data-field-path="company"] input')
-      .evaluateAll((inputs) =>
-        inputs.map((input) => (input as HTMLInputElement).value),
-      );
-    // Live row with the new period still shows the same company name.
-    expect(companies.filter((value) => value === company).length).toBeGreaterThanOrEqual(
-      1,
+    const sourceRow = reviewRow(source, "experience#0");
+    await expect(fieldInput(sourceRow, "company")).toHaveValue(company);
+    await expect(fieldInput(sourceRow, "company")).not.toHaveAttribute(
+      "data-mark",
+      "pending",
     );
+    await expect(fieldInput(sourceRow, "period")).toHaveValue("E2E Period 2099");
+    await expect(fieldInput(sourceRow, "period")).toHaveAttribute(
+      "data-mark",
+      "pending",
+    );
+    await expect(source.getByText(/Removed/i)).toHaveCount(0);
+
+    const targetPeriod = fieldInput(
+      reviewRow(reviewExperience(page, "target"), "experience#0"),
+      "period",
+    );
+    await expect(targetPeriod).toHaveAttribute("data-mark", "pending");
 
     await abandonReview(page);
   });
@@ -63,40 +68,21 @@ test.describe("dynamic form — high-value flows", () => {
     await goToReview(page);
 
     const target = reviewExperience(page, "target");
-    await expect(target.getByText(/Removed/i).first()).toBeVisible();
+    const pending = reviewRow(target, "experience#removed#1");
+    await expect(pending.getByText(/Removed/i)).toBeVisible();
+    const translatedCompany = await fieldInput(pending, "company").inputValue();
+    expect(translatedCompany.length).toBeGreaterThan(0);
+    await expect(
+      reviewExperience(page, "source").getByText(removedCompany, { exact: true }),
+    ).toHaveCount(0);
 
-    const dataIndex = await target.locator("[data-array-index]").evaluateAll(
-      (rows, company) => {
-        for (const row of rows) {
-          const input = row.querySelector(
-            '[data-field-path="company"] input',
-          ) as HTMLInputElement | null;
-          if (input?.value === company) {
-            return row.getAttribute("data-array-index");
-          }
-        }
-        return null;
-      },
-      removedCompany,
+    await pending.getByTestId("array-remove").click();
+
+    const synced = reviewRow(target, "experience#removed#1");
+    await expect(synced.getByText(/Removed/i)).toBeVisible();
+    await expect(synced.locator('[data-field-path="company"] input')).toHaveCount(
+      0,
     );
-    expect(dataIndex).not.toBeNull();
-
-    await target
-      .locator(`[data-array-index="${dataIndex}"]`)
-      .getByTestId("array-remove")
-      .click();
-
-    // Synced remove: placeholder remains, editable company field is gone.
-    await expect(target.getByText(/Removed/i).first()).toBeVisible();
-    await expect
-      .poll(async () =>
-        target
-          .locator('[data-field-path="company"] input')
-          .evaluateAll((inputs) =>
-            inputs.map((input) => (input as HTMLInputElement).value),
-          ),
-      )
-      .not.toContain(removedCompany);
 
     await abandonReview(page);
   });
