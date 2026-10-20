@@ -171,16 +171,19 @@ export function GhostButton({
   onClick,
   type = "button",
   danger = false,
+  "data-testid": dataTestId,
 }: {
   children: ReactNode;
   onClick?: () => void;
   type?: "button" | "submit";
   danger?: boolean;
+  "data-testid"?: string;
 }) {
   return (
     <button
       type={type}
       onClick={onClick}
+      data-testid={dataTestId}
       className={`border px-3 py-1.5 text-xs font-medium tracking-wide transition-colors ${
         danger
           ? "border-red-400/30 text-red-300 hover:border-red-300 hover:text-red-200"

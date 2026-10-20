@@ -328,15 +328,17 @@ function FieldsGrid({
             leaf
             className={field.fullWidth ? "sm:col-span-2" : undefined}
           >
-            <FieldControl
-              field={field}
-              value={value}
-              onChange={(next) => onChange(field.path, next)}
-              readOnly={readOnly}
-              mark={mark}
-              changedLabel={changedLabel}
-              resolvedLabel={resolvedLabel}
-            />
+            <div data-field-path={field.path}>
+              <FieldControl
+                field={field}
+                value={value}
+                onChange={(next) => onChange(field.path, next)}
+                readOnly={readOnly}
+                mark={mark}
+                changedLabel={changedLabel}
+                resolvedLabel={resolvedLabel}
+              />
+            </div>
           </ReviewAnchor>
         );
       })}
@@ -428,6 +430,7 @@ function ArraySectionCard({
   const addButton = readOnly ? null : (
     <button
       type="button"
+      data-testid="array-add"
       onClick={addBlankItem}
       className="inline-flex h-10 w-full items-center justify-center border border-[var(--border)] px-3 text-xs font-medium tracking-wide text-[var(--muted)] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)]"
     >
@@ -508,7 +511,10 @@ function ArraySectionCard({
                     </span>
                   </p>
                   {readOnly ? null : (
-                    <GhostButton onClick={() => addMissingFromSource(row)}>
+                    <GhostButton
+                      data-testid="array-add-from-source"
+                      onClick={() => addMissingFromSource(row)}
+                    >
                       {section.addLabel}
                     </GhostButton>
                   )}
@@ -568,6 +574,7 @@ function ArraySectionCard({
                 {readOnly ? null : (
                   <GhostButton
                     danger
+                    data-testid="array-remove"
                     onClick={() =>
                       updateItems(removeArrayItemAt(items, row.dataIndex))
                     }
@@ -601,15 +608,19 @@ function ArraySectionCard({
                       leaf
                       className={field.fullWidth ? "sm:col-span-2" : undefined}
                     >
-                      <FieldControl
-                        field={field}
-                        value={value}
-                        readOnly={readOnly}
-                        mark={mark}
-                        changedLabel={changedLabel}
-                        resolvedLabel={resolvedLabel}
-                        onChange={(next) => updateRowField(row, field.path, next)}
-                      />
+                      <div data-field-path={field.path}>
+                        <FieldControl
+                          field={field}
+                          value={value}
+                          readOnly={readOnly}
+                          mark={mark}
+                          changedLabel={changedLabel}
+                          resolvedLabel={resolvedLabel}
+                          onChange={(next) =>
+                            updateRowField(row, field.path, next)
+                          }
+                        />
+                      </div>
                     </ReviewAnchor>
                   );
                 })}

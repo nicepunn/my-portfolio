@@ -59,6 +59,7 @@ export function EditLogin() {
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             placeholder="••••••••"
+            data-testid="edit-password"
           />
         </Field>
 
@@ -66,6 +67,7 @@ export function EditLogin() {
 
         <button
           type="submit"
+          data-testid="edit-unlock"
           disabled={pending || password.trim().length === 0}
           className="inline-flex h-11 w-full items-center justify-center bg-[var(--accent)] px-5 text-sm font-semibold text-[var(--bg)] transition-[opacity,transform] enabled:hover:bg-[var(--accent-bright)] enabled:active:scale-[0.98] disabled:opacity-40"
         >
