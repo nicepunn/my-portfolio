@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
+import { flushSync } from "react-dom";
 import { Reorder, useDragControls } from "framer-motion";
 import type { Resume } from "@/lib/resume-schema";
 import {
@@ -86,46 +87,102 @@ type JsonDrivenFormProps = {
   dragToReorderLabel?: string;
 };
 
+function arrayItemPreview(sectionPath: string, item: ArrayItem): string {
+  const text = (key: string) => {
+    const value = item[key];
+    return typeof value === "string" ? value.trim() : "";
+  };
+  if (sectionPath === "experience") return text("company") || text("role");
+  if (sectionPath === "projects") return text("name");
+  if (sectionPath === "skills") return text("label");
+  return text("company") || text("name") || text("label");
+}
+
 function ArrayDragRow({
   item,
+  preview,
   dragLabel,
   dataArrayIndex,
+  lifted,
+  dimmed,
+  onLiftChange,
   className,
   children,
 }: {
   item: ArrayItem;
+  preview: string;
   dragLabel: string;
   dataArrayIndex: number;
+  lifted: boolean;
+  dimmed: boolean;
+  onLiftChange: (lifted: boolean) => void;
   className?: string;
   children: ReactNode;
 }) {
   const controls = useDragControls();
+  useEffect(() => {
+    if (!lifted) return;
+    const drop = () => onLiftChange(false);
+    window.addEventListener("pointerup", drop);
+    window.addEventListener("pointercancel", drop);
+    return () => {
+      window.removeEventListener("pointerup", drop);
+      window.removeEventListener("pointercancel", drop);
+    };
+  }, [lifted, onLiftChange]);
   return (
     <Reorder.Item
       as="div"
       value={item}
       dragListener={false}
       dragControls={controls}
+      dragMomentum={false}
+      whileDrag={{ scale: 1.015 }}
+      onDragStart={() => onLiftChange(true)}
+      onDragEnd={() => onLiftChange(false)}
       data-array-index={dataArrayIndex}
       data-reorderable="true"
+      data-lifted={lifted ? "true" : "false"}
       data-testid="array-reorder-item"
-      className={className}
+      className={
+        lifted
+          ? "relative z-30"
+          : `${className ?? ""} ${dimmed ? "opacity-70" : ""}`
+      }
     >
-      <div className="flex items-start gap-2">
+      <div
+        className={`flex items-start gap-2 ${
+          lifted
+            ? "border border-[var(--accent)] bg-[var(--bg)] px-3 py-3 shadow-[0_22px_48px_rgba(0,0,0,0.38)]"
+            : ""
+        }`}
+      >
         <div
           role="button"
           tabIndex={0}
           data-testid="array-drag-handle"
           aria-label={dragLabel}
-          className="mt-1 cursor-grab touch-none select-none px-1 py-2 font-mono text-xs tracking-tighter text-[var(--muted)] active:cursor-grabbing"
+          className={`mt-1 cursor-grab touch-none select-none px-1 py-2 font-mono text-xs tracking-tighter active:cursor-grabbing ${
+            lifted ? "cursor-grabbing text-[var(--accent)]" : "text-[var(--muted)]"
+          }`}
           onPointerDown={(event) => {
             event.preventDefault();
+            // Collapse to the lifted card before drag measures, so it stays under the pointer.
+            flushSync(() => onLiftChange(true));
             controls.start(event);
           }}
         >
           ⋮⋮
         </div>
-        <div className="min-w-0 flex-1 space-y-3">{children}</div>
+        <div className="min-w-0 flex-1">
+          {lifted ? (
+            <p className="truncate py-1.5 text-sm font-medium text-[var(--fg)]">
+              {preview}
+            </p>
+          ) : (
+            <div className="space-y-3">{children}</div>
+          )}
+        </div>
       </div>
     </Reorder.Item>
   );
@@ -470,6 +527,7 @@ function ArraySectionCard({
   const insertPosition = insertPositionForSection(section.path);
   const prependNew = prependsNewItems(section.path);
   const enableDrag = !readOnly && !sourceDiff && !compareAgainst;
+  const [liftedItem, setLiftedItem] = useState<ArrayItem | null>(null);
 
   const orderSourceOriginal = sourceDiff
     ? ((getAtPath(sourceDiff.original, section.path) as ArrayItem[]) ?? [])
@@ -784,10 +842,17 @@ function ArraySectionCard({
           if (enableDrag && reorderable) {
             return (
               <ArrayDragRow
-                key={`${arrayItemIdentity(section.path, item, row.dataIndex)}:${row.dataIndex}`}
+                key={arrayItemIdentity(section.path, item, row.dataIndex)}
                 item={item}
+                preview={
+                  arrayItemPreview(section.path, item) ||
+                  `${section.itemLabel} ${displayIndex + 1}`
+                }
                 dragLabel={dragToReorderLabel}
                 dataArrayIndex={row.dataIndex}
+                lifted={liftedItem === item}
+                dimmed={liftedItem != null && liftedItem !== item}
+                onLiftChange={(next) => setLiftedItem(next ? item : null)}
                 className={rowClass}
               >
                 {body}
