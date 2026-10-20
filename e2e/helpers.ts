@@ -18,6 +18,32 @@ export function arrayRow(section: Locator, dataIndex: number) {
   return section.locator(`[data-array-index="${dataIndex}"]`);
 }
 
+/** Framer Reorder listens to pointer events; HTML5 dragTo does not move items. */
+export async function dragArrayRow(
+  section: Locator,
+  fromIndex: number,
+  toIndex: number,
+) {
+  const fromRow = arrayRow(section, fromIndex);
+  const toRow = arrayRow(section, toIndex);
+  const fromHandle = fromRow.getByTestId("array-drag-handle");
+  await fromHandle.scrollIntoViewIfNeeded();
+  const handleBox = await fromHandle.boundingBox();
+  const toBox = await toRow.boundingBox();
+  if (!handleBox || !toBox) {
+    throw new Error("drag handles are not visible");
+  }
+  const page = section.page();
+  const startX = handleBox.x + handleBox.width / 2;
+  const startY = handleBox.y + handleBox.height / 2;
+  const endX = toBox.x + Math.min(40, toBox.width / 2);
+  const endY = toIndex > fromIndex ? toBox.y + toBox.height - 8 : toBox.y + 8;
+  await page.mouse.move(startX, startY);
+  await page.mouse.down();
+  await page.mouse.move(endX, endY, { steps: 40 });
+  await page.mouse.up();
+}
+
 export function fieldInput(rowOrSection: Locator, fieldPath: string) {
   return rowOrSection
     .locator(

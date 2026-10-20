@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
+import { Reorder, useDragControls } from "framer-motion";
 import type { Resume } from "@/lib/resume-schema";
 import {
   editForm,
@@ -17,6 +18,7 @@ import {
   insertArrayItem,
   insertPositionForSection,
   isReorderableRow,
+  moveArrayItem,
   prependsNewItems,
   readArrayItems,
   removeArrayItemAt,
@@ -26,8 +28,12 @@ import {
   type ArrayItem,
 } from "@/lib/dynamic-form-array";
 import {
+  arrayItemIdentity,
+  arrayOrderChanged,
+  applySourceOrderToTarget,
   fieldDirtyOnAlignedRow,
   fieldValuesEqual,
+  targetOrderMatchesSource,
   type AlignedArrayRow,
 } from "@/lib/form-diff";
 import {
@@ -74,7 +80,56 @@ type JsonDrivenFormProps = {
   addedItemLabel?: string;
   /** Shown on the target pane when source added a row that is not on this side yet. */
   addedOnSourceLabel?: string;
+  orderChangedLabel?: string;
+  orderResolvedLabel?: string;
+  applySourceOrderLabel?: string;
+  dragToReorderLabel?: string;
 };
+
+function ArrayDragRow({
+  item,
+  dragLabel,
+  dataArrayIndex,
+  className,
+  children,
+}: {
+  item: ArrayItem;
+  dragLabel: string;
+  dataArrayIndex: number;
+  className?: string;
+  children: ReactNode;
+}) {
+  const controls = useDragControls();
+  return (
+    <Reorder.Item
+      as="div"
+      value={item}
+      dragListener={false}
+      dragControls={controls}
+      data-array-index={dataArrayIndex}
+      data-reorderable="true"
+      data-testid="array-reorder-item"
+      className={className}
+    >
+      <div className="flex items-start gap-2">
+        <div
+          role="button"
+          tabIndex={0}
+          data-testid="array-drag-handle"
+          aria-label={dragLabel}
+          className="mt-1 cursor-grab touch-none select-none px-1 py-2 font-mono text-xs tracking-tighter text-[var(--muted)] active:cursor-grabbing"
+          onPointerDown={(event) => {
+            event.preventDefault();
+            controls.start(event);
+          }}
+        >
+          ⋮⋮
+        </div>
+        <div className="min-w-0 flex-1 space-y-3">{children}</div>
+      </div>
+    </Reorder.Item>
+  );
+}
 
 function pathDirtyFromSource(
   sourceDiff: SourceDiff | null | undefined,
@@ -383,6 +438,10 @@ function ArraySectionCard({
   removedItemLabel,
   addedItemLabel,
   addedOnSourceLabel,
+  orderChangedLabel = "Order changed",
+  orderResolvedLabel = "Order updated",
+  applySourceOrderLabel = "Apply source order",
+  dragToReorderLabel = "Drag to reorder",
 }: {
   section: ArraySection;
   data: Resume;
@@ -397,6 +456,10 @@ function ArraySectionCard({
   removedItemLabel?: string;
   addedItemLabel?: string;
   addedOnSourceLabel?: string;
+  orderChangedLabel?: string;
+  orderResolvedLabel?: string;
+  applySourceOrderLabel?: string;
+  dragToReorderLabel?: string;
 }) {
   const items = readArrayItems(data, section.path);
   const hasDiff = Boolean(sourceDiff || compareAgainst);
@@ -406,9 +469,48 @@ function ArraySectionCard({
   });
   const insertPosition = insertPositionForSection(section.path);
   const prependNew = prependsNewItems(section.path);
+  const enableDrag = !readOnly && !sourceDiff && !compareAgainst;
+
+  const orderSourceOriginal = sourceDiff
+    ? ((getAtPath(sourceDiff.original, section.path) as ArrayItem[]) ?? [])
+    : compareAgainst
+      ? ((getAtPath(compareAgainst, section.path) as ArrayItem[]) ?? [])
+      : null;
+  const orderSourceCurrent = sourceDiff
+    ? ((getAtPath(sourceDiff.current, section.path) as ArrayItem[]) ?? [])
+    : items;
+  const orderChanged = Boolean(
+    orderSourceOriginal &&
+      arrayOrderChanged(section.path, orderSourceOriginal, orderSourceCurrent),
+  );
+  const targetBaselineItems = resolveAgainst
+    ? ((getAtPath(resolveAgainst, section.path) as ArrayItem[]) ?? [])
+    : [];
+  const orderResolved =
+    Boolean(sourceDiff && resolveAgainst && orderChanged) &&
+    targetOrderMatchesSource(
+      section.path,
+      orderSourceOriginal ?? [],
+      orderSourceCurrent,
+      items,
+      targetBaselineItems,
+    );
+  const orderMark = toMark(orderChanged, orderResolved, resolveAgainst);
 
   function updateItems(nextItems: ArrayItem[]) {
     onChange(writeArrayItems(data, section.path, nextItems));
+  }
+
+  function applySourceOrder() {
+    if (readOnly || !sourceDiff || !orderSourceOriginal) return;
+    updateItems(
+      applySourceOrderToTarget(
+        section.path,
+        orderSourceOriginal,
+        orderSourceCurrent,
+        items,
+      ) as ArrayItem[],
+    );
   }
 
   function updateRowField(row: AlignedArrayRow, fieldPath: string, next: unknown) {
@@ -438,15 +540,40 @@ function ArraySectionCard({
     </button>
   );
 
-  return (
-    <SectionCard id={section.id} title={section.label}>
+  const orderBanner =
+    orderChanged && hasDiff ? (
       <div
-        className="space-y-6"
-        data-array-path={section.path}
-        data-array-prepend={prependNew ? "true" : "false"}
+        data-testid="array-order-banner"
+        data-review-mark={orderMark ?? undefined}
+        className={`flex flex-wrap items-center justify-between gap-3 border px-3 py-2 ${
+          orderMark === "resolved"
+            ? "border-emerald-500/60 bg-emerald-500/5"
+            : "border-red-500/60 bg-red-500/5"
+        }`}
       >
-        {prependNew ? addButton : null}
-        {rows.map((row, displayIndex) => {
+        <p
+          className={`flex items-center gap-2 font-mono text-xs ${markTextClass(orderMark, "text-red-500")}`}
+        >
+          <span
+            className={`inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold text-white ${
+              orderMark === "resolved" ? "bg-emerald-500" : "bg-red-500"
+            }`}
+          >
+            {orderMark === "resolved" ? "✓" : "!"}
+          </span>
+          <span className="tracking-wide uppercase">
+            {orderMark === "resolved" ? orderResolvedLabel : orderChangedLabel}
+          </span>
+        </p>
+        {!readOnly && sourceDiff && orderMark === "pending" ? (
+          <GhostButton data-testid="array-apply-order" onClick={applySourceOrder}>
+            {applySourceOrderLabel}
+          </GhostButton>
+        ) : null}
+      </div>
+    ) : null;
+
+  const rowNodes = rows.map((row, displayIndex) => {
           const rowKey = reviewRowKey(section.path, row);
           const reorderable = isReorderableRow(row);
 
@@ -540,16 +667,10 @@ function ArraySectionCard({
                     ),
                   );
           const rowMark = toMark(itemAttention, rowResolved, resolveAgainst);
+          const rowClass = `space-y-3 border-t pt-6 first:border-t-0 first:pt-0 ${markRowBorderClass(rowMark)}`;
 
-          return (
-            <div
-              key={row.key}
-              data-review-key={rowKey}
-              data-review-pane={reviewPane}
-              data-array-index={reorderable ? row.dataIndex : undefined}
-              data-reorderable={reorderable ? "true" : "false"}
-              className={`space-y-3 border-t pt-6 first:border-t-0 first:pt-0 ${markRowBorderClass(rowMark)}`}
-            >
+          const body = (
+            <>
               <div className="flex items-center justify-between gap-3">
                 <p
                   className={`font-mono text-xs ${markTextClass(rowMark, "text-[var(--accent)]")}`}
@@ -571,17 +692,45 @@ function ArraySectionCard({
                     </span>
                   ) : null}
                 </p>
-                {readOnly ? null : (
-                  <GhostButton
-                    danger
-                    data-testid="array-remove"
-                    onClick={() =>
-                      updateItems(removeArrayItemAt(items, row.dataIndex))
-                    }
-                  >
-                    Remove
-                  </GhostButton>
-                )}
+                <div className="flex flex-wrap items-center gap-2">
+                  {enableDrag && reorderable && row.dataIndex > 0 ? (
+                    <GhostButton
+                      data-testid="array-move-up"
+                      onClick={() =>
+                        updateItems(
+                          moveArrayItem(items, row.dataIndex, row.dataIndex - 1),
+                        )
+                      }
+                    >
+                      ↑
+                    </GhostButton>
+                  ) : null}
+                  {enableDrag &&
+                  reorderable &&
+                  row.dataIndex < items.length - 1 ? (
+                    <GhostButton
+                      data-testid="array-move-down"
+                      onClick={() =>
+                        updateItems(
+                          moveArrayItem(items, row.dataIndex, row.dataIndex + 1),
+                        )
+                      }
+                    >
+                      ↓
+                    </GhostButton>
+                  ) : null}
+                  {readOnly ? null : (
+                    <GhostButton
+                      danger
+                      data-testid="array-remove"
+                      onClick={() =>
+                        updateItems(removeArrayItemAt(items, row.dataIndex))
+                      }
+                    >
+                      Remove
+                    </GhostButton>
+                  )}
+                </div>
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2">
@@ -625,9 +774,60 @@ function ArraySectionCard({
                   );
                 })}
               </div>
+            </>
+          );
+
+          if (enableDrag && reorderable) {
+            return (
+              <ArrayDragRow
+                key={`${arrayItemIdentity(section.path, item, row.dataIndex)}:${row.dataIndex}`}
+                item={item}
+                dragLabel={dragToReorderLabel}
+                dataArrayIndex={row.dataIndex}
+                className={rowClass}
+              >
+                {body}
+              </ArrayDragRow>
+            );
+          }
+
+          return (
+            <div
+              key={row.key}
+              data-review-key={rowKey}
+              data-review-pane={reviewPane}
+              data-array-index={reorderable ? row.dataIndex : undefined}
+              data-reorderable={reorderable ? "true" : "false"}
+              className={rowClass}
+            >
+              {body}
             </div>
           );
-        })}
+        });
+
+  return (
+    <SectionCard id={section.id} title={section.label}>
+      <div
+        className="space-y-6"
+        data-array-path={section.path}
+        data-array-prepend={prependNew ? "true" : "false"}
+      >
+        {orderBanner}
+        {prependNew ? addButton : null}
+        {enableDrag ? (
+          <Reorder.Group
+            as="div"
+            axis="y"
+            values={items}
+            onReorder={updateItems}
+            className="space-y-6"
+            data-testid="array-reorder-group"
+          >
+            {rowNodes}
+          </Reorder.Group>
+        ) : (
+          rowNodes
+        )}
         {prependNew ? null : (
           <div className="border-t border-[var(--border)] pt-4">{addButton}</div>
         )}
@@ -650,6 +850,10 @@ function renderSection(
   removedItemLabel: string | undefined,
   addedItemLabel: string | undefined,
   addedOnSourceLabel: string | undefined,
+  orderChangedLabel: string | undefined,
+  orderResolvedLabel: string | undefined,
+  applySourceOrderLabel: string | undefined,
+  dragToReorderLabel: string | undefined,
 ) {
   if (section.kind === "array") {
     return (
@@ -668,6 +872,10 @@ function renderSection(
         removedItemLabel={removedItemLabel}
         addedItemLabel={addedItemLabel}
         addedOnSourceLabel={addedOnSourceLabel}
+        orderChangedLabel={orderChangedLabel}
+        orderResolvedLabel={orderResolvedLabel}
+        applySourceOrderLabel={applySourceOrderLabel}
+        dragToReorderLabel={dragToReorderLabel}
       />
     );
   }
@@ -706,6 +914,10 @@ export function JsonDrivenForm({
   removedItemLabel = "Removed",
   addedItemLabel = "New",
   addedOnSourceLabel = "Added on source",
+  orderChangedLabel = "Order changed",
+  orderResolvedLabel = "Order updated",
+  applySourceOrderLabel = "Apply source order",
+  dragToReorderLabel = "Drag to reorder",
 }: JsonDrivenFormProps) {
   const handleChange = onChange ?? (() => {});
 
@@ -726,6 +938,10 @@ export function JsonDrivenForm({
           removedItemLabel,
           addedItemLabel,
           addedOnSourceLabel,
+          orderChangedLabel,
+          orderResolvedLabel,
+          applySourceOrderLabel,
+          dragToReorderLabel,
         ),
       )}
     </>

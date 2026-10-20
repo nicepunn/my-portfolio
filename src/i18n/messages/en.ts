@@ -95,6 +95,10 @@ export const en = {
     itemRemoved: "Removed",
     itemAdded: "New",
     itemAddedOnSource: "Added on source — add here",
+    orderChanged: "Order changed",
+    orderResolved: "Order updated on this side",
+    applySourceOrder: "Apply source order",
+    dragToReorder: "Drag to reorder",
     published: "Published",
     noDraft: "No staged edit found. Start from the editor.",
     backToEditor: "← Back to editor",
@@ -193,6 +197,10 @@ export type Messages = {
     itemRemoved: string;
     itemAdded: string;
     itemAddedOnSource: string;
+    orderChanged: string;
+    orderResolved: string;
+    applySourceOrder: string;
+    dragToReorder: string;
     published: string;
     noDraft: string;
     backToEditor: string;

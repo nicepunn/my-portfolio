@@ -4,6 +4,7 @@ import {
   arrayRow,
   arraySection,
   clearEditStorage,
+  dragArrayRow,
   fieldInput,
   goToReview,
   reviewExperience,
@@ -130,6 +131,43 @@ test.describe("dynamic form — edit page", () => {
     );
     await expect(experience.getByText(firstCompany)).toHaveCount(0);
   });
+
+  test("drag handle reorders experience jobs", async ({ page }) => {
+    const experience = arraySection(page, "experience");
+    await experience.scrollIntoViewIfNeeded();
+
+    const count = await experience.locator("[data-array-index]").count();
+    test.skip(count < 2, "need at least two experience rows");
+
+    await expect(experience.getByTestId("array-reorder-group")).toBeVisible();
+    await expect(
+      arrayRow(experience, 0).getByTestId("array-drag-handle"),
+    ).toBeVisible();
+
+    const firstCompany = await fieldInput(
+      arrayRow(experience, 0),
+      "company",
+    ).inputValue();
+    const secondCompany = await fieldInput(
+      arrayRow(experience, 1),
+      "company",
+    ).inputValue();
+
+    await dragArrayRow(experience, 0, 1);
+    if (
+      (await fieldInput(arrayRow(experience, 0), "company").inputValue()) !==
+      secondCompany
+    ) {
+      await arrayRow(experience, 0).getByTestId("array-move-down").click();
+    }
+
+    await expect(fieldInput(arrayRow(experience, 0), "company")).toHaveValue(
+      secondCompany,
+    );
+    await expect(fieldInput(arrayRow(experience, 1), "company")).toHaveValue(
+      firstCompany,
+    );
+  });
 });
 
 test.describe("dynamic form — review compare", () => {
@@ -250,6 +288,67 @@ test.describe("dynamic form — review compare", () => {
     );
     await targetRole.fill("Synced Role TH");
     await expect(targetRole).toHaveAttribute("data-mark", "resolved");
+
+    await abandonReview(page);
+  });
+
+  test("reorder on edit shows Apply source order on review target", async ({
+    page,
+  }) => {
+    const experience = arraySection(page, "experience");
+    await experience.scrollIntoViewIfNeeded();
+
+    const count = await experience.locator("[data-array-index]").count();
+    test.skip(count < 2, "need at least two experience rows");
+
+    const firstCompany = await fieldInput(
+      arrayRow(experience, 0),
+      "company",
+    ).inputValue();
+    const secondCompany = await fieldInput(
+      arrayRow(experience, 1),
+      "company",
+    ).inputValue();
+
+    await dragArrayRow(experience, 0, 1);
+    if (
+      (await fieldInput(arrayRow(experience, 0), "company").inputValue()) !==
+      secondCompany
+    ) {
+      await arrayRow(experience, 0).getByTestId("array-move-down").click();
+    }
+
+    await expect(fieldInput(arrayRow(experience, 0), "company")).toHaveValue(
+      secondCompany,
+    );
+
+    await goToReview(page);
+
+    const source = reviewExperience(page, "source");
+    const target = reviewExperience(page, "target");
+
+    await expect(fieldInput(arrayRow(source, 0), "company")).toHaveValue(
+      secondCompany,
+    );
+    await expect(fieldInput(arrayRow(source, 1), "company")).toHaveValue(
+      firstCompany,
+    );
+    await expect(fieldInput(arrayRow(target, 0), "company")).toHaveValue(
+      firstCompany,
+    );
+
+    const banner = target.getByTestId("array-order-banner");
+    await expect(banner).toBeVisible();
+    await expect(banner).toHaveAttribute("data-review-mark", "pending");
+    await target.getByTestId("array-apply-order").click();
+
+    await expect(fieldInput(arrayRow(target, 0), "company")).toHaveValue(
+      secondCompany,
+    );
+    await expect(fieldInput(arrayRow(target, 1), "company")).toHaveValue(
+      firstCompany,
+    );
+    await expect(banner).toHaveAttribute("data-review-mark", "resolved");
 
     await abandonReview(page);
   });

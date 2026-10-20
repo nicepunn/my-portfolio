@@ -272,7 +272,11 @@ export function ResumeEditor({
         </button>
       </header>
 
-      <JsonDrivenForm data={data} onChange={setData} />
+      <JsonDrivenForm
+        data={data}
+        onChange={setData}
+        dragToReorderLabel={t.edit.dragToReorder}
+      />
 
       <div className="sticky bottom-0 z-10 border-t border-[var(--border)] bg-[color-mix(in_oklab,var(--bg)_92%,transparent)] py-4 backdrop-blur-md">
         <div className="flex flex-wrap items-center gap-3">

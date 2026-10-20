@@ -179,3 +179,93 @@ export function fieldDirtyOnAlignedRow(
     row.currentItem ? row.currentItem[fieldPath] : undefined,
   );
 }
+
+function identitySequence(
+  sectionPath: string,
+  items: ResumeItem[],
+): string[] {
+  return items.map((item, index) =>
+    arrayItemIdentity(sectionPath, item, index),
+  );
+}
+
+/**
+ * True when the relative order of shared identities differs between lists.
+ * Pure reorder is detected even when every row's field status is unchanged.
+ */
+export function arrayOrderChanged(
+  sectionPath: string,
+  originalItems: ResumeItem[],
+  currentItems: ResumeItem[],
+): boolean {
+  const originalIds = identitySequence(sectionPath, originalItems);
+  const currentIds = identitySequence(sectionPath, currentItems);
+  const currentSet = new Set(currentIds);
+  const originalSet = new Set(originalIds);
+  const originalShared = originalIds.filter((id) => currentSet.has(id));
+  const currentShared = currentIds.filter((id) => originalSet.has(id));
+  return JSON.stringify(originalShared) !== JSON.stringify(currentShared);
+}
+
+/**
+ * Reorder `targetItems` to follow sourceCurrent's order of identities that
+ * existed in sourceOriginal (index permutation). Extra target rows (pending
+ * deletes / unmatched) are appended in their previous relative order.
+ */
+export function applySourceOrderToTarget(
+  sectionPath: string,
+  sourceOriginal: ResumeItem[],
+  sourceCurrent: ResumeItem[],
+  targetItems: ResumeItem[],
+): ResumeItem[] {
+  if (targetItems.length === 0) return targetItems;
+
+  const originalIndexById = new Map<string, number>();
+  sourceOriginal.forEach((item, index) => {
+    const id = arrayItemIdentity(sectionPath, item, index);
+    if (!originalIndexById.has(id)) originalIndexById.set(id, index);
+  });
+
+  const orderedOriginalIndexes: number[] = [];
+  const seen = new Set<number>();
+  sourceCurrent.forEach((item, index) => {
+    const id = arrayItemIdentity(sectionPath, item, index);
+    const originalIndex = originalIndexById.get(id);
+    if (originalIndex == null || seen.has(originalIndex)) return;
+    orderedOriginalIndexes.push(originalIndex);
+    seen.add(originalIndex);
+  });
+
+  const used = new Set<number>();
+  const next: ResumeItem[] = [];
+  for (const originalIndex of orderedOriginalIndexes) {
+    if (originalIndex < 0 || originalIndex >= targetItems.length) continue;
+    next.push(targetItems[originalIndex]!);
+    used.add(originalIndex);
+  }
+  targetItems.forEach((item, index) => {
+    if (!used.has(index)) next.push(item);
+  });
+  return next;
+}
+
+/**
+ * Whether `targetItems` already equal the order obtained by applying the
+ * source original→current permutation to `targetBaseline` (pre-review snapshot).
+ * Baseline must be the target list as loaded before review edits.
+ */
+export function targetOrderMatchesSource(
+  sectionPath: string,
+  sourceOriginal: ResumeItem[],
+  sourceCurrent: ResumeItem[],
+  targetItems: ResumeItem[],
+  targetBaseline: ResumeItem[],
+): boolean {
+  const expected = applySourceOrderToTarget(
+    sectionPath,
+    sourceOriginal,
+    sourceCurrent,
+    targetBaseline,
+  );
+  return fieldValuesEqual(expected, targetItems);
+}

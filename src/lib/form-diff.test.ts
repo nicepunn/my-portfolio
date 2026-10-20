@@ -3,6 +3,7 @@ import {
   alignArrayRowsSameLocale,
   alignTargetRowsToSourceDiff,
   arrayItemIdentity,
+  arrayOrderChanged,
   fieldDirtyOnAlignedRow,
   fieldValuesEqual,
 } from "@/lib/form-diff";
@@ -88,7 +89,7 @@ describe("alignArrayRowsSameLocale", () => {
     expect(rows[0]?.dataIndex).toBe(0);
   });
 
-  it("treats pure reorder as unchanged content (order not tracked yet)", () => {
+  it("keeps row field status unchanged on pure reorder but tracks order separately", () => {
     const rows = alignArrayRowsSameLocale("experience", [a, b, c], [c, a, b]);
     expect(rows.map((r) => r.status)).toEqual([
       "unchanged",
@@ -101,6 +102,7 @@ describe("alignArrayRowsSameLocale", () => {
       "A",
       "B",
     ]);
+    expect(arrayOrderChanged("experience", [a, b, c], [c, a, b])).toBe(true);
   });
 });
 

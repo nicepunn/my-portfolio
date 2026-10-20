@@ -310,6 +310,10 @@ export function ResumeReviewEditor() {
               removedItemLabel={t.edit.itemRemoved}
               addedItemLabel={t.edit.itemAdded}
               addedOnSourceLabel={t.edit.itemAddedOnSource}
+              orderChangedLabel={t.edit.orderChanged}
+              orderResolvedLabel={t.edit.orderResolved}
+              applySourceOrderLabel={t.edit.applySourceOrder}
+              dragToReorderLabel={t.edit.dragToReorder}
             />
           </div>
         </section>
@@ -338,6 +342,10 @@ export function ResumeReviewEditor() {
               removedItemLabel={t.edit.itemRemoved}
               addedItemLabel={t.edit.itemAdded}
               addedOnSourceLabel={t.edit.itemAddedOnSource}
+              orderChangedLabel={t.edit.orderChanged}
+              orderResolvedLabel={t.edit.orderResolved}
+              applySourceOrderLabel={t.edit.applySourceOrder}
+              dragToReorderLabel={t.edit.dragToReorder}
             />
           </div>
         </section>
