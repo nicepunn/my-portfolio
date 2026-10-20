@@ -68,7 +68,7 @@ export function Field({
     >
       <div className="flex items-center gap-2">
         <span
-          className={`font-mono text-[11px] tracking-[0.18em] uppercase ${markAccentClass(mark)}`}
+          className={`edit-label font-mono text-[11px] tracking-[0.18em] uppercase ${markAccentClass(mark)}`}
         >
           {label}
         </span>
@@ -89,7 +89,7 @@ export function Field({
 }
 
 const controlClass =
-  "w-full border border-[var(--border)] bg-[var(--bg)] px-3 py-2.5 text-sm text-[var(--fg)] outline-none transition-[border-color,box-shadow,color,opacity] placeholder:text-[var(--muted)] focus:border-[var(--accent)] read-only:cursor-not-allowed read-only:bg-[color-mix(in_oklab,var(--fg)_4%,var(--bg))] read-only:text-[var(--muted)] read-only:opacity-75";
+  "edit-control w-full border border-[var(--border)] bg-[var(--bg)] px-3 py-2.5 text-sm text-[var(--fg)] outline-none transition-[border-color,box-shadow,background-color,color,opacity] placeholder:text-[var(--muted)] focus:border-[var(--accent)] read-only:cursor-not-allowed read-only:bg-[color-mix(in_oklab,var(--fg)_4%,var(--bg))] read-only:text-[var(--muted)] read-only:opacity-75";
 
 export function TextInput({
   mark,
@@ -155,7 +155,7 @@ export function SectionCard({
   return (
     <section
       id={id}
-      className="scroll-mt-24 space-y-4 border border-[var(--border)] p-5 sm:p-6"
+      className="edit-card scroll-mt-24 space-y-4 border border-[var(--border)] p-5 sm:p-6"
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="font-display text-lg font-semibold text-[var(--fg)]">{title}</h2>
@@ -171,22 +171,30 @@ export function GhostButton({
   onClick,
   type = "button",
   danger = false,
+  /** `default` matches primary action height (h-11); `compact` for inline row controls. */
+  size = "compact",
   "data-testid": dataTestId,
 }: {
   children: ReactNode;
   onClick?: () => void;
   type?: "button" | "submit";
   danger?: boolean;
+  size?: "default" | "compact";
   "data-testid"?: string;
 }) {
+  const sizeClass =
+    size === "default"
+      ? "inline-flex h-11 items-center justify-center px-4 text-sm font-medium tracking-wide"
+      : "px-3 py-1.5 text-xs font-medium tracking-wide";
+
   return (
     <button
       type={type}
       onClick={onClick}
       data-testid={dataTestId}
-      className={`border px-3 py-1.5 text-xs font-medium tracking-wide transition-colors ${
+      className={`edit-ghost border transition-colors ${sizeClass} ${
         danger
-          ? "border-red-400/30 text-red-300 hover:border-red-300 hover:text-red-200"
+          ? "edit-ghost-danger border-red-400/30 text-red-300 hover:border-red-300 hover:text-red-200"
           : "border-[var(--border)] text-[var(--muted)] hover:border-[var(--accent)] hover:text-[var(--accent)]"
       }`}
     >

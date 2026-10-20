@@ -31,7 +31,7 @@ export function ConfirmModal({
       aria-modal="true"
       aria-labelledby="confirm-modal-title"
     >
-      <div className="w-full max-w-md space-y-5 border border-[var(--border)] bg-[var(--bg)] p-6 shadow-xl">
+      <div className="edit-modal w-full max-w-md space-y-5 border border-[var(--border)] bg-[var(--bg)] p-6 shadow-xl">
         <div className="space-y-2">
           <h2
             id="confirm-modal-title"
@@ -51,7 +51,7 @@ export function ConfirmModal({
             onClick={onConfirm}
             className={`inline-flex h-11 items-center justify-center px-4 text-sm font-semibold transition-[opacity,transform] enabled:active:scale-[0.98] disabled:opacity-40 ${
               danger
-                ? "border border-red-400/40 text-red-300 enabled:hover:border-red-300 enabled:hover:text-red-200"
+                ? "edit-ghost edit-ghost-danger border border-red-400/40 text-red-300 enabled:hover:border-red-300 enabled:hover:text-red-200"
                 : "bg-[var(--accent)] text-[var(--bg)] enabled:hover:bg-[var(--accent-bright)]"
             }`}
           >

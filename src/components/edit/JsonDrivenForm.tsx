@@ -613,7 +613,9 @@ function ArraySectionCard({
       type="button"
       data-testid="array-add"
       onClick={addBlankItem}
-      className="inline-flex h-10 w-full items-center justify-center border border-[var(--border)] px-3 text-xs font-medium tracking-wide text-[var(--muted)] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)]"
+      className={`edit-add inline-flex h-10 w-full items-center justify-center border border-[var(--border)] px-3 text-xs font-medium tracking-wide text-[var(--muted)] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)]${
+        reviewPane ? " edit-flow-item" : ""
+      }`}
     >
       {section.addLabel}
     </button>
@@ -628,7 +630,9 @@ function ArraySectionCard({
         data-review-pane={reviewPane}
         data-review-mark={orderMark ?? undefined}
         data-review-leaf={orderMark ? "true" : undefined}
-        className={`flex flex-wrap items-center justify-between gap-3 border px-3 py-2 ${
+        className={`flex flex-wrap items-center justify-between gap-3 border px-3 py-2${
+          reviewPane ? " edit-flow-item" : ""
+        } ${
           orderMark === "resolved"
             ? "border-emerald-500/60 bg-emerald-500/5"
             : "border-red-500/60 bg-red-500/5"
@@ -670,7 +674,9 @@ function ArraySectionCard({
                 pane={reviewPane}
                 mark={mark}
                 leaf
-                className={`space-y-2 border border-dashed px-3 py-3 ${
+                className={`space-y-2 border border-dashed px-3 py-3${
+                  reviewPane ? " edit-flow-item" : ""
+                } ${
                   mark === "resolved"
                     ? "border-emerald-500/60 bg-emerald-500/5"
                     : "border-red-500/60 bg-red-500/5"
@@ -707,7 +713,9 @@ function ArraySectionCard({
                 pane={reviewPane}
                 mark={mark}
                 leaf
-                className="space-y-3 border border-dashed border-red-500/60 bg-red-500/5 px-3 py-3"
+                className={`space-y-3 border border-dashed border-red-500/60 bg-red-500/5 px-3 py-3${
+                  reviewPane ? " edit-flow-item" : ""
+                }`}
               >
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <p className="flex items-center gap-2 font-mono text-xs text-red-500">
@@ -749,7 +757,9 @@ function ArraySectionCard({
                     ),
                   );
           const rowMark = toMark(itemAttention, rowResolved, resolveAgainst);
-          const rowClass = `space-y-3 border-t pt-6 first:border-t-0 first:pt-0 ${markRowBorderClass(rowMark)}`;
+          const rowClass = `edit-row space-y-3 border-t pt-6 first:border-t-0 first:pt-0${
+            reviewPane ? " edit-flow-item" : ""
+          } ${markRowBorderClass(rowMark)}`;
 
           const body = (
             <>
@@ -909,7 +919,7 @@ function ArraySectionCard({
             axis="y"
             values={items}
             onReorder={updateItems}
-            className="space-y-6"
+            className={`space-y-6${reviewPane ? " edit-flow-item" : ""}`}
             data-testid="array-reorder-group"
           >
             {rowNodes}
@@ -917,8 +927,14 @@ function ArraySectionCard({
         ) : (
           rowNodes
         )}
-        {prependNew ? null : (
-          <div className="border-t border-[var(--border)] pt-4">{addButton}</div>
+        {prependNew || !addButton ? null : (
+          <div
+            className={`edit-add-wrap border-t border-[var(--border)] pt-4${
+              reviewPane ? " edit-flow-item" : ""
+            }`}
+          >
+            {addButton}
+          </div>
         )}
       </div>
     </SectionCard>

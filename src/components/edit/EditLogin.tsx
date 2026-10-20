@@ -38,7 +38,7 @@ export function EditLogin() {
   }
 
   return (
-    <div className="mx-auto flex min-h-[70vh] max-w-md flex-col justify-center px-6 py-16 sm:px-10">
+    <div className="edit-page mx-auto flex min-h-[70vh] max-w-md flex-col justify-center px-6 py-16 sm:px-10">
       <LoadingOverlay show={pending} />
       <p className="mb-3 font-mono text-xs tracking-[0.25em] text-[var(--accent)] uppercase">
         Protected
@@ -50,7 +50,7 @@ export function EditLogin() {
         This page is locked. Enter the edit password to continue.
       </p>
 
-      <form onSubmit={submit} className="mt-8 space-y-5">
+      <form onSubmit={submit} className="edit-card mt-8 space-y-5 border border-transparent p-5 sm:p-6">
         <Field label="Password">
           <TextInput
             type="password"

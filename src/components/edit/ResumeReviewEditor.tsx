@@ -214,7 +214,7 @@ export function ResumeReviewEditor() {
 
   if (!hydrated) {
     return (
-      <div className="mx-auto max-w-6xl px-6 py-12 text-sm text-[var(--muted)]">
+      <div className="edit-page mx-auto max-w-6xl px-6 py-12 text-sm text-[var(--muted)]">
         {t.common.loadingResume}
       </div>
     );
@@ -222,7 +222,7 @@ export function ResumeReviewEditor() {
 
   if (!draft || !sourceData || !targetData) {
     return (
-      <div className="mx-auto max-w-3xl space-y-4 px-6 py-12">
+      <div className="edit-page mx-auto max-w-3xl space-y-4 px-6 py-12">
         <p className="text-sm text-[var(--muted)]">{t.edit.noDraft}</p>
         <GhostButton onClick={() => router.replace("/edit")}>
           {t.edit.backToEditor}
@@ -236,10 +236,10 @@ export function ResumeReviewEditor() {
   const isLast = draft.queue.length === 0;
 
   return (
-    <div className="mx-auto flex h-full max-w-7xl flex-col overflow-hidden px-4 py-4 sm:px-6 lg:px-8">
+    <div className="edit-page edit-review mx-auto flex h-full max-w-7xl flex-col gap-4 overflow-hidden px-4 py-4 sm:px-6 lg:px-8">
       <LoadingOverlay show={pending} />
-      <header className="shrink-0 space-y-2 pb-4">
-        <p className="font-mono text-xs tracking-[0.25em] text-[var(--accent)] uppercase">
+      <header className="edit-header shrink-0 space-y-2">
+        <p className="edit-kicker font-mono text-xs tracking-[0.25em] text-[var(--accent)] uppercase">
           {t.edit.eyebrow}
         </p>
         <h1 className="font-display text-2xl font-bold tracking-tight text-[var(--fg)] sm:text-3xl">
@@ -287,10 +287,10 @@ export function ResumeReviewEditor() {
         ) : null}
       </header>
 
-      <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 overflow-hidden lg:grid-cols-2 lg:gap-6">
-        <section className="flex min-h-0 flex-col gap-3 overflow-hidden">
-          <div className="shrink-0 border border-[var(--border)] px-4 py-3">
-            <p className="font-mono text-[11px] tracking-[0.18em] text-[var(--muted)] uppercase">
+      <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 overflow-hidden lg:grid-cols-2">
+        <section className="flex min-h-0 flex-col gap-4 overflow-hidden">
+          <div className="edit-pane shrink-0 border border-[var(--border)] p-5 sm:p-6">
+            <p className="edit-kicker font-mono text-[11px] tracking-[0.18em] text-[var(--muted)] uppercase">
               {t.edit.reviewSource}
             </p>
             <p className="mt-1 text-sm font-medium text-[var(--fg)]">
@@ -299,7 +299,7 @@ export function ResumeReviewEditor() {
           </div>
           <div
             ref={sourceScrollRef}
-            className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1"
+            className="edit-stack min-h-0 flex-1 overflow-y-auto overscroll-contain"
           >
             <JsonDrivenForm
               data={sourceData}
@@ -319,9 +319,9 @@ export function ResumeReviewEditor() {
           </div>
         </section>
 
-        <section className="flex min-h-0 flex-col gap-3 overflow-hidden">
-          <div className="shrink-0 border border-[var(--accent)]/40 px-4 py-3">
-            <p className="font-mono text-[11px] tracking-[0.18em] text-[var(--accent)] uppercase">
+        <section className="flex min-h-0 flex-col gap-4 overflow-hidden">
+          <div className="edit-pane edit-pane-target shrink-0 border border-[var(--accent)]/40 p-5 sm:p-6">
+            <p className="edit-kicker font-mono text-[11px] tracking-[0.18em] text-[var(--accent)] uppercase">
               {t.edit.reviewTarget}
             </p>
             <p className="mt-1 text-sm font-medium text-[var(--fg)]">
@@ -330,7 +330,7 @@ export function ResumeReviewEditor() {
           </div>
           <div
             ref={targetScrollRef}
-            className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1"
+            className="edit-stack min-h-0 flex-1 overflow-y-auto overscroll-contain"
           >
             <JsonDrivenForm
               data={targetData}
@@ -352,7 +352,7 @@ export function ResumeReviewEditor() {
         </section>
       </div>
 
-      <div className="shrink-0 border-t border-[var(--border)] bg-[var(--bg)] py-4">
+      <div className="edit-bar shrink-0 border-t border-[var(--border)] bg-[var(--bg)] py-4">
         <div className="flex flex-wrap items-center gap-3">
           <button
             type="button"
@@ -366,7 +366,7 @@ export function ResumeReviewEditor() {
                 ? t.edit.reviewDone
                 : t.edit.reviewNext}
           </button>
-          <GhostButton danger onClick={abandon}>
+          <GhostButton size="default" danger onClick={abandon}>
             {t.edit.reviewAbandon}
           </GhostButton>
           {status ? (

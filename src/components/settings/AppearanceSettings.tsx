@@ -5,7 +5,7 @@ import { useTranslations } from "@/i18n/LocaleProvider";
 import { UI_SKINS, UI_SKIN_SWATCHES } from "@/lib/theme";
 
 export function AppearanceSettings() {
-  const { ui, setUi } = useTheme();
+  const { ui, setUi, ready } = useTheme();
   const t = useTranslations();
 
   return (
@@ -25,7 +25,8 @@ export function AppearanceSettings() {
         className="choice-list divide-y divide-[var(--border)] border-y border-[var(--border)]"
       >
         {UI_SKINS.map((id) => {
-          const active = id === ui;
+          // Avoid a false "Editorial" checked flash before localStorage sync.
+          const active = ready && id === ui;
           const copy = t.settings.appearance.skins[id];
           const [bg, accent, fg] = UI_SKIN_SWATCHES[id];
           return (

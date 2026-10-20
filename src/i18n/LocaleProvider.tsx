@@ -4,7 +4,7 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
+  useLayoutEffect,
   useMemo,
   useState,
   type ReactNode,
@@ -58,7 +58,7 @@ export function LocaleProvider({
   const [locale, setLocaleState] = useState<Locale>(initialLocale);
   const [ready, setReady] = useState(false);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const stored = readDeviceLocale();
     setLocaleState(stored);
     persistLocale(stored);
@@ -66,7 +66,24 @@ export function LocaleProvider({
     if (stored !== initialLocale) {
       router.refresh();
     }
-    // Hydrate once from this device's localStorage.
+
+    // History back / bfcache: re-assert device locale and refresh SSR resume.
+    const resync = () => {
+      const next = readDeviceLocale();
+      setLocaleState(next);
+      persistLocale(next);
+      router.refresh();
+    };
+    const onPageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) resync();
+    };
+    window.addEventListener("pageshow", onPageShow);
+    window.addEventListener("popstate", resync);
+    return () => {
+      window.removeEventListener("pageshow", onPageShow);
+      window.removeEventListener("popstate", resync);
+    };
+    // Hydrate once from this device's localStorage; popstate/pageshow re-sync.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -74,6 +91,7 @@ export function LocaleProvider({
     (next: Locale) => {
       setLocaleState(next);
       persistLocale(next);
+      // Invalidate cached RSC (home resume) so Resume / back see the new locale.
       router.refresh();
     },
     [router],

@@ -600,6 +600,170 @@ html[data-ui="soft"] .site-nav {
   }
 }
 
+html[data-ui="soft"] .edit-page {
+  --edit-surface: color-mix(in oklab, var(--accent) 6%, var(--bg));
+}
+
+html[data-ui="soft"] .edit-page .edit-header,
+html[data-ui="soft"] .edit-page .edit-card,
+html[data-ui="soft"] .edit-page .edit-modal,
+html[data-ui="soft"] .edit-page .edit-pane {
+  border-style: none;
+  border-width: 0;
+  border-radius: 1.35rem;
+  background: var(--edit-surface);
+  box-shadow: none;
+}
+
+html[data-ui="soft"] .edit-page .edit-pane-target {
+  background: color-mix(in oklab, var(--accent) 10%, var(--bg));
+}
+
+html[data-ui="soft"] .edit-review .edit-stack > .edit-card + .edit-card {
+  margin-top: 1rem;
+}
+
+html[data-ui="soft"] .edit-page .edit-header {
+  padding: 1.25rem 1.35rem;
+}
+
+html[data-ui="soft"] .edit-page .edit-kicker,
+html[data-ui="soft"] .edit-page .edit-label {
+  font-family: var(--font-outfit), system-ui, sans-serif;
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+
+html[data-ui="soft"] .edit-page .edit-control {
+  border-style: none;
+  border-width: 0;
+  border-radius: 0.95rem;
+  background: color-mix(in oklab, var(--fg) 5%, var(--edit-surface));
+  box-shadow: none;
+}
+
+html[data-ui="soft"] .edit-page .edit-control:focus {
+  border-color: transparent;
+  background: color-mix(in oklab, var(--accent) 18%, var(--edit-surface));
+  box-shadow: none;
+}
+
+html[data-ui="soft"] .edit-page .edit-row {
+  border-style: none;
+  border-width: 0;
+  border-block-start-width: 0;
+  border-block-end-width: 0;
+  margin-top: 0.85rem;
+  border-radius: 1.05rem;
+  background: color-mix(in oklab, var(--bg) 22%, var(--edit-surface));
+  padding: 1rem 1rem 1.05rem;
+}
+
+html[data-ui="soft"] .edit-page .edit-row:first-child {
+  margin-top: 0;
+}
+
+html[data-ui="soft"] .edit-page .edit-add,
+html[data-ui="soft"] .edit-page .edit-ghost {
+  border-style: none;
+  border-width: 0;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--fg) 4%, transparent);
+  color: var(--fg);
+}
+
+html[data-ui="soft"] .edit-page .edit-add:hover,
+html[data-ui="soft"] .edit-page .edit-ghost:hover {
+  border-color: transparent;
+  background: color-mix(in oklab, var(--accent) 10%, transparent);
+  color: var(--fg);
+}
+
+html[data-ui="soft"] .edit-page .edit-ghost-danger {
+  background: color-mix(in oklab, #e06a78 8%, transparent);
+  color: #a84d68;
+}
+
+html[data-ui="soft"] .edit-page .edit-ghost-danger:hover {
+  background: color-mix(in oklab, #e06a78 12%, transparent);
+  color: #a84d68;
+}
+
+html[data-ui="soft"][data-theme="dark"] .edit-page .edit-ghost-danger,
+html[data-ui="soft"][data-theme="dark"] .edit-page .edit-ghost-danger:hover {
+  color: #f7d4e0;
+}
+
+html[data-ui="soft"] .edit-page .edit-add-wrap {
+  border-style: none;
+  border-width: 0;
+  border-block-start-width: 0;
+  padding-top: 0.35rem;
+}
+
+html[data-ui="soft"] .edit-page .edit-bar {
+  border-style: none;
+  border-width: 0;
+  border-block-start-width: 0;
+  border-radius: 1.25rem;
+  background: color-mix(in oklab, var(--accent) 6%, var(--bg));
+  box-shadow: 0 8px 18px rgba(40, 24, 32, 0.07);
+  margin-bottom: 0.75rem;
+  padding-right: 1rem;
+  padding-left: 1rem;
+}
+
+/* Review only. One 1rem between flow items, so space-y and .edit-row
+   margin-top do not both apply. /edit does not use edit-flow-item. */
+html[data-ui="soft"] .edit-review .edit-flow-item {
+  margin-top: 1rem;
+  margin-bottom: 0;
+}
+
+html[data-ui="soft"] .edit-review .edit-flow-item:first-child {
+  margin-top: 0;
+}
+
+html[data-ui="soft"] .edit-review .edit-add-wrap {
+  padding-top: 0;
+}
+
+html[data-ui="soft"] .edit-review .edit-bar {
+  margin-bottom: 0;
+  padding: 1.25rem 1.35rem;
+}
+
+/* Keep Soft fills, but align co-located action buttons to Save (h-11). */
+.edit-page .edit-bar .edit-ghost {
+  display: inline-flex;
+  height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  padding-inline: 1rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+html[data-ui="soft"] .edit-page .edit-choice {
+  border-style: none;
+  border-width: 0;
+  border-radius: 1rem;
+  background: color-mix(in oklab, var(--fg) 5%, var(--edit-surface));
+}
+
+html[data-ui="soft"] .edit-page .edit-choice-on {
+  background: color-mix(in oklab, var(--accent) 12%, var(--bg));
+}
+
+html[data-ui="soft"] .edit-page .edit-nav button span:first-child {
+  border-style: none;
+  background: color-mix(in oklab, var(--fg) 18%, transparent);
+}
+
+html[data-ui="soft"] .edit-page .edit-nav button[aria-current="true"] span:first-child {
+  background: var(--accent);
+}
+
 .atmosphere {
   pointer-events: none;
   position: absolute;

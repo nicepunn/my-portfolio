@@ -237,14 +237,14 @@ export function ResumeEditor({
   );
 
   return (
-    <div className="relative mx-auto max-w-3xl space-y-8 px-6 py-12 sm:px-10 lg:px-0 xl:max-w-3xl">
+    <div className="edit-page relative mx-auto max-w-3xl space-y-8 px-6 py-12 sm:px-10 lg:px-0 xl:max-w-3xl">
       <LoadingOverlay show={pending} />
       <EditSectionNav onBack={onBackClick} />
 
-      <header className="space-y-3">
+      <header className="edit-header space-y-3">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="space-y-3">
-            <p className="font-mono text-xs tracking-[0.25em] text-[var(--accent)] uppercase">
+            <p className="edit-kicker font-mono text-xs tracking-[0.25em] text-[var(--accent)] uppercase">
               {t.edit.eyebrow}
             </p>
             <h1 className="font-display text-3xl font-bold tracking-tight text-[var(--fg)] sm:text-4xl">
@@ -278,13 +278,14 @@ export function ResumeEditor({
         dragToReorderLabel={t.edit.dragToReorder}
       />
 
-      <div className="sticky bottom-0 z-10 border-t border-[var(--border)] bg-[color-mix(in_oklab,var(--bg)_92%,transparent)] py-4 backdrop-blur-md">
+      <div className="edit-bar sticky bottom-0 z-10 border-t border-[var(--border)] bg-[color-mix(in_oklab,var(--bg)_92%,transparent)] py-4 backdrop-blur-md">
         <div className="flex flex-wrap items-center gap-3">
           {saveButton}
-          <GhostButton onClick={() => downloadJson(data, locale)}>
+          <GhostButton size="default" onClick={() => downloadJson(data, locale)}>
             {t.edit.downloadJson}
           </GhostButton>
           <GhostButton
+            size="default"
             onClick={() => {
               startTransition(async () => {
                 try {

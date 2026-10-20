@@ -31,8 +31,9 @@ async function HomeContent() {
   );
 }
 
-function HomeFallback() {
-  const messages = getMessages("en");
+async function HomeFallback() {
+  const locale = await getRequestLocale();
+  const messages = getMessages(locale);
   return (
     <div className="flex flex-1 items-center justify-center px-6 py-24 text-sm text-[var(--muted)]">
       {messages.common.loadingResume}

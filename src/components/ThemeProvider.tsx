@@ -4,7 +4,7 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
+  useLayoutEffect,
   useMemo,
   useState,
   type ReactNode,
@@ -28,21 +28,56 @@ type ThemeContextValue = {
   toggleTheme: () => void;
   ui: UiSkin;
   setUi: (ui: UiSkin) => void;
+  ready: boolean;
 };
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
+function readStoredTheme(): Theme {
+  try {
+    return resolveTheme(localStorage.getItem(THEME_STORAGE_KEY));
+  } catch {
+    return resolveTheme(document.documentElement.dataset.theme ?? null);
+  }
+}
+
+function readStoredUi(): UiSkin {
+  try {
+    return resolveUi(localStorage.getItem(UI_STORAGE_KEY));
+  } catch {
+    return resolveUi(document.documentElement.dataset.ui ?? null);
+  }
+}
+
+function syncFromStorage(
+  setThemeState: (theme: Theme) => void,
+  setUiState: (ui: UiSkin) => void,
+) {
+  const nextTheme = readStoredTheme();
+  const nextUi = readStoredUi();
+  setThemeState(nextTheme);
+  setUiState(nextUi);
+  applyTheme(nextTheme);
+  applyUi(nextUi);
+  return { nextTheme, nextUi };
+}
+
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(DEFAULT_THEME);
   const [ui, setUiState] = useState<UiSkin>(DEFAULT_UI);
+  const [ready, setReady] = useState(false);
 
-  useEffect(() => {
-    const initialTheme = resolveTheme(localStorage.getItem(THEME_STORAGE_KEY));
-    const initialUi = resolveUi(localStorage.getItem(UI_STORAGE_KEY));
-    setThemeState(initialTheme);
-    setUiState(initialUi);
-    applyTheme(initialTheme);
-    applyUi(initialUi);
+  useLayoutEffect(() => {
+    syncFromStorage(setThemeState, setUiState);
+    setReady(true);
+
+    // bfcache / history restore must re-apply device prefs (not a draft on leave).
+    const onPageShow = (event: PageTransitionEvent) => {
+      if (!event.persisted) return;
+      syncFromStorage(setThemeState, setUiState);
+    };
+    window.addEventListener("pageshow", onPageShow);
+    return () => window.removeEventListener("pageshow", onPageShow);
   }, []);
 
   const setTheme = useCallback((next: Theme) => {
@@ -62,8 +97,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ theme, setTheme, toggleTheme, ui, setUi }),
-    [theme, setTheme, toggleTheme, ui, setUi],
+    () => ({ theme, setTheme, toggleTheme, ui, setUi, ready }),
+    [theme, setTheme, toggleTheme, ui, setUi, ready],
   );
 
   return (

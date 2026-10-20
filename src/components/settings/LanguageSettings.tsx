@@ -4,7 +4,7 @@ import { locales, localeMeta } from "@/i18n/config";
 import { useLocale, useTranslations } from "@/i18n/LocaleProvider";
 
 export function LanguageSettings() {
-  const { locale, setLocale } = useLocale();
+  const { locale, setLocale, ready } = useLocale();
   const t = useTranslations();
 
   return (
@@ -24,7 +24,8 @@ export function LanguageSettings() {
         className="choice-list divide-y divide-[var(--border)] border-y border-[var(--border)]"
       >
         {locales.map((code) => {
-          const active = code === locale;
+          // Avoid a false "English" checked flash before localStorage sync.
+          const active = ready && code === locale;
           const meta = localeMeta[code];
           return (
             <button

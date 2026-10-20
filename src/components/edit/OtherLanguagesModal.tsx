@@ -41,7 +41,7 @@ export function OtherLanguagesModal({
       aria-modal="true"
       aria-labelledby="other-languages-title"
     >
-      <div className="w-full max-w-md space-y-5 border border-[var(--border)] bg-[var(--bg)] p-6 shadow-xl">
+      <div className="edit-modal w-full max-w-md space-y-5 border border-[var(--border)] bg-[var(--bg)] p-6 shadow-xl">
         <div className="space-y-2">
           <h2
             id="other-languages-title"
@@ -65,7 +65,9 @@ export function OtherLanguagesModal({
               return (
                 <label
                   key={locale}
-                  className="flex cursor-pointer items-center gap-3 border border-[var(--border)] px-3 py-2.5 text-sm text-[var(--fg)] transition-colors hover:border-[var(--accent)]"
+                  className={`edit-choice flex cursor-pointer items-center gap-3 border border-[var(--border)] px-3 py-2.5 text-sm text-[var(--fg)] transition-colors hover:border-[var(--accent)] ${
+                    checked ? "edit-choice-on" : ""
+                  }`}
                 >
                   <input
                     type="checkbox"
@@ -107,7 +109,7 @@ export function OtherLanguagesModal({
             type="button"
             disabled={pending}
             onClick={onSaveThisOnly}
-            className="inline-flex h-11 items-center justify-center border border-[var(--border)] px-4 text-sm font-medium text-[var(--fg)] transition-colors enabled:hover:border-[var(--accent)] enabled:hover:text-[var(--accent)] disabled:opacity-40"
+            className="edit-ghost inline-flex h-11 items-center justify-center border border-[var(--border)] px-4 text-sm font-medium text-[var(--fg)] transition-colors enabled:hover:border-[var(--accent)] enabled:hover:text-[var(--accent)] disabled:opacity-40"
           >
             {t.edit.saveThisOnly}
           </button>

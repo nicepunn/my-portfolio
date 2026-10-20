@@ -48,7 +48,7 @@ export function EditSectionNav({ onBack }: { onBack: () => void }) {
   return (
     <nav
       aria-label="Edit sections"
-      className="pointer-events-none fixed top-24 left-3 z-40 hidden md:block md:left-4 lg:left-6"
+      className="edit-nav pointer-events-none fixed top-24 left-3 z-40 hidden md:block md:left-4 lg:left-6"
     >
       <div className="pointer-events-auto flex flex-col gap-4">
         <button
