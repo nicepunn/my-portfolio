@@ -13,8 +13,19 @@ import {
   type FormSection,
 } from "@/lib/edit-form";
 import {
-  alignArrayRowsSameLocale,
-  alignTargetRowsToSourceDiff,
+  buildArraySectionRows,
+  insertArrayItem,
+  insertPositionForSection,
+  isReorderableRow,
+  prependsNewItems,
+  readArrayItems,
+  removeArrayItemAt,
+  reviewRowKey,
+  updateArrayItemField,
+  writeArrayItems,
+  type ArrayItem,
+} from "@/lib/dynamic-form-array";
+import {
   fieldDirtyOnAlignedRow,
   fieldValuesEqual,
   type AlignedArrayRow,
@@ -97,14 +108,6 @@ function toMark(
   if (!attention) return null;
   if (resolveAgainst) return resolved ? "resolved" : "pending";
   return "pending";
-}
-
-function reviewRowKey(sectionPath: string, row: AlignedArrayRow): string {
-  if (row.status === "removed") {
-    return `${sectionPath}#removed#${row.originalIndex}`;
-  }
-  if (row.originalIndex >= 0) return `${sectionPath}#${row.originalIndex}`;
-  return `${sectionPath}#added#${row.currentIndex}`;
 }
 
 function ReviewAnchor({
@@ -393,71 +396,33 @@ function ArraySectionCard({
   addedItemLabel?: string;
   addedOnSourceLabel?: string;
 }) {
-  const items = (getAtPath(data, section.path) as Record<string, unknown>[]) ?? [];
+  const items = readArrayItems(data, section.path);
   const hasDiff = Boolean(sourceDiff || compareAgainst);
+  const rows = buildArraySectionRows(section.path, items, {
+    sourceDiff,
+    compareAgainst,
+  });
+  const insertPosition = insertPositionForSection(section.path);
+  const prependNew = prependsNewItems(section.path);
 
-  const rows: AlignedArrayRow[] = (() => {
-    if (sourceDiff) {
-      const sourceOriginal =
-        (getAtPath(sourceDiff.original, section.path) as Record<
-          string,
-          unknown
-        >[]) ?? [];
-      const sourceCurrent =
-        (getAtPath(sourceDiff.current, section.path) as Record<
-          string,
-          unknown
-        >[]) ?? [];
-      return alignTargetRowsToSourceDiff(
-        section.path,
-        sourceOriginal,
-        sourceCurrent,
-        items,
-      );
-    }
-    if (compareAgainst) {
-      const originalItems =
-        (getAtPath(compareAgainst, section.path) as Record<string, unknown>[]) ??
-        [];
-      return alignArrayRowsSameLocale(section.path, originalItems, items);
-    }
-    return items.map((item, index) => ({
-      key: `${section.path}:plain:${index}`,
-      dataIndex: index,
-      currentIndex: index,
-      originalIndex: index,
-      status: "unchanged" as const,
-      dataItem: item,
-      originalItem: null,
-      currentItem: item,
-    }));
-  })();
-
-  function updateItems(nextItems: Record<string, unknown>[]) {
-    onChange(setAtPath(data, section.path, nextItems));
+  function updateItems(nextItems: ArrayItem[]) {
+    onChange(writeArrayItems(data, section.path, nextItems));
   }
 
   function updateRowField(row: AlignedArrayRow, fieldPath: string, next: unknown) {
     if (readOnly || row.dataIndex < 0) return;
-    const nextItems = items.map((current, itemIndex) =>
-      itemIndex === row.dataIndex
-        ? (setAtPath(current, fieldPath, next) as Record<string, unknown>)
-        : current,
-    );
-    updateItems(nextItems);
+    updateItems(updateArrayItemField(items, row.dataIndex, fieldPath, next));
   }
 
-  const prependNew = section.path === "experience";
-
   function addBlankItem() {
-    const blank = structuredClone(section.defaultItem) as Record<string, unknown>;
-    updateItems(prependNew ? [blank, ...items] : [...items, blank]);
+    const blank = structuredClone(section.defaultItem) as ArrayItem;
+    updateItems(insertArrayItem(items, blank, insertPosition));
   }
 
   function addMissingFromSource(row: AlignedArrayRow) {
     if (readOnly || !row.currentItem) return;
     const copy = structuredClone(row.currentItem);
-    updateItems(prependNew ? [copy, ...items] : [...items, copy]);
+    updateItems(insertArrayItem(items, copy, insertPosition));
   }
 
   const addButton = readOnly ? null : (
@@ -472,10 +437,15 @@ function ArraySectionCard({
 
   return (
     <SectionCard id={section.id} title={section.label}>
-      <div className="space-y-6">
+      <div
+        className="space-y-6"
+        data-array-path={section.path}
+        data-array-prepend={prependNew ? "true" : "false"}
+      >
         {prependNew ? addButton : null}
         {rows.map((row, displayIndex) => {
           const rowKey = reviewRowKey(section.path, row);
+          const reorderable = isReorderableRow(row);
 
           // Synced remove (target already deleted to match source).
           if (row.status === "removed" && !row.dataItem) {
@@ -570,6 +540,8 @@ function ArraySectionCard({
               key={row.key}
               data-review-key={rowKey}
               data-review-pane={reviewPane}
+              data-array-index={reorderable ? row.dataIndex : undefined}
+              data-reorderable={reorderable ? "true" : "false"}
               className={`space-y-3 border-t pt-6 first:border-t-0 first:pt-0 ${markRowBorderClass(rowMark)}`}
             >
               <div className="flex items-center justify-between gap-3">
@@ -597,9 +569,7 @@ function ArraySectionCard({
                   <GhostButton
                     danger
                     onClick={() =>
-                      updateItems(
-                        items.filter((_, itemIndex) => itemIndex !== row.dataIndex),
-                      )
+                      updateItems(removeArrayItemAt(items, row.dataIndex))
                     }
                   >
                     Remove

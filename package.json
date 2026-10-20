@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "generate:qr": "node scripts/generate-qr.mjs"
   },
   "dependencies": {
@@ -28,6 +30,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.4.2",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.12"
   }
 }
