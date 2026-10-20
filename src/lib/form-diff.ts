@@ -117,11 +117,39 @@ export function alignArrayRowsSameLocale(
 }
 
 /**
+ * Show target rows in the target list's own order. Existing jobs stay put
+ * until Apply source order. New-job placeholders sit at the section's insert
+ * edge, and a delete that is already gone on this side keeps its old slot.
+ */
+function displayTargetRows(
+  sectionPath: string,
+  rows: AlignedArrayRow[],
+): AlignedArrayRow[] {
+  const placed = rows
+    .filter((row) => row.dataIndex >= 0)
+    .sort((a, b) => a.dataIndex - b.dataIndex);
+  const adds = rows
+    .filter((row) => row.status === "added")
+    .sort((a, b) => a.currentIndex - b.currentIndex);
+  const removedHoles = rows
+    .filter((row) => row.dataIndex < 0 && row.status === "removed")
+    .sort((a, b) => a.originalIndex - b.originalIndex);
+
+  for (const hole of removedHoles) {
+    const at = Math.min(Math.max(hole.originalIndex, 0), placed.length);
+    placed.splice(at, 0, hole);
+  }
+  if (sectionPath === "experience") placed.unshift(...adds);
+  else placed.push(...adds);
+  return placed;
+}
+
+/**
  * Target (right) pane: dirty status from same-locale source diff.
  *
- * Display order follows source rows. With a review baseline, each target
- * item keeps the slot it had when review opened. Unmatched rows stay added
- * or removed.
+ * Rows stay in the target list's current order. With a review baseline, each
+ * target item keeps the slot it had when review opened. Unmatched rows stay
+ * added or removed.
  */
 export function alignTargetRowsToSourceDiff(
   sectionPath: string,
@@ -142,7 +170,7 @@ export function alignTargetRowsToSourceDiff(
     targetBaseline,
   );
 
-  return sourceRows.map((row, rowIndex) => {
+  const paired = sourceRows.map((row, rowIndex) => {
     const dataIndex = targetIndexes[rowIndex] ?? -1;
     if (dataIndex < 0) {
       return {
@@ -163,6 +191,8 @@ export function alignTargetRowsToSourceDiff(
       dataItem: targetItems[dataIndex] ?? null,
     };
   });
+
+  return displayTargetRows(sectionPath, paired);
 }
 
 export function fieldDirtyOnAlignedRow(

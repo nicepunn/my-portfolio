@@ -256,7 +256,28 @@ describe("alignTargetRowsToSourceDiff", () => {
     expect(rows[2]?.dataItem).toEqual(thB);
   });
 
-  it("pairs the same company after source reorder", () => {
+  it("keeps the target pane in its own order until apply", () => {
+    const enMy = job("MyCourseville", "2025");
+    const enLodash = job("Lodash", "2024");
+    const enLodashEdited = job("Lodashh", "2024");
+    const thMy = job("มายคอร์สวิลล์", "กรกฎาคม 2025");
+    const thLodash = job("โลแดช", "เมษายน 2024");
+    const rows = alignTargetRowsToSourceDiff(
+      "experience",
+      [enMy, enLodash],
+      [enLodashEdited, enMy],
+      [thMy, thLodash],
+      [thMy, thLodash],
+    );
+    expect(rows.map((row) => (row.dataItem as { company: string }).company)).toEqual([
+      "มายคอร์สวิลล์",
+      "โลแดช",
+    ]);
+    expect(fieldDirtyOnAlignedRow(rows[0]!, "company")).toBe(false);
+    expect(fieldDirtyOnAlignedRow(rows[1]!, "company")).toBe(true);
+  });
+
+  it("pairs the same company after source reorder without moving the target pane", () => {
     const rows = alignTargetRowsToSourceDiff(
       "experience",
       [enA, enB, enC],
@@ -264,14 +285,14 @@ describe("alignTargetRowsToSourceDiff", () => {
       [thA, thB, thC],
     );
     expect(rows.map((r) => (r.currentItem as { company: string }).company)).toEqual([
-      "Coral",
       "Acme",
       "Beta",
+      "Coral",
     ]);
     expect(rows.map((r) => (r.dataItem as { company: string }).company)).toEqual([
-      "Coral",
       "Acme",
       "Beta",
+      "Coral",
     ]);
   });
 
@@ -286,8 +307,8 @@ describe("alignTargetRowsToSourceDiff", () => {
     ];
     const rows = alignTargetRowsToSourceDiff("projects", en, en, th);
     expect(rows.map((r) => (r.dataItem as { name: string }).name)).toEqual([
-      "Heathub",
       "Hiwhiw",
+      "Heathub",
     ]);
   });
 
@@ -302,8 +323,8 @@ describe("alignTargetRowsToSourceDiff", () => {
     ];
     const rows = alignTargetRowsToSourceDiff("skills", en, en, th);
     expect(rows.map((r) => (r.dataItem as { label: string }).label)).toEqual([
-      "ภาษาโปรแกรม",
       "Front-End",
+      "ภาษาโปรแกรม",
     ]);
   });
 });

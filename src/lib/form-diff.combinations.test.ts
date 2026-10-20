@@ -46,6 +46,8 @@ type ComboCase = {
   expectStatuses: AlignedArrayRow["status"][];
   /** Companies on source currentItem (null for removed slots). */
   expectCurrentCompanies: (string | null)[];
+  /** Target pane order when it differs from the source display order. */
+  expectTargetStatuses?: AlignedArrayRow["status"][];
   /** Target companies paired to each display row (null = unpaired). */
   expectTargetCompanies: (string | null)[];
   /** Field-level dirty checks on first matching live row. */
@@ -146,7 +148,8 @@ const comboCases: ComboCase[] = [
       removeArrayItemAt(insertArrayItem(items, D, "start"), 2),
     expectStatuses: ["added", "removed", "unchanged", "unchanged"],
     expectCurrentCompanies: ["Delta", null, "Acme", "Coral"],
-    expectTargetCompanies: [null, "Beta", "Acme", "Coral"],
+    expectTargetStatuses: ["added", "unchanged", "removed", "unchanged"],
+    expectTargetCompanies: [null, "Acme", "Beta", "Coral"],
   },
   {
     name: "add + edit existing (prepend D, change A.role)",
@@ -181,7 +184,8 @@ const comboCases: ComboCase[] = [
     },
     expectStatuses: ["added", "removed", "unchanged", "changed"],
     expectCurrentCompanies: ["Delta", null, "Acme", "Coral"],
-    expectTargetCompanies: [null, "Beta", "Acme", "Coral"],
+    expectTargetStatuses: ["added", "unchanged", "removed", "changed"],
+    expectTargetCompanies: [null, "Acme", "Beta", "Coral"],
     dirty: { company: "Coral", fields: { role: true, period: false } },
   },
   {
@@ -206,7 +210,8 @@ const comboCases: ComboCase[] = [
     },
     expectStatuses: ["added", "removed", "added", "unchanged", "unchanged"],
     expectCurrentCompanies: ["Echo", null, "Delta", "Acme", "Coral"],
-    expectTargetCompanies: [null, "Beta", null, "Acme", "Coral"],
+    expectTargetStatuses: ["added", "added", "unchanged", "removed", "unchanged"],
+    expectTargetCompanies: [null, null, "Acme", "Beta", "Coral"],
   },
   {
     name: "partial edit after remove+add keeps identity pairing",
@@ -218,7 +223,8 @@ const comboCases: ComboCase[] = [
     },
     expectStatuses: ["removed", "added", "changed", "unchanged"],
     expectCurrentCompanies: [null, "Delta", "Beta", "Coral"],
-    expectTargetCompanies: ["Acme", null, "Beta", "Coral"],
+    expectTargetStatuses: ["added", "removed", "changed", "unchanged"],
+    expectTargetCompanies: [null, "Acme", "Beta", "Coral"],
     dirty: {
       company: "Beta",
       fields: { bullets: true, role: false, company: false },
@@ -236,6 +242,7 @@ describe("experience operation combinations (same-locale + cross-locale)", () =>
       apply,
       expectStatuses,
       expectCurrentCompanies,
+      expectTargetStatuses,
       expectTargetCompanies,
       dirty,
     }) => {
@@ -268,7 +275,7 @@ describe("experience operation combinations (same-locale + cross-locale)", () =>
         current,
         target,
       );
-      expect(statuses(targetRows)).toEqual(expectStatuses);
+      expect(statuses(targetRows)).toEqual(expectTargetStatuses ?? expectStatuses);
       expect(companies(targetRows, "data")).toEqual(expectTargetCompanies);
     },
   );
