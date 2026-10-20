@@ -112,4 +112,26 @@ describe("applySourceOrderToTarget", () => {
       ),
     ).toBe(false);
   });
+
+  it("stays matched after a field edit on an already ordered target", () => {
+    const baseline = [a, b, c];
+    const applied = applySourceOrderToTarget(
+      "experience",
+      [a, b, c],
+      [c, a, b],
+      baseline,
+    );
+    const edited = applied.map((item, index) =>
+      index === 0 ? { ...item, company: "Cee" } : item,
+    );
+    expect(
+      targetOrderMatchesSource(
+        "experience",
+        [a, b, c],
+        [c, a, b],
+        edited,
+        baseline,
+      ),
+    ).toBe(true);
+  });
 });

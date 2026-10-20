@@ -244,9 +244,9 @@ export function applySourceOrderToTarget(
 }
 
 /**
- * Whether `targetItems` already equal the order obtained by applying the
- * source original→current permutation to `targetBaseline` (pre-review snapshot).
- * Baseline must be the target list as loaded before review edits.
+ * Whether the target rows sit in the source's current order.
+ * Compares baseline slots, so editing a field after Apply source order
+ * does not turn the order banner red again.
  */
 export function targetOrderMatchesSource(
   sectionPath: string,
@@ -255,11 +255,15 @@ export function targetOrderMatchesSource(
   targetItems: ResumeItem[],
   targetBaseline: ResumeItem[],
 ): boolean {
-  const expected = applySourceOrderToTarget(
-    sectionPath,
-    sourceOriginal,
-    sourceCurrent,
-    targetBaseline,
+  const wanted = assignItemIndexes(sectionPath, sourceOriginal, sourceCurrent)
+    .sort((a, b) => a.right - b.right)
+    .map((pair) => pair.left);
+  const slots = targetBaselineSlots(sectionPath, targetBaseline, targetItems);
+  const firstUnmatched = slots.findIndex((slot) => slot < 0);
+  const matched = firstUnmatched < 0 ? slots : slots.slice(0, firstUnmatched);
+  const trailing = firstUnmatched < 0 ? [] : slots.slice(firstUnmatched);
+  return (
+    trailing.every((slot) => slot < 0) &&
+    JSON.stringify(matched) === JSON.stringify(wanted)
   );
-  return fieldValuesEqual(expected, targetItems);
 }
