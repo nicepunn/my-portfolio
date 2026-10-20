@@ -80,6 +80,36 @@ export function moveArrayItem(
   return next;
 }
 
+/**
+ * React keys for editable array rows.
+ * In-place field edits keep the key at that index (so typing in name/label
+ * does not remount the input). Reorder, add, and remove follow item identity
+ * by object reference.
+ */
+export function stableArrayRowKeys(
+  previousItems: ArrayItem[],
+  previousKeys: string[],
+  nextItems: ArrayItem[],
+  mint: () => string,
+): string[] {
+  const keyByItem = new Map<ArrayItem, string>();
+  previousItems.forEach((item, index) => {
+    const key = previousKeys[index];
+    if (key && !keyByItem.has(item)) keyByItem.set(item, key);
+  });
+
+  const sameLength = previousItems.length === nextItems.length;
+  const hasInPlaceEdit =
+    sameLength && nextItems.some((item) => !keyByItem.has(item));
+  if (hasInPlaceEdit) {
+    return nextItems.map(
+      (item, index) => keyByItem.get(item) ?? previousKeys[index] ?? mint(),
+    );
+  }
+
+  return nextItems.map((item) => keyByItem.get(item) ?? mint());
+}
+
 /** Rows that map to a real editable entry in `items` (not synced-remove / missing). */
 export function isReorderableRow(row: AlignedArrayRow): boolean {
   return row.dataIndex >= 0 && row.dataItem != null;

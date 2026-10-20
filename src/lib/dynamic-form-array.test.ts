@@ -6,6 +6,7 @@ import {
   isReorderableRow,
   moveArrayItem,
   prependsNewItems,
+  stableArrayRowKeys,
   readArrayItems,
   removeArrayItemAt,
   reviewRowKey,
@@ -104,6 +105,44 @@ describe("updateArrayItemField", () => {
   it("no-ops when the data index is missing", () => {
     const items = [job("A", "2024")];
     expect(updateArrayItemField(items, -1, "role", "Lead")).toBe(items);
+  });
+});
+
+describe("stableArrayRowKeys", () => {
+  const mint = (() => {
+    let n = 0;
+    return () => `k${++n}`;
+  })();
+
+  it("keeps keys when a name/label field is edited in place", () => {
+    const a = { name: "Heathub" };
+    const b = { name: "Other" };
+    const keys = ["row-a", "row-b"];
+    const edited = { ...a, name: "Heath" };
+    expect(stableArrayRowKeys([a, b], keys, [edited, b], mint)).toEqual(keys);
+  });
+
+  it("moves keys with the same item objects on reorder", () => {
+    const a = { label: "Frontend" };
+    const b = { label: "Backend" };
+    const c = { label: "Tools" };
+    expect(
+      stableArrayRowKeys([a, b, c], ["a", "b", "c"], [c, a, b], mint),
+    ).toEqual(["c", "a", "b"]);
+  });
+
+  it("mints a key for an inserted row and drops a removed row", () => {
+    const a = { name: "A" };
+    const b = { name: "B" };
+    const added = { name: "New" };
+    const afterAdd = stableArrayRowKeys([a, b], ["a", "b"], [added, a, b], mint);
+    expect(afterAdd[1]).toBe("a");
+    expect(afterAdd[2]).toBe("b");
+    expect(afterAdd[0]).toMatch(/^k/);
+    expect(stableArrayRowKeys([added, a, b], afterAdd, [a, b], mint)).toEqual([
+      "a",
+      "b",
+    ]);
   });
 });
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { flushSync } from "react-dom";
 import { Reorder, useDragControls } from "framer-motion";
 import type { Resume } from "@/lib/resume-schema";
@@ -24,12 +24,12 @@ import {
   readArrayItems,
   removeArrayItemAt,
   reviewRowKey,
+  stableArrayRowKeys,
   updateArrayItemField,
   writeArrayItems,
   type ArrayItem,
 } from "@/lib/dynamic-form-array";
 import {
-  arrayItemIdentity,
   arrayOrderChanged,
   applySourceOrderToTarget,
   fieldDirtyOnAlignedRow,
@@ -528,6 +528,25 @@ function ArraySectionCard({
   const prependNew = prependsNewItems(section.path);
   const enableDrag = !readOnly && !sourceDiff && !compareAgainst;
   const [liftedItem, setLiftedItem] = useState<ArrayItem | null>(null);
+  const rowKeyState = useRef<{ items: ArrayItem[]; keys: string[] }>({
+    items: [],
+    keys: [],
+  });
+  const rowKeyId = useRef(0);
+  const dragRowKeys = enableDrag
+    ? stableArrayRowKeys(
+        rowKeyState.current.items,
+        rowKeyState.current.keys,
+        items,
+        () => {
+          rowKeyId.current += 1;
+          return `${section.path}-row-${rowKeyId.current}`;
+        },
+      )
+    : [];
+  if (enableDrag) {
+    rowKeyState.current = { items, keys: dragRowKeys };
+  }
 
   const orderSourceOriginal = sourceDiff
     ? ((getAtPath(sourceDiff.original, section.path) as ArrayItem[]) ?? [])
@@ -842,7 +861,7 @@ function ArraySectionCard({
           if (enableDrag && reorderable) {
             return (
               <ArrayDragRow
-                key={arrayItemIdentity(section.path, item, row.dataIndex)}
+                key={dragRowKeys[row.dataIndex] ?? row.key}
                 item={item}
                 preview={
                   arrayItemPreview(section.path, item) ||
