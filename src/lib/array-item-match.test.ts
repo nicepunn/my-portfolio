@@ -121,7 +121,7 @@ describe("matchTargetIndexes", () => {
     expect(indexes).toEqual([-1, 0]);
   });
 
-  it("leaves rows unpaired when no field overlaps", () => {
+  it("leaves rows unpaired when no field overlaps and no original slot", () => {
     const sourceRows = [
       row({
         status: "unchanged",
@@ -139,5 +139,51 @@ describe("matchTargetIndexes", () => {
       { company: "เบต้า" },
     ]);
     expect(indexes).toEqual([-1, -1]);
+  });
+
+  it("pairs translated jobs by original index when no field scores", () => {
+    const sourceRows = [
+      row({
+        status: "unchanged",
+        originalIndex: 0,
+        currentItem: {
+          company: "MyCourseville Co., Ltd",
+          role: "Full-stack developer",
+          period: "July 2025 – Present",
+        },
+        originalItem: {
+          company: "MyCourseville Co., Ltd",
+          role: "Full-stack developer",
+          period: "July 2025 – Present",
+        },
+      }),
+      row({
+        status: "unchanged",
+        originalIndex: 1,
+        currentItem: {
+          company: "Lodash (Thailand) Co., Ltd",
+          role: "Full-stack developer",
+          period: "April 2024 – February 2025",
+        },
+        originalItem: {
+          company: "Lodash (Thailand) Co., Ltd",
+          role: "Full-stack developer",
+          period: "April 2024 – February 2025",
+        },
+      }),
+    ];
+    const indexes = matchTargetIndexes("experience", sourceRows, [
+      {
+        company: "บริษัทมายคอร์สวิลล์ จำกัด",
+        role: "นักพัฒนา Full-stack",
+        period: "กรกฎาคม 2025 – ปัจจุบัน",
+      },
+      {
+        company: "บริษัทโลแดช(ไทยแลนด์) จำกัด",
+        role: "นักพัฒนา Full-stack",
+        period: "เมษายน 2024 – กุมภาพันธ์ 2025",
+      },
+    ]);
+    expect(indexes).toEqual([0, 1]);
   });
 });

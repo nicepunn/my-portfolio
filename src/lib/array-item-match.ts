@@ -7,6 +7,8 @@ export type MatchableSourceRow = {
   status: "unchanged" | "changed" | "added" | "removed";
   originalItem: ResumeItem | null;
   currentItem: ResumeItem | null;
+  /** Index in the source list before this edit. -1 for a brand-new row. */
+  originalIndex?: number;
 };
 
 export function normalizeText(value: unknown): string {
@@ -308,10 +310,73 @@ function rowMatchScore(
   );
 }
 
+function originalSlot(row: MatchableSourceRow): number {
+  return typeof row.originalIndex === "number" ? row.originalIndex : -1;
+}
+
+/**
+ * Translated rows often share no exact field (Thai company and period vs
+ * English). When every anchored source row still has a slot and the target
+ * list is the same length, those slots are the parallel-locale partners.
+ * Score matches stay in place. Brand-new rows (no original index) stay out.
+ */
+function pairAnchoredRowsByOriginalIndex(
+  sourceRows: MatchableSourceRow[],
+  targetCount: number,
+  result: number[],
+): void {
+  const slots = sourceRows.map(originalSlot);
+  const anchored = slots.filter((slot) => slot >= 0);
+  if (anchored.length !== targetCount) return;
+  if (new Set(anchored).size !== anchored.length) return;
+  if (anchored.some((slot) => slot >= targetCount)) return;
+
+  const used = new Set(result.filter((index) => index >= 0));
+  sourceRows.forEach((_, rowIndex) => {
+    if ((result[rowIndex] ?? -1) >= 0) return;
+    const slot = slots[rowIndex] ?? -1;
+    if (slot < 0 || used.has(slot)) return;
+    result[rowIndex] = slot;
+    used.add(slot);
+  });
+}
+
+/**
+ * Target already dropped the pending deletes and kept survivor order.
+ * Map surviving source rows onto that shorter list by original index.
+ * Removed rows stay unmatched so the pane can show a synced delete.
+ */
+function pairSurvivorsAfterSyncedDeletes(
+  sourceRows: MatchableSourceRow[],
+  targetCount: number,
+  result: number[],
+): void {
+  if (result.some((index) => index >= 0)) return;
+
+  const removedCount = sourceRows.filter((row) => row.status === "removed").length;
+  if (removedCount === 0) return;
+
+  const survivors = sourceRows
+    .map((row, rowIndex) => ({ row, rowIndex, slot: originalSlot(row) }))
+    .filter(
+      (entry) =>
+        entry.slot >= 0 &&
+        entry.row.status !== "removed" &&
+        entry.row.status !== "added",
+    );
+  if (survivors.length !== targetCount) return;
+
+  survivors.sort((a, b) => a.slot - b.slot);
+  survivors.forEach((entry, targetIndex) => {
+    result[entry.rowIndex] = targetIndex;
+  });
+}
+
 /**
  * Pick a target index for each source display row (or -1 if unpaired).
  * Pairs are a global assignment over every field. Rows that do not clear
- * the score stay unmatched: added on source, or already removed on target.
+ * the score fall back to their original index when the target list is still
+ * the parallel translation. Added rows stay unmatched.
  */
 export function matchTargetIndexes(
   sectionPath: string,
@@ -326,5 +391,7 @@ export function matchTargetIndexes(
   for (const pair of pairs) {
     result[pair.left] = pair.right;
   }
+  pairAnchoredRowsByOriginalIndex(sourceRows, targetItems.length, result);
+  pairSurvivorsAfterSyncedDeletes(sourceRows, targetItems.length, result);
   return result;
 }

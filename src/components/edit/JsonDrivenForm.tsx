@@ -694,10 +694,9 @@ function ArraySectionCard({
           }
 
           const itemAttention = hasDiff && row.status !== "unchanged";
-          const missingOnThisSide = row.dataIndex < 0;
           const item = row.dataItem;
 
-          if (missingOnThisSide && sourceDiff) {
+          if (row.status === "added" && row.dataIndex < 0 && sourceDiff) {
             const mark = toMark(true, false, resolveAgainst);
             return (
               <ReviewAnchor

@@ -133,6 +133,44 @@ describe("alignTargetRowsToSourceDiff", () => {
     ]);
   });
 
+  it("pairs untouched translated experience even when period text differs", () => {
+    const en = [
+      {
+        company: "MyCourseville Co., Ltd",
+        role: "Full-stack developer",
+        period: "July 2025 – Present",
+        bullets: ["Built and shipped features."],
+      },
+      {
+        company: "Lodash (Thailand) Co., Ltd",
+        role: "Full-stack developer",
+        period: "April 2024 – February 2025",
+        bullets: ["Designed projects from scratch."],
+      },
+    ];
+    const th = [
+      {
+        company: "บริษัทมายคอร์สวิลล์ จำกัด",
+        role: "นักพัฒนา Full-stack",
+        period: "กรกฎาคม 2025 – ปัจจุบัน",
+        bullets: ["พัฒนาและปล่อยฟีเจอร์"],
+      },
+      {
+        company: "บริษัทโลแดช(ไทยแลนด์) จำกัด",
+        role: "นักพัฒนา Full-stack",
+        period: "เมษายน 2024 – กุมภาพันธ์ 2025",
+        bullets: ["ออกแบบ พัฒนา และดูแลโปรเจกต์"],
+      },
+    ];
+    const rows = alignTargetRowsToSourceDiff("experience", en, en, th);
+    expect(rows.map((r) => r.status)).toEqual(["unchanged", "unchanged"]);
+    expect(rows.map((r) => (r.dataItem as { company: string }).company)).toEqual([
+      "บริษัทมายคอร์สวิลล์ จำกัด",
+      "บริษัทโลแดช(ไทยแลนด์) จำกัด",
+    ]);
+    expect(rows.every((r) => r.dataIndex >= 0)).toBe(true);
+  });
+
   it("falls back to position when company names differ", () => {
     const rows = alignTargetRowsToSourceDiff(
       "experience",
