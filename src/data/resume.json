@@ -49,14 +49,6 @@
       "url": "https://spotlight-ts-serper.vercel.app/serperMock/auth/playground"
     },
     {
-      "name": "Hiwhiw",
-      "stack": "Next.js · Golang · Microservices · RabbitMQ · gRPC",
-      "description": [
-        "Smart recipe management: fridge inventory, menu search/filter, and custom menus.",
-        "Microservices architecture for scalability and maintainability."
-      ]
-    },
-    {
       "name": "CapyKnow",
       "stack": "LLM · RAG · Late chunking · UX/UI · SDLC",
       "description": [
