@@ -52,9 +52,9 @@
       "name": "Mycourseville alpha",
       "stack": "React · TypeScript · GraphQL · Code-first OpenAPI · Go · PostgreSQL · Redis",
       "description": [
-        "A university course management system where students can view courses, assignments, materials, videos, schedules, and grades in one place",
-        "The web app is built with React and TypeScript, and the same codebase is packaged as a mobile app with Capacitor",
-        "The server is written in Go and runs two APIs side by side: the existing GraphQL API, and a REST API whose Go comments are generated into an OpenAPI spec and a TypeScript client"
+        "A university course management system where students can view courses, assignments, materials, videos, schedules, and grades in one place.",
+        "The web app is built with React and TypeScript, and the same codebase is packaged as a mobile app with Capacitor.",
+        "The server is written in Go and runs two APIs side by side: the existing GraphQL API, and a REST API whose Go comments are generated into an OpenAPI spec and a TypeScript client."
       ],
       "url": "https://alpha.mycourseville.com/"
     },
