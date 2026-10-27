@@ -41,20 +41,30 @@
       "url": "https://heathub.vercel.app"
     },
     {
-      "name": "Serper",
-      "stack": "Solo · JSON-driven UI · Next.js · TypeScript · Tailwind CSS",
-      "description": [
-        "สร้างโคลนฟังก์ชันของ serper.dev เพื่อจำลองหน้าค้นหาและหน้าแสดงผล"
-      ],
-      "url": "https://spotlight-ts-serper.vercel.app/serperMock/auth/playground"
-    },
-    {
       "name": "CapyKnow",
       "stack": "LLM · RAG · Late chunking · UX/UI · SDLC",
       "description": [
         "โปรเจกต์จบการศึกษา: ผสาน LLM เข้ากับ myCourseVille แพลตฟอร์มการเรียนของจุฬาลงกรณ์มหาวิทยาลัย",
         "ดูแลวงจรการพัฒนาซอฟต์แวร์ตั้งแต่ต้นจนจบ"
       ]
+    },
+    {
+      "name": "Serper",
+      "stack": "JSON-driven UI · Next.js · TypeScript · Tailwind CSS",
+      "description": [
+        "สร้างโคลนฟังก์ชันของ serper.dev เพื่อจำลองหน้าค้นหาและหน้าแสดงผล"
+      ],
+      "url": "https://spotlight-ts-serper.vercel.app/serperMock/auth/playground"
+    },
+    {
+      "name": "Mycourseville alpha",
+      "stack": "React · TypeScript · GraphQL · Code-first OpenAPI · Go · PostgreSQL · Redis",
+      "description": [
+        "ระบบจัดการรายวิชาของมหาวิทยาลัย นักศึกษาดูวิชา การบ้าน เอกสาร วิดีโอ ตารางเรียน และคะแนนได้ในที่เดียว",
+        "เว็บเป็น React กับ TypeScript และใช้โค้ดชุดเดียวกันแพ็กเป็นแอปมือถือด้วย Capacitor",
+        "ฝั่งเซิร์ฟเวอร์เป็น Go มี API สองแบบ คู่กันอยู่ คือ GraphQL ของระบบเดิม และ REST ที่เขียน comment ใน Go แล้ว generate เป็น OpenAPI กับ TypeScript client"
+      ],
+      "url": "https://alpha.mycourseville.com/"
     }
   ],
   "skills": [
