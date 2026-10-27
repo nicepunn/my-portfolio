@@ -42,7 +42,7 @@
     },
     {
       "name": "CapyKnow",
-      "stack": "LLM · RAG · Late chunking · UX/UI · SDLC",
+      "stack": "LLM · RAG · Late chunking · UX/UI",
       "description": [
         "โปรเจกต์จบการศึกษา: ผสาน LLM เข้ากับ myCourseVille แพลตฟอร์มการเรียนของจุฬาลงกรณ์มหาวิทยาลัย",
         "ดูแลวงจรการพัฒนาซอฟต์แวร์ตั้งแต่ต้นจนจบ"
@@ -50,9 +50,9 @@
     },
     {
       "name": "Mycourseville alpha",
-      "stack": "React · TypeScript · GraphQL · Code-first OpenAPI · Go · PostgreSQL · Redis",
+      "stack": "React · TypeScript · GraphQL · Code-first OpenAPI · Go · PostgreSQL · Redis · Monorepo",
       "description": [
-        "ระบบจัดการรายวิชาของมหาวิทยาลัย นักศึกษาดูวิชา การบ้าน เอกสาร วิดีโอ ตารางเรียน และคะแนนได้ในที่เดียว",
+        "MyCourseVille คือระบบจัดการรายวิชาของมหาวิทยาลัย นักศึกษาดูวิชา การบ้าน เอกสาร วิดีโอ ตารางเรียน และคะแนนได้ในที่เดียว",
         "เว็บเป็น React กับ TypeScript และใช้โค้ดชุดเดียวกันแพ็กเป็นแอปมือถือด้วย Capacitor",
         "ฝั่งเซิร์ฟเวอร์เป็น Go มี API สองแบบ คู่กันอยู่ คือ GraphQL ของระบบเดิม และ REST ที่เขียน comment ใน Go แล้ว generate เป็น OpenAPI กับ TypeScript client"
       ],
