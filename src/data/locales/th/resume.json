@@ -49,14 +49,6 @@
       ]
     },
     {
-      "name": "Serper",
-      "stack": "JSON-driven UI · Next.js · TypeScript · Tailwind CSS",
-      "description": [
-        "สร้างโคลนฟังก์ชันของ serper.dev เพื่อจำลองหน้าค้นหาและหน้าแสดงผล"
-      ],
-      "url": "https://spotlight-ts-serper.vercel.app/serperMock/auth/playground"
-    },
-    {
       "name": "Mycourseville alpha",
       "stack": "React · TypeScript · GraphQL · Code-first OpenAPI · Go · PostgreSQL · Redis",
       "description": [
@@ -65,6 +57,14 @@
         "ฝั่งเซิร์ฟเวอร์เป็น Go มี API สองแบบ คู่กันอยู่ คือ GraphQL ของระบบเดิม และ REST ที่เขียน comment ใน Go แล้ว generate เป็น OpenAPI กับ TypeScript client"
       ],
       "url": "https://alpha.mycourseville.com/"
+    },
+    {
+      "name": "Serper",
+      "stack": "JSON-driven UI · Next.js · TypeScript · Tailwind CSS",
+      "description": [
+        "สร้างโคลนฟังก์ชันของ serper.dev เพื่อจำลองหน้าค้นหาและหน้าแสดงผล"
+      ],
+      "url": "https://spotlight-ts-serper.vercel.app/serperMock/auth/playground"
     }
   ],
   "skills": [
