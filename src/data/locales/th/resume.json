@@ -49,14 +49,6 @@
       "url": "https://spotlight-ts-serper.vercel.app/serperMock/auth/playground"
     },
     {
-      "name": "Hiwhiw",
-      "stack": "Next.js · Golang · Microservices · RabbitMQ · gRPC",
-      "description": [
-        "ระบบจัดการสูตรอาหารอัจฉริยะ ครอบคลุมสต็อกในตู้เย็น การค้นหาและกรองเมนู รวมถึงเมนูกำหนดเอง",
-        "ออกแบบแบบ microservices เพื่อให้ขยายระบบและดูแลต่อได้ง่าย"
-      ]
-    },
-    {
       "name": "CapyKnow",
       "stack": "LLM · RAG · Late chunking · UX/UI · SDLC",
       "description": [
